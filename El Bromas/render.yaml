@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: el-bromas-online
+    runtime: docker
+    repo: https://github.com/c2233x/Cskskskksks
+    branch: main
+    dockerfilePath: ./Dockerfile
+    autoDeployTrigger: commit
+    plan: free
+    region: ohio
+    healthCheckPath: /health
