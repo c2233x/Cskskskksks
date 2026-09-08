@@ -1,10 +1,11 @@
 <!DOCTYPE html>
+
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
-    <title>El Bromas</title>
-    <style>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>El Bromas</title>
+<style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
             width: 100%; height: 100%; overflow: hidden;
@@ -20,9 +21,10 @@
             justify-content: center; align-items: center; color: white;
         }
         #gameTitle {
-            font-size: 26px; font-weight: bold; margin-bottom: 20px;
+            font-size: 26px; font-weight: bold; margin: 16px 0 0;
             text-shadow: 0 0 25px rgba(0,180,255,0.9);
             animation: pulse 2s infinite; text-align: center; padding: 0 15px;
+            position: relative; z-index: 2;
         }
         @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }
         #playButton {
@@ -194,7 +196,6 @@
         #githubLoaderError { display:none; margin-top:12px; color:#ff7777; font-size:12px; line-height:1.4; }
         #githubLog { margin-top:12px; max-height:180px; overflow:auto; background:#07101d; border:1px solid #26364f; border-radius:8px; padding:8px; font-family:monospace; font-size:10px; line-height:1.45; text-align:left; color:#9fe3b1; white-space:pre-wrap; word-break:break-word; }
         #githubRetryBtn { display:none; margin:14px auto 0; padding:9px 18px; border:0; border-radius:9px; background:#1677ff; color:#fff; font-weight:700; }
-        #playOfflineBtn { display:none; margin:10px auto 0; padding:9px 18px; border:0; border-radius:9px; background:#555; color:#fff; font-weight:700; }
         
         #interactionPrompt {
             position: fixed; bottom: 200px; left: 50%; transform: translateX(-50%);
@@ -225,91 +226,108 @@
         }
         #btnRestartYes { background: #ff4444; color: white; }
         #btnRestartNo { background: #555; color: white; }
-    </style>
+    
+/* Barra de carga visible debajo del título */
+        #startupProgressTrack { width: min(320px, 78vw); height: 10px; margin-top: 14px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.28); display: block; }
+        #startupProgressBar { width: 0%; height: 100%; border-radius: 8px; background: linear-gradient(90deg,#0077ff,#00e5ff); transition: width .12s linear; }
+        #startupProgressPercent { margin-top: 6px; font-size: 11px; color: #cbd7ee; display: block; }
+        #loadingText { font-size: 24px; font-weight: 800; color: #fff; margin-bottom: 2px; text-align:center; }
+#startupProgressTrack { width: min(360px, 78vw); height: 10px; margin-top: 14px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.10); border: 2px solid rgba(0,255,100,.35); box-shadow: 0 0 0 rgba(0,255,100,0); animation: githubReading 1s ease-in-out infinite; }
+#startupProgressBar { width: 0%; height: 100%; border-radius: 6px; background: linear-gradient(90deg,#00b84a,#39ff88); transition: width .12s linear; }
+#startupProgressPercent { margin-top: 6px; font-size: 12px; color: #fff; display: block; font-weight: 800; }
+#startupProgressCount { margin-top: 2px; font-size: 12px; color: #fff; display: block; font-weight: 800; letter-spacing: .2px; }
+@keyframes githubReading { 0%,100% { border-color: rgba(0,255,100,.30); box-shadow: 0 0 0 rgba(0,255,100,0); } 50% { border-color: rgba(0,255,100,1); box-shadow: 0 0 10px rgba(0,255,100,.65); } }
+        @media (orientation: portrait) { #startScreen { width: 100vw; height: 100vh; } }
+
+        /* Pantalla inicial limpia: solo carga, porcentaje, contador y JUGAR. */
+        #startScreen { gap: 0; }
+        #loadingText { font-size: 24px; font-weight: 800; color: #fff; text-shadow: 0 0 18px rgba(0,255,100,.45); }
+        #startupProgressTrack { width: min(320px,78vw); height: 10px; margin-top: 14px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.10); border: 2px solid rgba(0,255,100,.30); animation: startupBarBlink 1s ease-in-out infinite; }
+        #startupProgressBar { width: 0%; height: 100%; border-radius: 6px; background: linear-gradient(90deg,#00b84a,#39ff88); transition: width .12s linear; }
+        #startupProgressPercent, #startupProgressCount { color:#fff; font-weight:700; margin-top:7px; font-size:14px; }
+        #startupProgressCount { margin-top:3px; font-size:13px; opacity:.9; }
+        @keyframes startupBarBlink { 0%,100% { opacity:.58; box-shadow:0 0 7px rgba(0,255,100,.18); } 50% { opacity:1; box-shadow:0 0 18px rgba(0,255,100,.62); } }
+        #startScreen.error #startupProgressTrack { border-color:rgba(255,45,45,.9); animation:startupBarErrorBlink .55s ease-in-out infinite; }
+        #startScreen.error #startupProgressBar { background:linear-gradient(90deg,#ff2424,#ff6868)!important; }
+        @keyframes startupBarErrorBlink { 0%,100% { opacity:.65; box-shadow:0 0 8px rgba(255,0,0,.25); } 50% { opacity:1; box-shadow:0 0 20px rgba(255,0,0,.7); } }
+                #githubLoader, #githubLoaderBox, #githubLoaderTitle, #githubLoaderStatus, #githubProgressTrack, #githubProgressPercent, #githubProgressCount, #githubLoaderError, #githubRetryBtn, #playOfflineBtn, #githubLog, #gameInstructions { display:none!important; }
+
+
+        /* Interfaz de carga limpia: no mostrar textos técnicos, logs ni botones de respaldo. */
+        #githubLoader, #githubLoaderBox, #githubLoaderTitle, #githubLoaderStatus, #githubProgressTrack, #playButton,
+        #githubProgressPercent, #githubProgressCount, #githubLoaderError, #githubRetryBtn,
+        #playOfflineBtn, #githubLog { display:none!important; }
+        #startScreen.error #startupProgressTrack { border-color: rgba(255,70,70,.75)!important; animation: githubErrorPulse 1s ease-in-out infinite!important; }
+        #startScreen.error #startupProgressBar { background:#ff3030!important; }
+        @keyframes githubErrorPulse { 0%,100%{box-shadow:0 0 0 rgba(255,40,40,0)} 50%{box-shadow:0 0 14px rgba(255,40,40,.55)} }
+</style>
 </head>
 <body>
-    <div id="startScreen">
-        <div id="gameTitle">🍆 Salva a Cornatan</div>
-        <button id="playButton">☁️ CARGAR RECURSOS</button>
-        <div id="gameInstructions">
-            Los recursos se leen directamente desde GitHub.<br>
-            No necesitas seleccionar una carpeta ni cargar archivos localmente.
-        </div>
-        <input type="file" id="folderInput" webkitdirectory multiple>
-    </div>
-
-    <div id="githubLoader">
-        <div id="githubLoaderBox">
-            <div id="githubLoaderTitle">☁️ Cargando recursos</div>
-            <div id="githubLoaderStatus">Conectando con GitHub...</div>
-            <div id="githubProgressTrack"><div id="githubProgressBar"></div></div>
-            <div id="githubProgressPercent">0%</div>
-            <div id="githubProgressCount">Preparando archivos...</div>
-            <div id="githubLoaderError"></div>
-            <div id="githubLog">[GitHub] Esperando conexión...</div>
-            <button id="githubRetryBtn">↻ Reintentar (retoma donde quedó)</button>
-            <button id="playOfflineBtn">▶️ Jugar sin descargar</button>
-        </div>
-    </div>
-    
-    <div id="statusText">Listo</div>
-    <div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
-    
-    <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
-    <div id="bossName">👹 PENE GIGANTE</div>
-    
-    <div id="playerHealthBar"><div id="playerHealthFill"></div></div>
-    <div id="playerHealthLabel">🌽 Cornatan</div>
-    
-    <div id="auraBarContainer"><div id="auraBarCenter"></div><div id="auraFillPositive"></div><div id="auraFillNegative"></div></div>
-    <div id="auraLabel">💜 Aura: 0</div>
-    
-    <div id="semenBar"><div id="semenFill"></div></div>
-    <div id="semenLabel">💦 Semen: 0%</div>
-    
-    <div id="peneCountInfo">🍆 Vivos: 0</div>
-    
-    <div id="auraPopup"></div>
-    <div id="interactionPrompt"></div>
-
-    <div id="sysRestartBtn">🔄</div>
-    <div id="restartModal">
-        <h3>¿Reiniciar el Mundo?</h3>
-        <p>Tu partida, terreno y construcciones se reiniciarán a su estado original. Perderás tu progreso actual.</p>
-        <div style="display: flex; justify-content: space-between; gap: 10px;">
-            <button class="modalBtn" id="btnRestartNo">Cancelar</button>
-            <button class="modalBtn" id="btnRestartYes">Sí, Reiniciar</button>
-        </div>
-    </div>
-    
-    <div id="flightControls">
-        <div class="flightBtn" id="flyUpBtn">🔼</div>
-        <div class="flightBtn" id="flyDownBtn">🔽</div>
-    </div>
-    
-    <div id="joystickArea" style="display:none;"><div id="joystickKnob"></div></div>
-    
-    <div id="actionButtons" style="display:none;">
-        <div class="actionBtn" id="tuboBtn">🚀<br>Tubo<div class="cooldownBar"><div id="tuboCooldownFill" class="cooldownFill"></div></div></div>
-        <div class="actionBtn" id="buffBtn">🔥<br>Poder<div class="cooldownBar"><div id="buffCooldownFill" class="cooldownFill"></div></div></div>
-        <div class="actionBtn" id="poopBtn">💩<br>Caca<div class="cooldownBar"><div id="poopCooldownFill" class="cooldownFill"></div></div></div>
-        <div class="actionBtn" id="flyBtn">🦅<br>Volar<div class="cooldownBar"><div id="flyCooldownFill" class="cooldownFill"></div></div></div>
-        <div class="actionBtn" id="specialBtn">💜<br>Aura<div class="cooldownBar"><div id="specialCooldownFill" class="cooldownFill"></div></div></div>
-        <div class="actionBtn" id="morteroBtn">💩<br>Mortero<div class="cooldownBar"><div id="morteroCooldownFill" class="cooldownFill"></div></div></div>
-        <div class="actionBtn" id="attackBtn">⚔️<br>Atacar</div>
-        <div class="actionBtn" id="jumpBtn">⬆️<br>Saltar</div>
-        <div class="actionBtn" id="runBtn">🏃<br>Correr</div>
-    </div>
-    
-    <div id="morteroFireBtn">🔥 DISPARAR</div>
-    <div id="tuboBigFireBtn">🔫<br>DISPARAR</div>
-    
-    <div id="morteroTimer">Mortero: 20s</div>
-    <div id="crosshair"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-    <script>
+<div id="startScreen">
+<div id="loadingText">Iniciando</div>
+<div id="startupProgressTrack"><div id="startupProgressBar"></div></div>
+<div id="startupProgressPercent">0%</div>
+<div id="startupProgressCount">0/0</div>
+<input id="folderInput" multiple="" type="file" webkitdirectory="" style="display:none!important"/>
+</div>
+<div id="githubLoader">
+<div id="githubLoaderBox">
+<div id="githubLoaderTitle">Cargando</div>
+<div id="githubLoaderStatus"></div>
+<div id="githubProgressTrack"><div id="githubProgressBar"></div></div>
+<div id="githubProgressPercent">0%</div>
+<div id="githubProgressCount"></div>
+<div id="githubLoaderError"></div>
+<div id="githubLog"></div>
+<button id="githubRetryBtn" style="display:none!important"></button>
+<button id="playOfflineBtn" style="display:none!important"></button>
+</div>
+</div>
+<div id="statusText">Listo</div>
+<div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
+<div id="bossHealthBar"><div id="bossHealthFill"></div></div>
+<div id="bossName">👹 PENE GIGANTE</div>
+<div id="playerHealthBar"><div id="playerHealthFill"></div></div>
+<div id="playerHealthLabel">🌽 Cornatan</div>
+<div id="auraBarContainer"><div id="auraBarCenter"></div><div id="auraFillPositive"></div><div id="auraFillNegative"></div></div>
+<div id="auraLabel">💜 Aura: 0</div>
+<div id="semenBar"><div id="semenFill"></div></div>
+<div id="semenLabel">💦 Semen: 0%</div>
+<div id="peneCountInfo">🍆 Vivos: 0</div>
+<div id="auraPopup"></div>
+<div id="interactionPrompt"></div>
+<div id="sysRestartBtn">🔄</div>
+<div id="restartModal">
+<h3>Reiniciar mundo</h3>
+<p>Vuelve todo como antes después de reiniciar.</p>
+<div style="display: flex; justify-content: space-between; gap: 10px;">
+<button class="modalBtn" id="btnRestartNo">Nel</button>
+<button class="modalBtn" id="btnRestartYes">Sí</button>
+</div>
+</div>
+<div id="flightControls">
+<div class="flightBtn" id="flyUpBtn">🔼</div>
+<div class="flightBtn" id="flyDownBtn">🔽</div>
+</div>
+<div id="joystickArea" style="display:none;"><div id="joystickKnob"></div></div>
+<div id="actionButtons" style="display:none;">
+<div class="actionBtn" id="tuboBtn">🚀<br/>Tubo<div class="cooldownBar"><div class="cooldownFill" id="tuboCooldownFill"></div></div></div>
+<div class="actionBtn" id="buffBtn">🔥<br/>Poder<div class="cooldownBar"><div class="cooldownFill" id="buffCooldownFill"></div></div></div>
+<div class="actionBtn" id="poopBtn">💩<br/>Caca<div class="cooldownBar"><div class="cooldownFill" id="poopCooldownFill"></div></div></div>
+<div class="actionBtn" id="flyBtn">🦅<br/>Volar<div class="cooldownBar"><div class="cooldownFill" id="flyCooldownFill"></div></div></div>
+<div class="actionBtn" id="specialBtn">💜<br/>Aura<div class="cooldownBar"><div class="cooldownFill" id="specialCooldownFill"></div></div></div>
+<div class="actionBtn" id="morteroBtn">💩<br/>Mortero<div class="cooldownBar"><div class="cooldownFill" id="morteroCooldownFill"></div></div></div>
+<div class="actionBtn" id="attackBtn">⚔️<br/>Atacar</div>
+<div class="actionBtn" id="jumpBtn">⬆️<br/>Saltar</div>
+<div class="actionBtn" id="runBtn">🏃<br/>Correr</div>
+</div>
+<div id="morteroFireBtn">🔥 DISPARAR</div>
+<div id="tuboBigFireBtn">🔫<br/>DISPARAR</div>
+<div id="morteroTimer">Mortero: 20s</div>
+<div id="crosshair"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script>
         // ============ VARIABLES GLOBALES ============
         let billboardMaterials = []; let streetLights = []; let buildingColliders = []; let destructibleProps = []; 
         let sharedBuildingMaterials = []; let activeMiniBosses = []; let cinematicBosses = [];
@@ -374,7 +392,11 @@
             else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
         }
 
-        const startScreen = document.getElementById('startScreen'); const playButton = document.getElementById('playButton'); const folderInput = document.getElementById('folderInput');
+        const startScreen = document.getElementById('startScreen');
+        const loadingText = document.getElementById('loadingText');
+        const startupProgressBar = document.getElementById('startupProgressBar');
+        const startupProgressPercent = document.getElementById('startupProgressPercent');
+        const startupProgressCount = document.getElementById('startupProgressCount'); const playButton = document.getElementById('playButton'); const folderInput = document.getElementById('folderInput');
         const githubLoader = document.getElementById('githubLoader');
         const githubLoaderStatus = document.getElementById('githubLoaderStatus');
         const githubProgressBar = document.getElementById('githubProgressBar');
@@ -392,10 +414,6 @@
         const sysRestartBtn = document.getElementById('sysRestartBtn'); const restartModal = document.getElementById('restartModal');
         const btnRestartYes = document.getElementById('btnRestartYes'); const btnRestartNo = document.getElementById('btnRestartNo');
 
-        playButton.addEventListener('click', async () => {
-            if (filesLoaded) { enterFullscreen(); setTimeout(startGame, 200); return; }
-            await loadGitHubAssets();
-        });
         githubRetryBtn.addEventListener('click', () => loadGitHubAssets());
         playOfflineBtn.addEventListener('click', () => playWithoutDownload());
         sysRestartBtn.addEventListener('click', () => { restartModal.style.display = 'block'; });
@@ -411,12 +429,21 @@
         const GITHUB_FOLDER = 'El Bromas';
         const GITHUB_CONTENTS_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/`;
 
+        let currentLoadProgress = 0;
+
         function setGitHubProgress(percent, status, countText) {
             const p = Math.max(0, Math.min(100, percent));
+            currentLoadProgress = p;
             githubProgressBar.style.width = p.toFixed(1) + '%';
             githubProgressPercent.textContent = Math.round(p) + '%';
+            if (startupProgressBar) startupProgressBar.style.width = p.toFixed(1) + '%';
+            if (startupProgressPercent) startupProgressPercent.textContent = Math.round(p) + '%';
             if (status) githubLoaderStatus.textContent = status;
-            if (countText) githubProgressCount.textContent = countText;
+            if (countText) {
+                githubProgressCount.textContent = countText;
+                if (startupProgressCount) startupProgressCount.textContent = countText.replace(/\s+/g,'').replace(/archivos.*$/i,'');
+            }
+            if (startScreen && p < 100) startScreen.classList.remove('ready');
         }
 
         async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
@@ -438,7 +465,7 @@
                 if (done) break;
                 chunks.push(value);
                 loaded += value.byteLength;
-                onProgress(total ? loaded / total : 0);
+                onProgress(total ? loaded / total : Math.min(0.92, 0.08 + loaded / (loaded + 1048576)));
             }
             onProgress(1);
             return new Blob(chunks);
@@ -721,17 +748,20 @@
             await new Promise(resolve => setTimeout(resolve, 300));
             githubLogMsg(`⬇️ Descarga finalizada: ${virtualFiles.length} archivos. Iniciando instalación...`, 'ok');
             processFiles(virtualFiles);
-            setGitHubProgress(0, 'Instalando...', `0 / ${virtualFiles.length} archivos instalados`);
+            if (loadingText) loadingText.textContent = 'Iniciando';
+            setGitHubProgress(0, 'Iniciando...', `0 / ${virtualFiles.length} archivos instalados`);
             await saveGameFilesToCache(virtualFiles, (done, total, path) => {
-                setGitHubProgress(done / total * 100, `Instalando... (${path})`, `${done} / ${total} archivos instalados`);
+                setGitHubProgress(done / total * 100, 'Iniciando...', `${done} / ${total} archivos instalados`);
             });
             filesLoaded = true;
             setGitHubProgress(100, '✓ Instalación completa', `${virtualFiles.length} archivos instalados (${sourceText})`);
             await new Promise(resolve => setTimeout(resolve, 500));
             githubLoader.style.display = 'none';
-            playButton.disabled = false;
-            playButton.innerHTML = '▶️ JUGAR';
-            playButton.style.background = 'linear-gradient(135deg,#16a34a,#22c55e)';
+            startScreen.classList.remove('error','ready');
+            // Al terminar la instalación se ejecuta automáticamente la misma
+            // acción que antes hacía el botón JUGAR.
+            enterFullscreen();
+            setTimeout(startGame, 150);
         }
 
         async function tryCachedGame() {
@@ -868,23 +898,23 @@
         async function loadGitHubAssets() {
             if (githubLoader.dataset.loading === '1') return;
             githubLoader.dataset.loading = '1';
-            githubLoader.style.display = 'flex';
+            githubLoader.style.display = 'none';
             githubLoaderError.style.display = 'none';
+            startScreen.classList.remove('ready','error');
+            if (loadingText) loadingText.textContent = 'Iniciando';
             githubRetryBtn.style.display = 'none';
             playOfflineBtn.style.display = 'none';
-            playButton.disabled = true;
             githubLog.textContent = '';
             githubLogMsg(`Repositorio: https://github.com/${GITHUB_OWNER}/${GITHUB_REPO}`);
             githubLogMsg(`Rama: ${GITHUB_BRANCH}`);
             githubLogMsg(`Ruta raíz del repositorio: /`);
-            githubLogMsg(`Buscando primero la carpeta: /${GITHUB_FOLDER}/`);
-            githubLogMsg(`URL raíz: ${GITHUB_CONTENTS_URL}?ref=${encodeURIComponent(GITHUB_BRANCH)}`);
-            setGitHubProgress(0, 'Comprobando versión...', 'Buscando Version ...');
+                        githubLogMsg(`URL raíz: ${GITHUB_CONTENTS_URL}?ref=${encodeURIComponent(GITHUB_BRANCH)}`);
+            setGitHubProgress(0, 'Iniciando...', '0/0');
 
             try {
                 // Primero revisamos Version y el caché. Esto evita la API de GitHub en cargas posteriores.
                 if (await tryCachedGame()) return;
-                setGitHubProgress(0, 'Leyendo raíz del repositorio...', 'Buscando /El Bromas/ ...');
+                setGitHubProgress(0, 'Iniciando...', '0/0');
                 const rootItems = await githubListFolder('');
                 const bromas = rootItems.find(item => item.type === 'dir' && item.name.toLowerCase() === GITHUB_FOLDER.toLowerCase());
                 if (!bromas) {
@@ -951,34 +981,29 @@
             } catch (error) {
                 console.error('Error cargando recursos de GitHub:', error);
                 const msg = error?.message || String(error);
-                // Cualquier fallo descargando archivo por archivo (límite de API,
-                // "Failed to fetch" en un archivo puntual, corte de red, etc.)
-                // cae automáticamente al respaldo: bajar el repositorio completo
-                // como un solo ZIP en vez de cientos de peticiones sueltas.
-                {
+
+                // Si el error aparece cuando ya avanzamos bastante, NO hacemos otra
+                // descarga. Entramos directamente en el mismo flujo de "JUGAR".
+                if (typeof currentLoadProgress === 'number' && currentLoadProgress >= 80) {
                     try {
-                        await loadGitHubZipFallback(`Falló la descarga archivo por archivo (${msg}). Probando con el ZIP completo del repositorio...`);
+                        await playWithoutDownload();
                         return;
-                    } catch (zipError) {
-                        console.error('Error en respaldo ZIP:', zipError);
-                        githubLogMsg(`FALLÓ también el respaldo ZIP: ${zipError?.message || zipError}`, 'error');
-                        githubLoaderStatus.textContent = '❌ No se pudieron leer los recursos';
-                        githubLoaderError.textContent = zipError?.message || 'No se pudo cargar el respaldo ZIP.';
-                        githubLoaderError.style.display = 'block';
-                        githubRetryBtn.style.display = 'inline-flex';
-                        playOfflineBtn.style.display = 'inline-flex';
-                        playButton.disabled = false;
-                        return;
-                    }
+                    } catch (_) {}
                 }
 
-                githubLogMsg(`ERROR FINAL: ${msg}`, 'error');
-                githubLoaderStatus.textContent = '❌ No se pudieron leer los recursos';
-                githubLoaderError.textContent = msg;
-                githubLoaderError.style.display = 'block';
-                githubRetryBtn.style.display = 'inline-flex';
-                playOfflineBtn.style.display = 'inline-flex';
-                playButton.disabled = false;
+                // En errores tempranos sí probamos una sola alternativa silenciosa.
+                try {
+                    await loadGitHubZipFallback('');
+                    return;
+                } catch (zipError) {
+                    console.error('Error en respaldo ZIP:', zipError);
+                    startScreen.classList.add('error');
+                    if (loadingText) loadingText.textContent = 'Error';
+                    if (startupProgressBar) startupProgressBar.style.width = '0%';
+                    if (startupProgressPercent) startupProgressPercent.textContent = 'Error';
+                    if (startupProgressCount) startupProgressCount.textContent = '0/0';
+                    githubLoader.style.display = 'none';
+                }
             } finally {
                 githubLoader.dataset.loading = '0';
             }
@@ -2274,8 +2299,18 @@
         
         document.addEventListener('touchmove', (e) => e.preventDefault(), { passive: false });
         window.addEventListener('resize', () => { if (camera && renderer) { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); } });
+        // Al abrir el HTML se ejecuta automáticamente la misma función que antes
+        // hacía el botón "CARGAR RECURSOS". No se muestra ningún log.
+        window.addEventListener('DOMContentLoaded', () => {
+            enterFullscreen();
+            setTimeout(() => loadGitHubAssets(), 120);
+            const unlockAudio = () => {
+                enterFullscreen();
+                if (filesLoaded && musicTracks.length) playMusic();
+            };
+            document.addEventListener('pointerdown', unlockAudio, { once:true });
+            document.addEventListener('touchstart', unlockAudio, { once:true, passive:true });
+        });
     </script>
 </body>
 </html>
-
-
