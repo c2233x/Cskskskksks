@@ -399,7 +399,7 @@
         let cinematicPhase = 0; let cinematicTimer = 0; let protestSoundTimer = 0; let epicAsteroid = null; let epicSemen = null; let asteroidRainTimer = 0;
         
         const audioPlayer = new Audio(); const audioRolon = new Audio(); audioRolon.loop = true; let audioFuera = new Audio();
-        let musicTracks = []; let musicPlaybackToken = 0; let musicStarting = false; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null;
+        let musicTracks = []; let musicPlaybackToken = 0; let musicStarting = false; let musicTrackFailures = 0; let supremeEffectAudio = null; let supremeEffectActive = false; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null, supremeAttackSoundUrl = null;
         let taradoSoundUrl = null, pedoSoundUrl = null, risaSoundUrl = null, fueraSoundUrl = null;
         let explosionSoundUrl = null, rolonSoundUrl = null, pumSoundUrl = null;
         let faceTextureUrl = null; let texCespedUrl = null, texTierraUrl = null, texPiedraUrl = null;
@@ -1452,16 +1452,18 @@
             document.getElementById('semenBar').style.display = 'block'; document.getElementById('semenLabel').style.display = 'block';
             const pci = document.getElementById('peneCountInfo'); if (pci) pci.style.display = 'block';
             
-            // La música debe intentar arrancar justo después de iniciar el juego.
-            // En móviles/WebView el navegador puede bloquear el audio automático;
-            // en ese caso el listener de interacción la desbloquea sin reiniciar pistas.
-            if (musicTracks.length > 0) {
-                audioPlayer.volume = 0.65;
-                playMusic(false);
-            }
             if (fueraSoundUrl) { audioFuera.src = fueraSoundUrl; audioFuera.volume = 0.35; }
             if (rolonSoundUrl) { audioRolon.src = rolonSoundUrl; audioRolon.volume = 0.6; }
-            gameStarted = true; initGame();
+            // Marcar el juego como iniciado ANTES de intentar el audio. Así el
+            // desbloqueo por toque funciona inmediatamente y no reinicia la pista.
+            gameStarted = true;
+            // Arrancar la música ANTES de initGame(): initGame() puede tardar
+            // bastante en Android/WebView y eso provocaba el retraso audible.
+            if (musicTracks.length > 0) {
+                audioPlayer.volume = 0.65;
+                playMusic(true).catch(() => {});
+            }
+            initGame();
         }
 
         function fullRestartGame() {
@@ -1512,7 +1514,7 @@
         }
         
         function processFiles(files) {
-            musicTracks = []; cartelTextureUrls = []; attackSoundUrl = jumpSoundUrl = damageSoundUrl = auraPuraSoundUrl = null;
+            musicTracks = []; cartelTextureUrls = []; attackSoundUrl = jumpSoundUrl = damageSoundUrl = auraPuraSoundUrl = supremeAttackSoundUrl = null;
             taradoSoundUrl = pedoSoundUrl = risaSoundUrl = fueraSoundUrl = null; explosionSoundUrl = rolonSoundUrl = pumSoundUrl = faceTextureUrl = null;
             texCespedUrl = texTierraUrl = texPiedraUrl = null;
             
@@ -1529,8 +1531,7 @@
                                       path.includes('/música/') || path.includes('\\música\\') ||
                                       path.includes('/music/') || path.includes('\\music\\');
                 if (isMusicFolder && ['mp3','wav','ogg','m4a','aac','webm'].includes(ext)) {
-                    musicTracks.push({ name: file.name, url: URL.createObjectURL(fileBlob) });
-                    continue;
+                    musicTracks.push({ name: file.name, url: URL.createObjectURL(fileBlob), failures: 0 });
                 }
                 if (fileName === 'cesped.jpeg' || fileName === 'cesped.jpg') texCespedUrl = URL.createObjectURL(fileBlob);
                 if (fileName === 'tierra.jpeg' || fileName === 'tierra.jpg') texTierraUrl = URL.createObjectURL(fileBlob);
@@ -1539,7 +1540,8 @@
                 if (fileName.includes('salto') || fileName === 'salto.mp3') jumpSoundUrl = URL.createObjectURL(fileBlob);
                 else if (!jumpSoundUrl && (fileName.includes('risa') || fileName.includes('memerisa'))) jumpSoundUrl = URL.createObjectURL(fileBlob);
                 if (fileName.includes('daño') || fileName.includes('dano') || fileName.includes('damage') || fileName.includes('hit')) damageSoundUrl = URL.createObjectURL(fileBlob);
-                if (fileName.includes('meme') && fileName.includes('aura') || fileName.includes('aura pura')) auraPuraSoundUrl = URL.createObjectURL(fileBlob);
+                if ((fileName.includes('meme') && fileName.includes('aura')) || fileName.includes('aura pura')) auraPuraSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('supremo') || fileName.includes('supreme') || fileName.includes('epic') || fileName.includes('espacial')) supremeAttackSoundUrl = URL.createObjectURL(fileBlob);
                 if (fileName.includes('tarado') || fileName === 'tarado.mp3') taradoSoundUrl = URL.createObjectURL(fileBlob);
                 if (fileName.includes('pedo') || fileName === 'pedo.mp3') pedoSoundUrl = URL.createObjectURL(fileBlob);
                 if (fileName.includes('risa') || fileName === 'risa.mp3') risaSoundUrl = URL.createObjectURL(fileBlob);
@@ -1557,42 +1559,89 @@
         }
         
         async function playMusic(force = false) {
-            if (!musicTracks.length) return;
-            if (musicStarting && !force) return;
-            if (!force && !audioPlayer.paused && audioPlayer.src) return;
+            if (supremeEffectActive) return false;
+            if (!musicTracks.length) return false;
+            if (musicStarting && !force) return false;
+            if (!force && !audioPlayer.paused && audioPlayer.src) return true;
             musicStarting = true;
             const token = ++musicPlaybackToken;
-            currentTrackIndex = ((currentTrackIndex % musicTracks.length) + musicTracks.length) % musicTracks.length;
-            const track = musicTracks[currentTrackIndex];
-            try {
-                audioPlayer.pause();
-                audioPlayer.onended = null;
-                audioPlayer.onerror = null;
-                audioPlayer.src = track.url;
-                audioPlayer.loop = false;
-                audioPlayer.onended = () => {
-                    if (token !== musicPlaybackToken) return;
-                    currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+            const total = musicTracks.length;
+            let attempts = 0;
+            while (attempts < total) {
+                currentTrackIndex = ((currentTrackIndex % total) + total) % total;
+                const track = musicTracks[currentTrackIndex];
+                try {
+                    audioPlayer.pause();
+                    audioPlayer.onended = null;
+                    audioPlayer.onerror = null;
+                    audioPlayer.src = track.url;
+                    audioPlayer.loop = false;
+                    audioPlayer.onended = () => {
+                        if (token !== musicPlaybackToken) return;
+                        musicTrackFailures = 0;
+                        currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+                        musicStarting = false;
+                        setTimeout(() => playMusic(true), 20);
+                    };
+                    audioPlayer.onerror = () => {
+                        if (token !== musicPlaybackToken) return;
+                        track.failures = (track.failures || 0) + 1;
+                        currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+                        musicStarting = false;
+                        setTimeout(() => playMusic(true), 50);
+                    };
+                    audioPlayer.load();
+                    await audioPlayer.play();
+                    musicTrackFailures = 0;
                     musicStarting = false;
-                    playMusic(true);
-                };
-                audioPlayer.onerror = () => {
-                    if (token !== musicPlaybackToken) return;
-                    currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
-                    musicStarting = false;
-                    setTimeout(() => playMusic(true), 150);
-                };
-                audioPlayer.load();
-                await audioPlayer.play();
-            } catch (_) {
-                // El navegador puede bloquear autoplay; el primer toque posterior volverá a intentarlo.
-            } finally {
-                if (token === musicPlaybackToken) musicStarting = false;
+                    return true;
+                } catch (err) {
+                    if (token !== musicPlaybackToken) return false;
+                    track.failures = (track.failures || 0) + 1;
+                    attempts++;
+                    currentTrackIndex = (currentTrackIndex + 1) % total;
+                }
             }
+            musicStarting = false;
+            return false;
         }
         function playAttackSound() { if (attackSoundUrl) { const s = new Audio(attackSoundUrl); s.volume = 0.8; s.play().catch(()=>{}); } }
         function playJumpSound() { if (jumpSoundUrl) { const s = new Audio(jumpSoundUrl); s.volume = 0.9; s.play().catch(()=>{}); } }
         function playDamageSound() { if (damageSoundUrl) { const s = new Audio(damageSoundUrl); s.volume = 0.9; s.play().catch(()=>{}); } }
+        function resumeNormalMusicAfterSupreme() {
+            supremeEffectActive = false;
+            if (gameStarted && musicTracks.length) {
+                // Reanudar la música normal exactamente al terminar el efecto.
+                playMusic(true).catch(() => {});
+            }
+        }
+        function playSupremeAttackSound() {
+            // El efecto del Supremo tiene prioridad: detener la música de fondo
+            // mientras suena y volver a ponerla justo cuando termina.
+            supremeEffectActive = true;
+            try { audioPlayer.pause(); } catch (_) {}
+            if (supremeEffectAudio) {
+                try { supremeEffectAudio.pause(); supremeEffectAudio.currentTime = 0; } catch (_) {}
+                supremeEffectAudio = null;
+            }
+            const url = supremeAttackSoundUrl || explosionSoundUrl;
+            if (!url) { resumeNormalMusicAfterSupreme(); return; }
+            const s = new Audio(url);
+            supremeEffectAudio = s;
+            s.volume = 1.0;
+            s.onended = () => {
+                if (supremeEffectAudio === s) supremeEffectAudio = null;
+                resumeNormalMusicAfterSupreme();
+            };
+            s.onerror = () => {
+                if (supremeEffectAudio === s) supremeEffectAudio = null;
+                resumeNormalMusicAfterSupreme();
+            };
+            s.play().catch(() => {
+                if (supremeEffectAudio === s) supremeEffectAudio = null;
+                resumeNormalMusicAfterSupreme();
+            });
+        }
         function playAuraPuraSound() { if (auraPuraSoundUrl) { const s = new Audio(auraPuraSoundUrl); s.volume = 1.0; s.play().catch(() => {}); } }
         function playTaradoSound() { if (taradoSoundUrl) { const s = new Audio(taradoSoundUrl); s.volume = 1.0; s.play().catch(() => {}); } }
         function playPedoSound() { if (pedoSoundUrl) { const s = new Audio(pedoSoundUrl); s.volume = 1.0; s.play().catch(() => {}); } }
@@ -2003,7 +2052,7 @@
             const bar = document.getElementById('bossHealthBar'); const fill = document.getElementById('bossHealthFill'); const name = document.getElementById('bossName');
             if (!boss || boss.userData.health <= 0) {
                 bar.style.display = 'none'; name.style.display = 'none';
-                if (boss && !bossDefeated) { scene.remove(boss); boss = null; bossDefeated = true; audioRolon.pause(); audioPlayer.play().catch(()=>{}); changeAura(10000); spawnNextWave(); }
+                if (boss && !bossDefeated) { scene.remove(boss); boss = null; bossDefeated = true; audioRolon.pause(); supremeEffectActive = false; if (supremeEffectAudio) { try { supremeEffectAudio.pause(); } catch (_) {} supremeEffectAudio = null; } playMusic(true).catch(()=>{}); changeAura(10000); spawnNextWave(); }
                 return;
             }
             if(isCinematic) return;
@@ -2159,7 +2208,7 @@
         }
 
         function startEpicBossCinematic() {
-            isCinematic = true; cinematicPhase = 10; cinematicTimer = 0; boss.userData.hasDoneEpicAttack = true; document.getElementById('statusText').textContent = '¡EL SUPREMO PREPARA UN ATAQUE ESPACIAL!'; document.getElementById('statusText').style.display = 'block'; playTaradoSound();
+            isCinematic = true; cinematicPhase = 10; cinematicTimer = 0; boss.userData.hasDoneEpicAttack = true; document.getElementById('statusText').textContent = '¡EL SUPREMO PREPARA UN ATAQUE ESPACIAL!'; document.getElementById('statusText').style.display = 'block'; playSupremeAttackSound();
         }
 
         function createCrater(x, z, radius=30, depth=6) {
@@ -2722,7 +2771,7 @@
                     if (cinematicTimer > 300) { cinematicPhase = 15; cinematicTimer = 0; }
                 } else if (cinematicPhase === 15) {
                     const ideal = new THREE.Vector3(character.position.x + Math.sin(cameraTheta) * cameraDistance, character.position.y + 5, character.position.z + Math.cos(cameraTheta) * cameraDistance); camera.position.lerp(ideal, 0.05); camera.lookAt(character.position);
-                    if (cinematicTimer > 60) { isCinematic = false; asteroidRainTimer = 7200; document.getElementById('statusText').style.display = 'none'; joystickVector = {x:0, y:0}; }
+                    if (cinematicTimer > 60) { isCinematic = false; supremeEffectActive = false; if (supremeEffectAudio) { try { supremeEffectAudio.pause(); } catch (_) {} supremeEffectAudio = null; } playMusic(true).catch(()=>{}); asteroidRainTimer = 7200; document.getElementById('statusText').style.display = 'none'; joystickVector = {x:0, y:0}; }
                 }
             } else if (morteroActive) {
                 morteroTimeLeft -= 1/60; const mt = document.getElementById('morteroTimer'); if (mt) mt.textContent = 'Mortero: ' + Math.max(0, morteroTimeLeft).toFixed(1) + 's';
