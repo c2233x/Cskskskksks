@@ -1,0 +1,881 @@
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Rinconcito de Juegos 🎮</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            300: '#a5b4fc',
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: #07090e;
+            background-image: 
+                radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(168, 85, 247, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.35);
+        }
+
+        .search-container {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .search-container:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07090e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen">
+
+    <div id="toastNotification" class="fixed top-5 right-5 z-50 transform translate-y-[-150%] opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 bg-slate-900/90 border border-brand-500/50 text-white px-4 py-3 rounded-2xl shadow-2xl backdrop-blur-md">
+        <i id="toastIcon" class="fa-solid fa-circle-check text-brand-400 text-lg"></i>
+        <span id="toastMessage" class="text-sm font-medium">Actualizado</span>
+    </div>
+
+    <div id="appContainer" class="flex flex-col min-h-screen w-full">
+
+        <header class="sticky top-0 z-30 w-full py-5 px-4 sm:px-8 flex justify-center items-center">
+            <div class="search-container relative w-full max-w-2xl rounded-2xl transition-all duration-300 flex items-center px-4">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 text-lg mr-2 shrink-0 select-none"></i>
+                
+                <button id="refreshBtn" onclick="forceRefreshGames()" title="Actualizar" class="p-1.5 text-slate-400 hover:text-white active:scale-90 transition-all rounded-lg flex items-center justify-center mr-2 shrink-0 focus:outline-none">
+                    <i id="refreshIcon" class="fa-solid fa-rotate-right text-lg"></i>
+                </button>
+
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar..." class="w-full bg-transparent text-white text-base sm:text-lg py-3.5 focus:outline-none placeholder-slate-400 font-medium">
+            </div>
+        </header>
+
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-4 flex flex-col justify-start">
+
+            <div id="loadingGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-5 bg-slate-800/60 rounded-full w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-5 bg-slate-800/60 rounded-full w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-5 bg-slate-800/60 rounded-full w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-5 bg-slate-800/60 rounded-full w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+            </div>
+
+            <div id="emptyContainer" class="hidden flex-col items-center justify-center py-20 text-center">
+                <div class="w-20 h-20 rounded-3xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center text-slate-400 text-3xl mb-4">
+                    <i id="emptyIcon" class="fa-solid fa-gamepad"></i>
+                </div>
+                <h3 id="emptyTitle" class="text-xl font-bold text-white mb-2">Error de carga</h3>
+                <p id="emptyMessage" class="text-sm text-slate-400 max-w-sm mb-6">No hay datos.</p>
+                <button onclick="reloadRepository()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-brand-600/30 flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Reintentar
+                </button>
+            </div>
+
+            <div id="gamesGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            </div>
+
+        </main>
+    </div>
+
+    <div id="primaryGameView" class="fixed inset-0 z-50 bg-black hidden flex-col w-screen h-screen overflow-hidden">
+
+        <div id="draggableBackBtn" onclick="handleBackBtnClick()" class="fixed top-5 left-5 z-50 w-12 h-12 rounded-full bg-slate-900/90 text-white border border-brand-500/60 shadow-2xl flex items-center justify-center cursor-move select-none hover:scale-110 active:scale-95 transition-transform backdrop-blur-md" title="Mover botón • Tocar para salir">
+            <i class="fa-solid fa-arrow-left text-lg text-brand-400"></i>
+        </div>
+
+        <div id="exitConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-xs rounded-3xl p-6 shadow-2xl text-center">
+                <div class="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+                <h3 class="text-base font-bold text-white mb-6">¿Salir?</h3>
+
+                <div class="flex flex-col gap-2.5">
+                    <button onclick="confirmExitGame()" class="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-rose-600/30">
+                        Sí, salir
+                    </button>
+                    <button onclick="closeExitModal()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition border border-slate-700">
+                        Cancelar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="relative w-full h-full flex-1 bg-black">
+            <div id="gameLoadingScreen" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-slate-300 z-10">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-500 mb-4"></i>
+                <p class="text-sm font-medium text-slate-400">Cargando...</p>
+            </div>
+            <iframe id="primaryGameIframe" class="w-full h-full border-0" 
+                    allow="autoplay; fullscreen; gamepad; microphone; camera; midi; accelerometer; gyroscope; payment"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads allow-modals allow-pointer-lock" 
+                    onload="hideGameLoadingScreen()"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const REPO_CONFIG = {
+            owner: 'c2233x',
+            repo: 'Cskskskksks',
+            branch: 'main',
+            cacheKey: 'gh_games_launcher_cache_v6'
+        };
+
+        let state = {
+            games: [],
+            filteredGames: [],
+            isLoading: false,
+            lastSha: null
+        };
+
+        let isDragging = false;
+        let dragMoved = false;
+        let startX, startY, initialLeft, initialTop;
+        let toastTimeout = null;
+
+        function showToast(message, icon = 'fa-circle-check') {
+            const toast = document.getElementById('toastNotification');
+            const toastMsg = document.getElementById('toastMessage');
+            const toastIcon = document.getElementById('toastIcon');
+
+            if (!toast) return;
+
+            toastMsg.textContent = message;
+            toastIcon.className = `fa-solid ${icon} text-brand-400 text-lg`;
+
+            toast.classList.remove('translate-y-[-150%]', 'opacity-0');
+            toast.classList.add('translate-y-0', 'opacity-100');
+
+            if (toastTimeout) clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('translate-y-0', 'opacity-100');
+                toast.classList.add('translate-y-[-150%]', 'opacity-0');
+            }, 3000);
+        }
+
+        async function fetchRepoData() {
+            const owner = REPO_CONFIG.owner;
+            const repo = REPO_CONFIG.repo;
+            const branch = REPO_CONFIG.branch;
+            const timestamp = Date.now();
+
+            let commitSha = branch;
+
+            try {
+                const commitRes = await fetch(`https://api.github.com/repos/${owner}/${repo}/commits/${branch}?_=${timestamp}`, {
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                });
+                if (commitRes.ok) {
+                    const commitData = await commitRes.json();
+                    if (commitData && commitData.sha) {
+                        commitSha = commitData.sha;
+                    }
+                }
+            } catch(e) {
+                console.error('Error');
+            }
+
+            const endpoints = [
+                `https://api.github.com/repos/${owner}/${repo}/git/trees/${commitSha}?recursive=1&_=${timestamp}`,
+                `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://api.github.com/repos/${owner}/${repo}/git/trees/${commitSha}?recursive=1`)}`,
+                `https://corsproxy.io/?${encodeURIComponent(`https://api.github.com/repos/${owner}/${repo}/git/trees/${commitSha}?recursive=1`)}`,
+                `https://data.jsdelivr.net/v1/packages/gh/${owner}/${repo}@${commitSha}?structure=flat`
+            ];
+
+            for (const url of endpoints) {
+                try {
+                    const controller = new AbortController();
+                    const timeoutId = setTimeout(() => controller.abort(), 4000);
+                    const res = await fetch(url, { signal: controller.signal });
+                    clearTimeout(timeoutId);
+
+                    if (res.ok) {
+                        const data = await res.json();
+                        let treeItems = null;
+
+                        if (data.tree && Array.isArray(data.tree) && data.tree.length > 0) {
+                            treeItems = data.tree;
+                        } else if (data.files && Array.isArray(data.files) && data.files.length > 0) {
+                            treeItems = data.files.map(f => ({
+                                path: f.name.startsWith('/') ? f.name.slice(1) : f.name,
+                                type: 'blob'
+                            }));
+                        }
+
+                        if (treeItems) {
+                            return {
+                                sha: data.sha || commitSha,
+                                commitSha: commitSha,
+                                tree: treeItems
+                            };
+                        }
+                    }
+                } catch(e) {
+                    console.error('Error');
+                }
+            }
+
+            return null;
+        }
+
+        function formatTitle(str) {
+            if (!str) return 'Juego';
+            return str
+                .replace(/[-_]+/g, ' ')
+                .replace(/\b\w/g, c => c.toUpperCase())
+                .trim();
+        }
+
+        async function parseGamesFromTree(treeItems, commitSha) {
+            const owner = REPO_CONFIG.owner;
+            const repo = REPO_CONFIG.repo;
+            const ref = commitSha || REPO_CONFIG.branch;
+
+            const rawBaseUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${ref}/`;
+            const cdnBaseUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${ref}/`;
+
+            const htmlFiles = treeItems.filter(item => {
+                const path = item.path || item.name || '';
+                if (!path || !path.includes('/')) return false;
+                const lower = path.toLowerCase();
+                return lower.endsWith('.html') || lower.endsWith('.htm');
+            });
+
+            if (htmlFiles.length === 0) return [];
+
+            const gameDirsMap = {};
+
+            htmlFiles.forEach(file => {
+                const path = file.path || file.name;
+                const parts = path.split('/');
+                const folderPath = parts.slice(0, -1).join('/');
+                
+                if (!gameDirsMap[folderPath]) {
+                    gameDirsMap[folderPath] = [];
+                }
+                gameDirsMap[folderPath].push(file);
+            });
+
+            const gamesList = [];
+            const timestamp = Date.now();
+
+            for (const folderPath in gameDirsMap) {
+                const folderHtmls = gameDirsMap[folderPath];
+
+                let mainHtml = folderHtmls.find(f => {
+                    const n = (f.path || f.name).split('/').pop().toLowerCase();
+                    return n === 'index.html' || n === 'index.htm';
+                });
+
+                if (!mainHtml) {
+                    mainHtml = folderHtmls.find(f => {
+                        const n = (f.path || f.name).split('/').pop().toLowerCase();
+                        return n === 'main.html' || n === 'main.htm';
+                    });
+                }
+
+                if (!mainHtml) {
+                    const folderName = folderPath.split('/').pop().toLowerCase();
+                    mainHtml = folderHtmls.find(f => {
+                        const fileName = (f.path || f.name).split('/').pop();
+                        const cleanName = fileName.replace(/\.html?$/i, '').toLowerCase();
+                        return cleanName === folderName;
+                    });
+                }
+
+                if (!mainHtml) {
+                    mainHtml = folderHtmls[0];
+                }
+
+                const mainHtmlPath = mainHtml.path || mainHtml.name;
+
+                const folderParts = folderPath.split('/');
+                const lastFolder = folderParts[folderParts.length - 1];
+                const mainFileName = mainHtmlPath.split('/').pop();
+                const mainCleanName = mainFileName.replace(/\.html?$/i, '');
+
+                let cleanTitle = '';
+                if (mainCleanName.toLowerCase() === 'index' || mainCleanName.toLowerCase() === 'main') {
+                    cleanTitle = formatTitle(lastFolder);
+                } else {
+                    cleanTitle = formatTitle(mainCleanName);
+                }
+
+                const prefix = folderPath + '/';
+                const gameRelatedFiles = treeItems.filter(item => {
+                    const p = item.path || item.name || '';
+                    return p.startsWith(prefix);
+                });
+
+                const candidateImages = [];
+                const imageExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.ico', '.avif', '.bmp'];
+                const priorityKeywords = [
+                    'key', 'icono', 'icon', 'cover', 'portada', 'caratula', 
+                    'thumb', 'thumbnail', 'preview', 'poster', 'banner', 'logo', 
+                    'foto', 'image', 'imagen', 'pic', 'card', 'main'
+                ];
+
+                gameRelatedFiles.forEach(item => {
+                    const p = item.path || item.name || '';
+                    const fileName = p.split('/').pop();
+                    const fileNameLower = fileName.toLowerCase();
+                    const ext = fileNameLower.includes('.') ? '.' + fileNameLower.split('.').pop() : '';
+
+                    if (imageExtensions.includes(ext)) {
+                        const baseName = fileNameLower.replace(/\.[^/.]+$/, '');
+                        
+                        const isPriority = priorityKeywords.some(kw => 
+                            baseName === kw || baseName.startsWith(kw + '-') || baseName.startsWith(kw + '_') || baseName.endsWith('-' + kw) || baseName.endsWith('_' + kw)
+                        );
+
+                        const isDirectChild = (p.split('/').length === folderParts.length + 1);
+
+                        candidateImages.push({
+                            path: p,
+                            fileName: fileName,
+                            isPriority: isPriority,
+                            isDirectChild: isDirectChild,
+                            depth: p.split('/').length
+                        });
+                    }
+                });
+
+                candidateImages.sort((a, b) => {
+                    if (a.isPriority !== b.isPriority) return a.isPriority ? -1 : 1;
+                    if (a.isDirectChild !== b.isDirectChild) return a.isDirectChild ? -1 : 1;
+                    if (a.depth !== b.depth) return a.depth - b.depth;
+                    return a.path.length - b.path.length;
+                });
+
+                let iconPath = candidateImages.length > 0 ? candidateImages[0].path : null;
+
+                let versionPath = null;
+                gameRelatedFiles.forEach(item => {
+                    const p = item.path || item.name || '';
+                    const fileName = p.split('/').pop().toLowerCase();
+                    
+                    if (
+                        fileName === 'version.txt' || fileName === 'version' || fileName === 'ver.txt' || fileName === 'ver' ||
+                        fileName === 'v.txt' || fileName === 'version.json' || fileName === 'info.txt' || fileName === 'info.json' ||
+                        fileName === 'build.txt' || fileName === 'version.md' || fileName.startsWith('version') || fileName.startsWith('ver')
+                    ) {
+                        if (!versionPath || fileName === 'version.txt' || fileName === 'version.json' || fileName === 'ver.txt') {
+                            versionPath = p;
+                        }
+                    }
+                });
+
+                const gameUrl = cdnBaseUrl + mainHtmlPath;
+                const rawGameUrl = rawBaseUrl + mainHtmlPath;
+                const iconUrl = iconPath ? (cdnBaseUrl + iconPath + '?v=' + timestamp) : null;
+                const rawIconUrl = iconPath ? (rawBaseUrl + iconPath + '?v=' + timestamp) : null;
+                const versionUrl = versionPath ? (cdnBaseUrl + versionPath + '?v=' + timestamp) : null;
+                const rawVersionUrl = versionPath ? (rawBaseUrl + versionPath + '?v=' + timestamp) : null;
+
+                gamesList.push({
+                    id: folderPath,
+                    title: cleanTitle,
+                    folderPath: folderPath,
+                    htmlPath: mainHtmlPath,
+                    gameUrl: gameUrl,
+                    rawGameUrl: rawGameUrl,
+                    iconPath: iconPath,
+                    iconUrl: iconUrl,
+                    rawIconUrl: rawIconUrl,
+                    versionPath: versionPath,
+                    versionUrl: versionUrl,
+                    rawVersionUrl: rawVersionUrl,
+                    versionText: 'v1.0'
+                });
+            }
+
+            gamesList.sort((a, b) => a.title.localeCompare(b.title));
+
+            await Promise.all(gamesList.map(async (game) => {
+                if (game.versionUrl || game.rawVersionUrl) {
+                    const urlsToTry = [game.versionUrl, game.rawVersionUrl].filter(Boolean);
+                    for (const vUrl of urlsToTry) {
+                        try {
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 2500);
+                            const res = await fetch(vUrl, { signal: controller.signal });
+                            clearTimeout(timeoutId);
+                            
+                            if (res.ok) {
+                                const txt = await res.text();
+                                let cleaned = txt.trim();
+                                
+                                if (cleaned.startsWith('{') && cleaned.endsWith('}')) {
+                                    try {
+                                        const parsedJson = JSON.parse(cleaned);
+                                        cleaned = parsedJson.version || parsedJson.ver || parsedJson.v || parsedJson.build || cleaned;
+                                    } catch(e) {}
+                                }
+
+                                cleaned = String(cleaned).trim().replace(/[\r\n]+/g, ' ').replace(/\.+$/, '');
+                                if (cleaned) {
+                                    if (!cleaned.toLowerCase().startsWith('v') && !isNaN(parseFloat(cleaned[0]))) {
+                                        game.versionText = 'v' + cleaned;
+                                    } else {
+                                        game.versionText = cleaned;
+                                    }
+                                    break;
+                                }
+                            }
+                        } catch(e) {
+                            console.error('Error');
+                        }
+                    }
+                }
+            }));
+
+            return gamesList;
+        }
+
+        function loadGamesFromCache() {
+            try {
+                const cached = localStorage.getItem(REPO_CONFIG.cacheKey);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (parsed && Array.isArray(parsed.games) && parsed.games.length > 0) {
+                        state.games = parsed.games;
+                        state.filteredGames = parsed.games;
+                        state.lastSha = parsed.sha || null;
+                        renderGamesGrid();
+                        return true;
+                    }
+                }
+            } catch(e) {
+                console.error('Error');
+            }
+            return false;
+        }
+
+        function saveGamesToCache(sha, games) {
+            try {
+                const payload = {
+                    sha: sha,
+                    games: games,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(REPO_CONFIG.cacheKey, JSON.stringify(payload));
+                state.lastSha = sha;
+            } catch(e) {
+                console.error('Error');
+            }
+        }
+
+        async function loadRepositoryGames(isManual = false) {
+            state.isLoading = true;
+
+            const refreshIcon = document.getElementById('refreshIcon');
+            if (refreshIcon) {
+                refreshIcon.classList.add('fa-spin');
+            }
+
+            const hasCache = loadGamesFromCache();
+
+            if (!hasCache) {
+                showLoadingState();
+            }
+
+            try {
+                const repoData = await fetchRepoData();
+
+                if (repoData && repoData.tree) {
+                    const freshGames = await parseGamesFromTree(repoData.tree, repoData.commitSha);
+
+                    if (freshGames && freshGames.length > 0) {
+                        const hasShaChanged = repoData.sha !== state.lastSha;
+                        const hasCountChanged = freshGames.length !== state.games.length;
+                        const isDifferent = hasShaChanged || hasCountChanged || JSON.stringify(freshGames) !== JSON.stringify(state.games);
+
+                        if (isDifferent || !hasCache) {
+                            state.games = freshGames;
+                            applySearchFilter();
+                            saveGamesToCache(repoData.sha, freshGames);
+                            renderGamesGrid();
+
+                            if (hasCache) {
+                                showToast('Actualizado');
+                            }
+                        } else if (isManual) {
+                            showToast('Al día', 'fa-circle-info');
+                        }
+                    } else if (!hasCache) {
+                        showEmptyState('Error de carga', 'Sin juegos.');
+                    }
+                } else if (!hasCache) {
+                    showEmptyState('Error de carga', 'Sin conexión.');
+                }
+            } catch(err) {
+                console.error('Error');
+                if (!hasCache) {
+                    showEmptyState('Error de carga', 'Sin datos.');
+                }
+            } finally {
+                state.isLoading = false;
+                if (refreshIcon) {
+                    setTimeout(() => {
+                        refreshIcon.classList.remove('fa-spin');
+                    }, 300);
+                }
+            }
+        }
+
+        function forceRefreshGames() {
+            showToast('Actualizando...', 'fa-rotate-right');
+            loadRepositoryGames(true);
+        }
+
+        function applySearchFilter() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                state.filteredGames = [...state.games];
+            } else {
+                state.filteredGames = state.games.filter(g => 
+                    g.title.toLowerCase().includes(query) || 
+                    g.folderPath.toLowerCase().includes(query)
+                );
+            }
+        }
+
+        function showLoadingState() {
+            document.getElementById('loadingGrid').classList.remove('hidden');
+            document.getElementById('gamesGrid').classList.add('hidden');
+            document.getElementById('emptyContainer').classList.add('hidden');
+        }
+
+        function showEmptyState(title, message) {
+            document.getElementById('loadingGrid').classList.add('hidden');
+            document.getElementById('gamesGrid').classList.add('hidden');
+            const empty = document.getElementById('emptyContainer');
+            document.getElementById('emptyTitle').textContent = title;
+            document.getElementById('emptyMessage').textContent = message || 'Sin resultados.';
+            empty.classList.remove('hidden');
+            empty.classList.add('flex');
+        }
+
+        function renderGamesGrid() {
+            document.getElementById('loadingGrid').classList.add('hidden');
+            document.getElementById('emptyContainer').classList.add('hidden');
+
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = '';
+
+            if (state.filteredGames.length === 0) {
+                showEmptyState('Error de carga', 'No se encontraron juegos.');
+                return;
+            }
+
+            state.filteredGames.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-3xl p-5 flex flex-col items-center text-center relative overflow-hidden group';
+
+                const firstLetter = game.title ? game.title.charAt(0).toUpperCase() : '🎮';
+
+                const imageHtml = game.iconUrl 
+                    ? `<img src="${escapeHtml(game.iconUrl)}" 
+                            data-raw-src="${escapeHtml(game.rawIconUrl || '')}" 
+                            alt="${escapeHtml(game.title)}" 
+                            class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-300" 
+                            onerror="handleImageError(this, '${escapeHtml(game.title)}')">`
+                    : `<div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-brand-900/60 to-slate-900 text-brand-400 rounded-2xl p-4 border border-brand-500/20">
+                        <span class="text-4xl font-extrabold text-brand-400 mb-1 select-none">${escapeHtml(firstLetter)}</span>
+                        <i class="fa-solid fa-gamepad text-lg text-slate-500"></i>
+                       </div>`;
+
+                const versionText = game.versionText || 'v1.0';
+
+                card.innerHTML = `
+                    <div class="w-full aspect-video rounded-2xl overflow-hidden mb-4 bg-slate-900/90 border border-slate-800/80 relative flex items-center justify-center shadow-inner">
+                        ${imageHtml}
+                    </div>
+                    <h3 class="text-lg font-bold text-white leading-snug line-clamp-1 w-full px-1" title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</h3>
+                    
+                    <div class="mt-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-500/15 border border-brand-500/30 text-brand-300 text-xs font-semibold tracking-wide shadow-sm">
+                        <i class="fa-solid fa-code-branch text-[11px] text-brand-400"></i>
+                        <span>${escapeHtml(versionText)}</span>
+                    </div>
+
+                    <button onclick="launchGame('${encodeURIComponent(game.gameUrl)}', '${encodeURIComponent(game.rawGameUrl)}')" class="mt-5 w-full py-3 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-brand-600/30 flex items-center justify-center gap-2 active:scale-95">
+                        <i class="fa-solid fa-play text-xs"></i>
+                        <span>Jugar</span>
+                    </button>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            grid.classList.remove('hidden');
+        }
+
+        function handleImageError(imgEl, title) {
+            const rawSrc = imgEl.getAttribute('data-raw-src');
+            if (rawSrc && imgEl.src !== rawSrc) {
+                imgEl.removeAttribute('data-raw-src');
+                imgEl.src = rawSrc;
+            } else {
+                const parent = imgEl.parentNode;
+                if (!parent) return;
+                const firstLetter = title ? title.charAt(0).toUpperCase() : '🎮';
+                parent.innerHTML = `
+                    <div class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-brand-900/60 to-slate-900 text-brand-400 rounded-2xl p-4 border border-brand-500/20">
+                        <span class="text-4xl font-extrabold text-brand-400 mb-1 select-none">${escapeHtml(firstLetter)}</span>
+                        <i class="fa-solid fa-gamepad text-lg text-slate-500"></i>
+                    </div>
+                `;
+            }
+        }
+
+        function handleSearch() {
+            applySearchFilter();
+            renderGamesGrid();
+        }
+
+        async function launchGame(encodedCdnUrl, encodedRawUrl) {
+            const cdnUrl = decodeURIComponent(encodedCdnUrl);
+            const rawUrl = decodeURIComponent(encodedRawUrl);
+
+            document.getElementById('appContainer').style.display = 'none';
+
+            const iframe = document.getElementById('primaryGameIframe');
+            const loadingScreen = document.getElementById('gameLoadingScreen');
+            loadingScreen.classList.remove('hidden');
+
+            try {
+                let response = await fetch(cdnUrl);
+                if (!response.ok) {
+                    response = await fetch(rawUrl);
+                }
+
+                if (response.ok) {
+                    let htmlContent = await response.text();
+
+                    const targetUrl = response.url || cdnUrl;
+                    const lastSlash = targetUrl.lastIndexOf('/');
+                    const baseUrl = targetUrl.substring(0, lastSlash + 1);
+
+                    if (!htmlContent.toLowerCase().includes('<base')) {
+                        if (htmlContent.toLowerCase().includes('<head>')) {
+                            htmlContent = htmlContent.replace(/<head>/i, `<head><base href="${baseUrl}">`);
+                        } else {
+                            htmlContent = `<base href="${baseUrl}">${htmlContent}`;
+                        }
+                    }
+
+                    iframe.srcdoc = htmlContent;
+                } else {
+                    iframe.src = cdnUrl;
+                }
+            } catch(e) {
+                console.error('Error');
+                iframe.src = cdnUrl;
+            }
+
+            const primaryView = document.getElementById('primaryGameView');
+            primaryView.classList.remove('hidden');
+            primaryView.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideGameLoadingScreen() {
+            document.getElementById('gameLoadingScreen').classList.add('hidden');
+        }
+
+        function closePrimaryGame() {
+            const iframe = document.getElementById('primaryGameIframe');
+            iframe.removeAttribute('srcdoc');
+            iframe.src = 'about:blank';
+
+            const primaryView = document.getElementById('primaryGameView');
+            primaryView.classList.add('hidden');
+            primaryView.classList.remove('flex');
+
+            document.getElementById('appContainer').style.display = 'flex';
+            document.body.style.overflow = '';
+        }
+
+        function initDraggableBtn() {
+            const btn = document.getElementById('draggableBackBtn');
+            if (!btn) return;
+
+            btn.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', endDrag);
+
+            btn.addEventListener('touchstart', startDrag, { passive: false });
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function startDrag(e) {
+            const btn = document.getElementById('draggableBackBtn');
+            const event = e.touches ? e.touches[0] : e;
+            isDragging = true;
+            dragMoved = false;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            const rect = btn.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            const event = e.touches ? e.touches[0] : e;
+            const dx = event.clientX - startX;
+            const dy = event.clientY - startY;
+
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                dragMoved = true;
+            }
+
+            if (dragMoved) {
+                if (e.cancelable) e.preventDefault();
+                const btn = document.getElementById('draggableBackBtn');
+                let newLeft = initialLeft + dx;
+                let newTop = initialTop + dy;
+
+                const maxLeft = window.innerWidth - btn.offsetWidth - 12;
+                const maxTop = window.innerHeight - btn.offsetHeight - 12;
+
+                newLeft = Math.max(12, Math.min(newLeft, maxLeft));
+                newTop = Math.max(12, Math.min(newTop, maxTop));
+
+                btn.style.left = newLeft + 'px';
+                btn.style.top = newTop + 'px';
+                btn.style.right = 'auto';
+                btn.style.bottom = 'auto';
+            }
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        function handleBackBtnClick() {
+            if (dragMoved) return;
+            document.getElementById('exitConfirmModal').classList.remove('hidden');
+        }
+
+        function closeExitModal() {
+            document.getElementById('exitConfirmModal').classList.add('hidden');
+        }
+
+        function confirmExitGame() {
+            closeExitModal();
+            closePrimaryGame();
+        }
+
+        function reloadRepository() {
+            loadRepositoryGames(true);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeExitModal();
+                closePrimaryGame();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDraggableBtn();
+            loadRepositoryGames();
+        });
+    </script>
+</body>
+</html>
