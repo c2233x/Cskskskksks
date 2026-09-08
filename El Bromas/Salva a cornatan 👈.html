@@ -235,8 +235,29 @@
 #startupProgressTrack { width: min(360px, 78vw); height: 10px; margin-top: 14px; border-radius: 8px; overflow: hidden; background: rgba(255,255,255,.10); border: 2px solid rgba(0,255,100,.35); box-shadow: 0 0 0 rgba(0,255,100,0); animation: githubReading 1s ease-in-out infinite; }
 #startupProgressBar { width: 0%; height: 100%; border-radius: 6px; background: linear-gradient(90deg,#00b84a,#39ff88); transition: width .12s linear; }
 #startupProgressPercent { margin-top: 6px; font-size: 12px; color: #fff; display: block; font-weight: 800; }
-#startupProgressCount { margin-top: 2px; font-size: 12px; color: #fff; display: block; font-weight: 800; letter-spacing: .2px; }
+
+        #startupProgressCount { margin-top: 2px; font-size: 12px; color: #fff; display: block; font-weight: 800; letter-spacing: .2px; }
 @keyframes githubReading { 0%,100% { border-color: rgba(0,255,100,.30); box-shadow: 0 0 0 rgba(0,255,100,0); } 50% { border-color: rgba(0,255,100,1); box-shadow: 0 0 10px rgba(0,255,100,.65); } }
+        #startupRescanButton {
+            width: 38px; height: 38px; margin-top: 10px; padding: 0;
+            border: 2px solid #168cff; border-radius: 50%; background: rgba(22,140,255,.10); color: #fff;
+            font-size: 28px; line-height: 38px; display: none; align-items: center;
+            justify-content: center; cursor: pointer; touch-action: manipulation;
+            opacity: .9; text-shadow: 0 0 10px rgba(255,255,255,.45);
+            transition: transform .2s ease, opacity .2s ease;
+        }
+        #startupRescanButton:active { transform: rotate(180deg) scale(.9); opacity: .7; }
+        #startupRetryButton { width:38px; height:38px; margin-top:4px; padding:0; border:2px solid #ff3030; border-radius:50%; background:rgba(255,48,48,.10); color:#fff; font-size:25px; line-height:38px; display:flex; align-items:center; justify-content:center; cursor:pointer; touch-action:manipulation; opacity:.9; text-shadow:0 0 10px rgba(255,255,255,.45); }
+        #startupRetryButton:active { transform:scale(.88) rotate(-90deg); opacity:.7; }
+        #startScreen.hasFailed #startupRetryButton { display:flex!important; }
+        #startScreen.loading #startupRetryButton { display:none!important; }
+        #startScreen.ready #startupRetryButton { display:none!important; }
+        #startScreen.loading #startupRescanButton { display: flex!important; }
+        #startScreen.error #startupRescanButton { display: flex!important; }
+        #startScreen.ready #startupRescanButton { display: none!important; }
+        #startupRescanButton { border:2px solid #168cff!important; background:rgba(22,140,255,.10)!important; }
+        #startupRetryButton { border:2px solid #ff3030!important; background:rgba(255,48,48,.10)!important; }
+
         @media (orientation: portrait) { #startScreen { width: 100vw; height: 100vh; } }
 
         /* Pantalla inicial limpia: solo carga, porcentaje, contador y JUGAR. */
@@ -246,6 +267,19 @@
         #startupProgressBar { width: 0%; height: 100%; border-radius: 6px; background: linear-gradient(90deg,#00b84a,#39ff88); transition: width .12s linear; }
         #startupProgressPercent, #startupProgressCount { color:#fff; font-weight:700; margin-top:7px; font-size:14px; }
         #startupProgressCount { margin-top:3px; font-size:13px; opacity:.9; }
+#startupVersionInfo{margin-top:8px;display:flex;gap:14px;justify-content:center;align-items:center;font-size:11px;font-weight:800;color:#fff;flex-wrap:wrap}
+#startupVersionInfo span{opacity:.95}
+#startupVersionInfo b{font-weight:900}
+#startupMainButtons{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+#startupMainButtons button{height:38px;padding:0 13px;border-radius:20px;border:2px solid;font-size:12px;font-weight:900;background:transparent;color:#fff;cursor:pointer;touch-action:manipulation}
+#startupRescanButton{margin-top:0!important;width:38px!important;padding:0!important;border-radius:50%!important;color:#1683ff!important}
+#startupRefreshButton{border-color:#39c56b!important;color:#39c56b!important}
+#startupErrorButtons{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+#startupErrorButtons button{cursor:pointer}
+#startScreen:not(.error) #startupErrorButtons{display:none!important}
+#startScreen.error #startupMainButtons{display:flex!important}
+#startScreen.ready #startupMainButtons{display:none!important}
+
         @keyframes startupBarBlink { 0%,100% { opacity:.58; box-shadow:0 0 7px rgba(0,255,100,.18); } 50% { opacity:1; box-shadow:0 0 18px rgba(0,255,100,.62); } }
         #startScreen.error #startupProgressTrack { border-color:rgba(255,45,45,.9); animation:startupBarErrorBlink .55s ease-in-out infinite; }
         #startScreen.error #startupProgressBar { background:linear-gradient(90deg,#ff2424,#ff6868)!important; }
@@ -256,10 +290,28 @@
         /* Interfaz de carga limpia: no mostrar textos técnicos, logs ni botones de respaldo. */
         #githubLoader, #githubLoaderBox, #githubLoaderTitle, #githubLoaderStatus, #githubProgressTrack, #playButton,
         #githubProgressPercent, #githubProgressCount, #githubLoaderError, #githubRetryBtn,
-        #playOfflineBtn, #githubLog { display:none!important; }
+        #playOfflineBtn, #githubLog, #githubLoaderStatus, #githubLoaderError, #githubLoaderTitle, #githubProgressTrack, #githubProgressPercent, #githubProgressCount { display:none!important; }
         #startScreen.error #startupProgressTrack { border-color: rgba(255,70,70,.75)!important; animation: githubErrorPulse 1s ease-in-out infinite!important; }
         #startScreen.error #startupProgressBar { background:#ff3030!important; }
         @keyframes githubErrorPulse { 0%,100%{box-shadow:0 0 0 rgba(255,40,40,0)} 50%{box-shadow:0 0 14px rgba(255,40,40,.55)} }
+
+#startupErrorActions{display:none;align-items:center;justify-content:center;gap:10px;margin-top:10px}
+#startupErrorActions button{width:42px;height:42px;border-radius:50%;font-size:22px;font-weight:900;background:transparent;display:flex;align-items:center;justify-content:center}
+#startupRetryButton{border:2px solid #ff3030!important;color:#ff5050!important}
+#startupRescanButton{border:2px solid #1683ff!important;color:#1683ff!important}
+#startupPlayIfError{font-size:13px;font-weight:800;color:#fff;display:flex;align-items:center;gap:5px}
+#startupPlayIfError input{width:18px;height:18px}
+#startupDebugPanel{width:min(520px,88vw);margin-top:12px;padding:10px;border:1px solid rgba(255,80,80,.7);border-radius:10px;background:#080b12;text-align:left}
+#startupDebugTitle{font-weight:900;color:#ff6666;margin-bottom:6px}
+#startupDebugLog{max-height:180px;overflow:auto;white-space:pre-wrap;word-break:break-word;font:11px monospace;color:#ddd;margin:0 0 8px}
+#copyDebugLog{padding:7px 10px;border:1px solid #888;border-radius:7px;background:#151515;color:#fff}
+#viewDebugLog{display:none;padding:7px 10px;border:1px solid #888;border-radius:7px;background:#151515;color:#fff}
+#startupPlayAnyway{display:none;padding:7px 10px;border:1px solid #2d9cff;border-radius:7px;background:rgba(45,156,255,.14);color:#fff;cursor:pointer;font-weight:700}
+#startScreen.error #startupPlayAnyway{display:inline-block}
+#startScreen.error #startupErrorActions{display:flex!important}
+#startScreen:not(.error) #startupErrorActions{display:none!important}
+#startScreen.error #startupRetryButton{display:flex!important}
+#startScreen:not(.error) #startupDebugPanel{display:none!important}
 </style>
 </head>
 <body>
@@ -268,6 +320,13 @@
 <div id="startupProgressTrack"><div id="startupProgressBar"></div></div>
 <div id="startupProgressPercent">0%</div>
 <div id="startupProgressCount">0/0</div>
+<div id="startupVersionInfo"><span>Ultima: <b id="startupLatestVersion">-</b></span><span>Actual: <b id="startupCurrentVersion">-</b></span></div>
+<div id="startupMainButtons">
+  <button id="startupRescanButton" type="button" aria-label="Restablecer archivos y volver a descargar" title="Restablecer archivos y volver a descargar">↻</button>
+  <button id="startupRefreshButton" type="button">Reactualizar</button>
+</div>
+<div id="startupErrorButtons"><button id="startupRetryButton" type="button" aria-label="Reintentar descargas fallidas" title="Reintentar descargas fallidas">⟳</button><button id="viewDebugLog" type="button">Ver logs</button><button id="startupPlayAnyway" type="button">Jugar de todos modos</button></div>
+<div id="startupDebugPanel" style="display:none"><div id="startupDebugTitle">Detalles del error</div><pre id="startupDebugLog"></pre><button id="copyDebugLog" type="button">Copiar al portapapeles</button></div>
 <input id="folderInput" multiple="" type="file" webkitdirectory="" style="display:none!important"/>
 </div>
 <div id="githubLoader">
@@ -301,7 +360,7 @@
 <h3>Reiniciar mundo</h3>
 <p>Vuelve todo como antes después de reiniciar.</p>
 <div style="display: flex; justify-content: space-between; gap: 10px;">
-<button class="modalBtn" id="btnRestartNo">Nel</button>
+<button class="modalBtn" id="btnRestartNo">No</button>
 <button class="modalBtn" id="btnRestartYes">Sí</button>
 </div>
 </div>
@@ -340,12 +399,12 @@
         let cinematicPhase = 0; let cinematicTimer = 0; let protestSoundTimer = 0; let epicAsteroid = null; let epicSemen = null; let asteroidRainTimer = 0;
         
         const audioPlayer = new Audio(); const audioRolon = new Audio(); audioRolon.loop = true; let audioFuera = new Audio();
-        let musicTracks = []; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null;
+        let musicTracks = []; let musicPlaybackToken = 0; let musicStarting = false; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null;
         let taradoSoundUrl = null, pedoSoundUrl = null, risaSoundUrl = null, fueraSoundUrl = null;
         let explosionSoundUrl = null, rolonSoundUrl = null, pumSoundUrl = null;
         let faceTextureUrl = null; let texCespedUrl = null, texTierraUrl = null, texPiedraUrl = null;
         let cartelTextureUrls = []; let cartelTextures = []; let currentCartelIndex = 0;
-        let faceImageObj = new Image(); let posterTextureObj = null; let currentTrackIndex = 0; let lastAuraMilestone = 0; 
+        let faceImageObj = new Image(); let posterTextureObj = null; let currentTrackIndex = 0; let partialVirtualFiles = []; let lastAuraMilestone = 0; 
         
         let cacaStains = []; let fartParticles = []; let playerHealth = 100; const playerMaxHealth = 100; let playerAura = 0; const AURA_MAX_DISPLAY = 15000;
         let specialReady = true; let specialCooldownRemaining = 0; const SPECIAL_COOLDOWN = 7; let isSpecialAttacking = false; let specialPhase = 0;
@@ -396,7 +455,8 @@
         const loadingText = document.getElementById('loadingText');
         const startupProgressBar = document.getElementById('startupProgressBar');
         const startupProgressPercent = document.getElementById('startupProgressPercent');
-        const startupProgressCount = document.getElementById('startupProgressCount'); const playButton = document.getElementById('playButton'); const folderInput = document.getElementById('folderInput');
+        const startupProgressCount = document.getElementById('startupProgressCount'); const viewDebugLog = document.getElementById('viewDebugLog'); const startupRescanButton = document.getElementById('startupRescanButton'); const startupRefreshButton = document.getElementById('startupRefreshButton'); const startupLatestVersion = document.getElementById('startupLatestVersion'); const startupCurrentVersion = document.getElementById('startupCurrentVersion');
+        const startupRetryButton = document.getElementById('startupRetryButton'); const startupPlayAnyway = document.getElementById('startupPlayAnyway'); const startupErrorActions = document.getElementById('startupErrorActions'); const startupDebugPanel = document.getElementById('startupDebugPanel'); const startupDebugLog = document.getElementById('startupDebugLog'); const copyDebugLog = document.getElementById('copyDebugLog'); const playButton = document.getElementById('playButton'); const folderInput = document.getElementById('folderInput');
         const githubLoader = document.getElementById('githubLoader');
         const githubLoaderStatus = document.getElementById('githubLoaderStatus');
         const githubProgressBar = document.getElementById('githubProgressBar');
@@ -414,7 +474,84 @@
         const sysRestartBtn = document.getElementById('sysRestartBtn'); const restartModal = document.getElementById('restartModal');
         const btnRestartYes = document.getElementById('btnRestartYes'); const btnRestartNo = document.getElementById('btnRestartNo');
 
+        function showStartupError(error) {
+            const msg = error?.stack || error?.message || String(error || 'Error desconocido');
+            startScreen.classList.add('error');
+            if (loadingText) loadingText.textContent = 'Error';
+            if (startupProgressPercent) startupProgressPercent.textContent = 'Error';
+            if (startupErrorActions) startupErrorActions.style.display = 'flex';
+            if (viewDebugLog) viewDebugLog.style.display = 'inline-block';
+            if (startupDebugPanel) startupDebugPanel.style.display = 'block';
+            if (startupDebugLog) startupDebugLog.textContent = msg;
+            if (githubLog) githubLog.textContent += (githubLog.textContent ? '\n' : '') + msg;
+            try { localStorage.setItem('ElBromas_LastErrorLog', JSON.stringify({version: currentGameVersion, message: msg, savedAt: Date.now()})); } catch (_) {}
+        }
+        if (startupPlayAnyway) startupPlayAnyway.addEventListener('click', () => playWithoutDownload());
+        if (viewDebugLog) viewDebugLog.addEventListener('click', () => {
+            if (startupDebugPanel) startupDebugPanel.style.display = startupDebugPanel.style.display === 'none' ? 'block' : 'none';
+        });
+        if (copyDebugLog) copyDebugLog.addEventListener('click', async () => {
+            const text = startupDebugLog?.textContent || githubLog?.textContent || '';
+            try { await navigator.clipboard.writeText(text); copyDebugLog.textContent = 'Copiado'; setTimeout(()=>copyDebugLog.textContent='Copiar al portapapeles',1200); }
+            catch (_) { try { const ta=document.createElement('textarea'); ta.value=text; document.body.appendChild(ta); ta.select(); document.execCommand('copy'); ta.remove(); copyDebugLog.textContent='Copiado'; } catch(e){} }
+        });
         githubRetryBtn.addEventListener('click', () => loadGitHubAssets());
+        startupRetryButton.addEventListener('click', async () => {
+            if (!failedDownloadEntries.length || githubLoader.dataset.loading === '1') return;
+            const retryList = failedDownloadEntries.slice();
+            failedDownloadEntries = [];
+            startupRetryButton.disabled = true;
+            startScreen.classList.remove('error','hasFailed');
+            if (loadingText) loadingText.textContent = 'Descargando';
+            try {
+                let done = 0;
+                for (const entry of retryList) {
+                    try {
+                        const blob = await fetchBlobWithProgress(entry.download_url, part => {
+                            const pct = ((done + part) / retryList.length) * 100;
+                            if (startupProgressPercent) startupProgressPercent.textContent = Math.round(pct) + '%';
+                        });
+                        await cachePut({ key:`file:${currentGameVersion}:${entry.path}`, version:currentGameVersion, path:entry.path, blob, type:blob.type || 'application/octet-stream', lastModified:Date.now() });
+                        savedFilesCount++;
+                        done++
+                        saveDownloadManifest(currentGameVersion, entriesTotalForUI);
+                    } catch (e) { failedDownloadEntries.push({...entry, error:e?.message||String(e), url:e?.url||entry.download_url||'', status:e?.status||'', stack:e?.stack||'', time:Date.now()}); saveFailedManifest(failedDownloadEntries); }
+                }
+                saveFailedManifest(failedDownloadEntries);
+                const allCached = await loadCachedGameFiles();
+                if (allCached && allCached.length) {
+                    await finishLoadedFiles(allCached, 'caché actualizado', failedDownloadEntries.length === 0);
+                    if (failedDownloadEntries.length) startScreen.classList.add('hasFailed');
+                    else clearFailedManifest();
+                }
+            } finally {
+                startupRetryButton.disabled = false;
+            }
+        });
+        startupRescanButton.addEventListener('click', async () => {
+            if (startScreen.classList.contains('error')) {
+                startScreen.classList.remove('error');
+                if (startupProgressBar) startupProgressBar.style.width = '0%';
+                if (startupProgressPercent) startupProgressPercent.textContent = '0%';
+                if (loadingText) loadingText.textContent = 'Iniciando';
+                if (startupDebugPanel) startupDebugPanel.style.display = 'none';
+            }
+            if (githubLoader.dataset.loading === '1') {
+                githubLoader.dataset.cancelled = '1';
+            }
+            startupRescanButton.disabled = true;
+            try {
+                await clearAllGameCache();
+                savedFilesCount = 0;
+                entriesTotalForUI = 0;
+                if (startupCurrentVersion) startupCurrentVersion.textContent = '-';
+            } finally {
+                githubLoader.dataset.cancelled = '0';
+                startupRescanButton.disabled = false;
+                await loadGitHubAssets();
+            }
+        });
+        startupRefreshButton.addEventListener('click', () => refreshGitHubIfNeeded());
         playOfflineBtn.addEventListener('click', () => playWithoutDownload());
         sysRestartBtn.addEventListener('click', () => { restartModal.style.display = 'block'; });
         btnRestartNo.addEventListener('click', () => { restartModal.style.display = 'none'; });
@@ -430,29 +567,60 @@
         const GITHUB_CONTENTS_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/`;
 
         let currentLoadProgress = 0;
+        let savedFilesCount = 0;
+        let entriesTotalForUI = 0;
+        let failedDownloadEntries = [];
+        let loadingAppliedCount = 0;
 
         function setGitHubProgress(percent, status, countText) {
             const p = Math.max(0, Math.min(100, percent));
-            currentLoadProgress = p;
-            githubProgressBar.style.width = p.toFixed(1) + '%';
-            githubProgressPercent.textContent = Math.round(p) + '%';
-            if (startupProgressBar) startupProgressBar.style.width = p.toFixed(1) + '%';
-            if (startupProgressPercent) startupProgressPercent.textContent = Math.round(p) + '%';
+            currentLoadProgress = Math.max(currentLoadProgress, p);
+            const shownProgress = currentLoadProgress;
+            githubProgressBar.style.width = shownProgress.toFixed(1) + '%';
+            githubProgressPercent.textContent = Math.round(shownProgress) + '%';
+            if (startupProgressBar) startupProgressBar.style.width = shownProgress.toFixed(1) + '%';
+            if (startupProgressPercent) startupProgressPercent.textContent = Math.round(shownProgress) + '%';
             if (status) githubLoaderStatus.textContent = status;
             if (countText) {
                 githubProgressCount.textContent = countText;
-                if (startupProgressCount) startupProgressCount.textContent = countText.replace(/\s+/g,'').replace(/archivos.*$/i,'');
+                if (startupProgressCount) startupProgressCount.textContent = countText.replace(/\s+/g,'').replace(/archivos.*$/i,'')
             }
             if (startScreen && p < 100) startScreen.classList.remove('ready');
         }
 
         async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+        function jsDelivrUrlForGitHub(rawUrl) {
+            try {
+                const u = new URL(rawUrl);
+                const marker = `/` + GITHUB_OWNER + `/` + GITHUB_REPO + `/`;
+                const idx = u.pathname.indexOf(marker);
+                if (idx < 0) return null;
+                let path = u.pathname.slice(idx + marker.length).split('/').map(decodeURIComponent).join('/');
+                // raw.githubusercontent.com usa /owner/repo/branch/ruta, mientras
+                // jsDelivr ya recibe la rama en @branch. Evitamos así generar
+                // accidentalmente /@main/main/ruta, que provoca HTTP 404.
+                const branchPrefix = `${GITHUB_BRANCH}/`;
+                if (path === GITHUB_BRANCH) path = '';
+                else if (path.startsWith(branchPrefix)) path = path.slice(branchPrefix.length);
+                return `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${path.split('/').map(encodeURIComponent).join('/')}`;
+            } catch (_) { return null; }
+        }
+
         async function fetchBlobWithProgressOnce(url, onProgress) {
-            const response = await fetch(url, { cache: 'no-cache' });
-            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            const response = await fetch(url, { cache: 'no-store' });
+            if (!response.ok) {
+                const err = new Error(`HTTP ${response.status}`);
+                err.status = response.status;
+                err.url = url;
+                throw err;
+            }
             const total = Number(response.headers.get('content-length')) || 0;
-            if (!response.body) {
+            // response.blob() evita mantener dos copias del archivo grande en memoria
+            // (una por chunks y otra por Blob), algo que hace fallar a WebView/APK con
+            // poca RAM. La barra se actualiza por fases cuando el navegador no expone stream.
+            if (!response.body || !response.body.getReader) {
+                onProgress(0.15);
                 const blob = await response.blob();
                 onProgress(1);
                 return blob;
@@ -465,27 +633,34 @@
                 if (done) break;
                 chunks.push(value);
                 loaded += value.byteLength;
-                onProgress(total ? loaded / total : Math.min(0.92, 0.08 + loaded / (loaded + 1048576)));
+                onProgress(total ? Math.min(0.98, loaded / total) : Math.min(0.98, 0.05 + loaded / (loaded + 4 * 1048576)));
+                // Cede el hilo para que WebView pueda respirar durante archivos pesados.
+                if (loaded % (2 * 1048576) < value.byteLength) await sleep(0);
             }
             onProgress(1);
             return new Blob(chunks);
         }
 
-        // Reintenta la descarga varias veces antes de rendirse. Esto evita que
-        // un corte de red momentáneo (muy común en WiFi/datos móviles) tumbe
-        // toda la carga con "Failed to fetch" a mitad de camino.
-        async function fetchBlobWithProgress(url, onProgress, retries = 3) {
+        // Primero usa raw.githubusercontent.com. Si un navegador/WebView no puede
+        // manejar un archivo grande o devuelve Failed to fetch/5xx, cambia silenciosamente
+        // a jsDelivr, que suele servir mejor archivos grandes y conexiones móviles.
+        async function fetchBlobWithProgress(url, onProgress, retries = 4) {
+            const urls = [url];
+            const cdn = jsDelivrUrlForGitHub(url);
+            if (cdn && cdn !== url) urls.push(cdn);
             let lastError;
-            for (let attempt = 1; attempt <= retries; attempt++) {
-                try {
-                    return await fetchBlobWithProgressOnce(url, onProgress);
-                } catch (err) {
-                    lastError = err;
-                    githubLogMsg(`⚠️ Fallo de red (intento ${attempt}/${retries}) en ${url}: ${err?.message || err}`, 'error');
-                    if (attempt < retries) await sleep(800 * attempt);
+            for (const candidate of urls) {
+                for (let attempt = 1; attempt <= retries; attempt++) {
+                    try {
+                        const forcedUrl = candidate + (candidate.includes('?') ? '&' : '?') + '_cb=' + Date.now() + '_' + attempt;
+                        return await fetchBlobWithProgressOnce(forcedUrl, onProgress);
+                    } catch (err) {
+                        lastError = err;
+                        if (attempt < retries) await sleep(700 * attempt);
+                    }
                 }
             }
-            throw lastError;
+            throw lastError || new Error('No se pudo descargar el archivo');
         }
 
         function githubLogMsg(message, type='info') {
@@ -558,6 +733,35 @@
             }
         }
 
+        // Lectura de árbol en una sola petición: reduce fallos de red y límites
+        // de WebView/APK que aparecen al recorrer carpeta por carpeta.
+        async function githubCollectFilesFromTree() {
+            const treeUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${encodeURIComponent(GITHUB_BRANCH)}?recursive=1`;
+            let response, lastError;
+            for (let attempt = 1; attempt <= 3; attempt++) {
+                try {
+                    response = await fetch(treeUrl, { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } });
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                    const data = await response.json();
+                    if (data.truncated) throw new Error('Árbol de GitHub truncado');
+                    const prefix = `${GITHUB_FOLDER}/`;
+                    const entries = (Array.isArray(data.tree) ? data.tree : [])
+                        .filter(x => x.type === 'blob' && x.path.startsWith(prefix))
+                        .map(x => ({
+                            path: x.path,
+                            size: Number(x.size) || 0,
+                            download_url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${encodeURIComponent(GITHUB_BRANCH)}/${x.path.split('/').map(encodeURIComponent).join('/')}`
+                        }));
+                    if (!entries.length) throw new Error(`No se encontraron archivos dentro de /${GITHUB_FOLDER}/.`);
+                    return entries;
+                } catch (e) {
+                    lastError = e;
+                    if (attempt < 3) await sleep(700 * attempt);
+                }
+            }
+            throw lastError || new Error('No se pudo leer el árbol de GitHub.');
+        }
+
         // ============ VERSION + CACHÉ LOCAL DE RECURSOS ============
         // La versión se consulta directamente desde raw.githubusercontent.com, sin usar la API.
         // Los archivos ya descargados se guardan en IndexedDB. Si la versión no cambia,
@@ -565,6 +769,10 @@
         const GAME_CACHE_DB = 'ElBromasGameCacheV2';
         const GAME_CACHE_STORE = 'files';
         let currentGameVersion = 'sin-version';
+            savedFilesCount = 0;
+            entriesTotalForUI = 0;
+            failedDownloadEntries = [];
+            loadingAppliedCount = 0;
 
         function openGameCache() {
             return new Promise((resolve, reject) => {
@@ -599,7 +807,101 @@
                     req.onsuccess = resolve;
                     req.onerror = () => reject(req.error);
                 });
-            } catch (e) { console.warn('No se pudo guardar caché:', e); }
+                return true;
+            } catch (e) {
+                console.warn('No se pudo guardar caché:', e);
+                githubLogMsg(`ERROR AL ALMACENAR ${record?.path || record?.key || ''}: ${e?.name || ''} ${e?.message || e}`, 'error');
+                return false;
+            }
+        }
+
+        async function getStoredCountForVersion(version) {
+            try {
+                const db = await openGameCache();
+                return await new Promise((resolve) => {
+                    const tx = db.transaction(GAME_CACHE_STORE, 'readonly');
+                    const store = tx.objectStore(GAME_CACHE_STORE);
+                    const req = store.openCursor();
+                    const prefix = `file:${version}:`;
+                    let count = 0;
+                    req.onsuccess = () => {
+                        const cursor = req.result;
+                        if (!cursor) { resolve(count); return; }
+                        if (cursor.value && typeof cursor.value.key === 'string' && cursor.value.key.startsWith(prefix) && cursor.value.blob) count++;
+                        cursor.continue();
+                    };
+                    req.onerror = () => resolve(0);
+                });
+            } catch (_) { return 0; }
+        }
+
+        function saveDownloadManifest(version, total) {
+            try {
+                localStorage.setItem('ElBromas_DownloadManifest', JSON.stringify({version, total:Number(total)||0, savedAt:Date.now()}));
+            } catch (_) {}
+        }
+
+        function readDownloadManifest() {
+            try {
+                const raw = localStorage.getItem('ElBromas_DownloadManifest');
+                return raw ? JSON.parse(raw) : null;
+            } catch (_) { return null; }
+        }
+
+        async function clearDownloadManifest() {
+            try { localStorage.removeItem('ElBromas_DownloadManifest'); } catch (_) {}
+        }
+        function saveFailedManifest(entries) {
+            try {
+                const compact = (entries || []).map(e => ({ path:e.path, size:Number(e.size)||0, error:e.error||'Error desconocido', stack:e.stack||'', time:e.time||Date.now() }));
+                localStorage.setItem('ElBromas_FailedDownloads', JSON.stringify({version:currentGameVersion, entries:compact, savedAt:Date.now()}));
+            } catch (_) {}
+        }
+
+        function readFailedManifest(version) {
+            try {
+                const raw = localStorage.getItem('ElBromas_FailedDownloads');
+                const data = raw ? JSON.parse(raw) : null;
+                if (!data || data.version !== version || !Array.isArray(data.entries)) return [];
+                return data.entries.map(e => ({
+                    path: e.path,
+                    size: Number(e.size)||0,
+                    error: e.error || 'Error desconocido',
+                    stack: e.stack || '',
+                    time: e.time || 0,
+                    download_url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${encodeURIComponent(GITHUB_BRANCH)}/${String(e.path).split('/').map(encodeURIComponent).join('/')}`
+                }));
+            } catch (_) { return []; }
+        }
+
+        function clearFailedManifest() {
+            try { localStorage.removeItem('ElBromas_FailedDownloads'); } catch (_) {}
+        }
+
+        async function clearAllGameCache() {
+            // La rueda no recarga la página: borra los recursos guardados y vuelve
+            // a escanear/descargar el repositorio desde cero.
+            try {
+                if ('indexedDB' in window) {
+                    await new Promise((resolve) => {
+                        const req = indexedDB.deleteDatabase(GAME_CACHE_DB);
+                        req.onsuccess = req.onerror = req.onblocked = () => resolve();
+                    });
+                }
+            } catch (_) {}
+            try { localStorage.removeItem('ElBromas_GameVersion'); } catch (_) {}
+            try {
+                for (const track of musicTracks) if (track && track.url) URL.revokeObjectURL(track.url);
+            } catch (_) {}
+            musicTracks.length = 0;
+            currentTrackIndex = 0;
+            try { audioPlayer.pause(); audioPlayer.removeAttribute('src'); audioPlayer.load(); } catch (_) {}
+            partialVirtualFiles = [];
+            virtualFileMap.clear();
+            filesLoaded = false;
+            currentGameVersion = 'sin-version';
+            await clearDownloadManifest();
+            clearFailedManifest();
         }
 
         async function cacheClearOldVersions(version) {
@@ -624,6 +926,7 @@
 
         async function fetchVersionDirect() {
             const candidates = [
+                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodeURIComponent(GITHUB_FOLDER)}/Version.txt`,
                 `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Version`,
                 `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Version.txt`,
                 `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/version.txt`,
@@ -645,6 +948,8 @@
         async function getGameVersion() {
             const remote = await fetchVersionDirect();
             const saved = localStorage.getItem('ElBromas_GameVersion');
+            if (startupLatestVersion) startupLatestVersion.textContent = remote || '-';
+            if (startupCurrentVersion) startupCurrentVersion.textContent = saved || '-';
             if (remote) {
                 currentGameVersion = remote;
                 if (saved && saved !== remote) {
@@ -656,6 +961,7 @@
                     githubLogMsg(`🆕 Versión detectada: ${remote}.`, 'ok');
                 }
                 localStorage.setItem('ElBromas_GameVersion', remote);
+                if (startupCurrentVersion) startupCurrentVersion.textContent = remote;
             } else {
                 currentGameVersion = saved || 'sin-version';
                 githubLogMsg(`⚠️ No se encontró archivo Version; se usará ${currentGameVersion}.`);
@@ -671,8 +977,7 @@
                 const rec = await cacheGet(`file:${currentGameVersion}:${path}`);
                 if (!rec || !rec.blob) return null;
                 const fileName = path.split('/').pop();
-                const file = new File([rec.blob], fileName, { type: rec.type || 'application/octet-stream', lastModified: rec.lastModified || Date.now() });
-                Object.defineProperty(file, 'webkitRelativePath', { value: path, configurable: true });
+                const file = makeLoadedFile(rec.blob, path, rec.type, rec.lastModified);
                 files.push(file);
             }
             return files;
@@ -699,8 +1004,7 @@
                         if (rec && rec.key && rec.key.indexOf(prefix) === 0 && rec.blob) {
                             const path = rec.path;
                             const fileName = path.split('/').pop();
-                            const file = new File([rec.blob], fileName, { type: rec.type || 'application/octet-stream', lastModified: rec.lastModified || Date.now() });
-                            Object.defineProperty(file, 'webkitRelativePath', { value: path, configurable: true });
+                            const file = makeLoadedFile(rec.blob, path, rec.type, rec.lastModified);
                             files.push(file);
                         }
                         cursor.continue();
@@ -741,36 +1045,72 @@
             githubLogMsg(`💾 Instalación completa: ${files.length} archivos guardados para la versión ${currentGameVersion}.`, 'ok');
         }
 
-        async function finishLoadedFiles(virtualFiles, sourceText) {
+        // Representación ligera de un recurso remoto. Evita crear copias grandes
+        // mediante new File([blob]) en WebView/APK con poca memoria.
+        function makeLoadedFile(blob, relativePath, type, lastModified) {
+            const cleanPath = String(relativePath || '').replace(/\\/g, '/');
+            const name = cleanPath.split('/').pop() || 'archivo';
+            return {
+                name,
+                webkitRelativePath: cleanPath,
+                type: type || blob?.type || 'application/octet-stream',
+                lastModified: lastModified || Date.now(),
+                blob
+            };
+        }
+
+        async function finishLoadedFiles(virtualFiles, sourceText, autoStart = true) {
             // La descarga ya llegó al 100%. Ahora empieza la fase de instalación
             // (guardar en IndexedDB), con su propio log y barra de progreso.
-            setGitHubProgress(100, '✓ Descarga completa (100%)', `${virtualFiles.length} archivos descargados (${sourceText})`);
+            setGitHubProgress(100, '', `${virtualFiles.length}/${virtualFiles.length}`);
             await new Promise(resolve => setTimeout(resolve, 300));
             githubLogMsg(`⬇️ Descarga finalizada: ${virtualFiles.length} archivos. Iniciando instalación...`, 'ok');
+            if (loadingText) loadingText.textContent = 'Cargando';
+            loadingAppliedCount = 0;
+            if (startupProgressCount) startupProgressCount.textContent = `${virtualFiles.length}/${entriesTotalForUI || virtualFiles.length}`;
             processFiles(virtualFiles);
-            if (loadingText) loadingText.textContent = 'Iniciando';
-            setGitHubProgress(0, 'Iniciando...', `0 / ${virtualFiles.length} archivos instalados`);
-            await saveGameFilesToCache(virtualFiles, (done, total, path) => {
-                setGitHubProgress(done / total * 100, 'Iniciando...', `${done} / ${total} archivos instalados`);
-            });
+            loadingAppliedCount = virtualFiles.length;
+            if (startupProgressCount) startupProgressCount.textContent = `${virtualFiles.length}/${entriesTotalForUI || virtualFiles.length}`;
+            // Registrar el conjunto completo permite reutilizar TODOS los archivos
+            // en el siguiente inicio, sin volver a descargar ni reconstruirlos.
+            try {
+                const paths = virtualFiles.map(f => f.webkitRelativePath || f.name).filter(Boolean);
+                await cachePut({ key: `meta:${currentGameVersion}`, version: currentGameVersion, paths, savedAt: Date.now() });
+            } catch (cacheError) {
+                console.warn('No se pudo guardar el índice del caché:', cacheError);
+            }
+            // Los archivos descargados por GitHub ya se guardan uno por uno durante la
+            // descarga. No volvemos a escribir todo el conjunto aquí: duplicar blobs
+            // grandes en IndexedDB puede superar la cuota o la RAM de algunos APK/WebView.
             filesLoaded = true;
-            setGitHubProgress(100, '✓ Instalación completa', `${virtualFiles.length} archivos instalados (${sourceText})`);
-            await new Promise(resolve => setTimeout(resolve, 500));
+            setGitHubProgress(100, '', `${virtualFiles.length}/${virtualFiles.length}`);
+            if (startupProgressCount) startupProgressCount.textContent = `${virtualFiles.length}/${entriesTotalForUI || virtualFiles.length}`;
+            await new Promise(resolve => setTimeout(resolve, 250));
             githubLoader.style.display = 'none';
-            startScreen.classList.remove('error','ready');
-            // Al terminar la instalación se ejecuta automáticamente la misma
-            // acción que antes hacía el botón JUGAR.
-            enterFullscreen();
-            setTimeout(startGame, 150);
+            if (autoStart) {
+                startScreen.classList.remove('error','hasFailed','ready');
+                enterFullscreen();
+                setTimeout(startGame, 150);
+            } else {
+                startScreen.classList.remove('loading','ready');
+                startScreen.classList.add('error','hasFailed');
+                if (loadingText) loadingText.textContent = 'Error';
+                if (startupProgressPercent) startupProgressPercent.textContent = 'Error';
+            }
         }
 
         async function tryCachedGame() {
             await getGameVersion();
             const cached = await loadCachedGameFiles();
             if (!cached) return false;
+            const manifest = readDownloadManifest();
+            entriesTotalForUI = Number(manifest?.total) || cached.length;
+            savedFilesCount = cached.length;
+            if (startupProgressCount) startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI}`;
             githubLogMsg(`⚡ Caché encontrado: ${cached.length} archivos. No se descargará el repositorio otra vez.`, 'ok');
             setGitHubProgress(95, 'Cargando recursos guardados...', `${cached.length} archivos`);
             await finishLoadedFiles(cached, 'caché local');
+            clearFailedManifest();
             return true;
         }
 
@@ -779,7 +1119,7 @@
             githubLogMsg(`⚠️ ${reason}`, 'error');
             githubLogMsg(`Usando respaldo ZIP de GitHub para evitar el límite de la API...`);
             githubLogMsg(`ZIP: ${zipUrl}`);
-            setGitHubProgress(0, 'Descargando respaldo de GitHub...', 'Conexión directa al ZIP');
+            setGitHubProgress(0, '', '0/0');
 
             if (typeof JSZip === 'undefined') {
                 githubLogMsg('⚠️ JSZip no estaba disponible. Intentando cargar el lector ZIP desde otro CDN...');
@@ -798,7 +1138,7 @@
             if (!response.ok) throw new Error(`No se pudo descargar el respaldo ZIP: HTTP ${response.status}`);
 
             const total = Number(response.headers.get('content-length')) || 0;
-            let arrayBuffer;
+            let zipBlob;
             if (response.body) {
                 const reader = response.body.getReader();
                 const chunks = [];
@@ -808,21 +1148,17 @@
                     if (done) break;
                     chunks.push(value);
                     loaded += value.byteLength;
-                    const part = total ? loaded / total : 0;
-                    setGitHubProgress(part * 35, 'Descargando respaldo de GitHub...',
-                        total ? `${(loaded / 1048576).toFixed(1)} / ${(total / 1048576).toFixed(1)} MB` : `${(loaded / 1048576).toFixed(1)} MB`);
+                    const part = total ? loaded / total : Math.min(0.99, 0.08 + loaded / (loaded + 1048576));
+                    setGitHubProgress(part * 35, 'Iniciando...', `${(loaded / 1048576).toFixed(1)} MB`);
                 }
-                const merged = new Uint8Array(loaded);
-                let offset = 0;
-                for (const chunk of chunks) { merged.set(chunk, offset); offset += chunk.length; }
-                arrayBuffer = merged.buffer;
+                zipBlob = new Blob(chunks, { type: 'application/zip' });
             } else {
-                arrayBuffer = await response.arrayBuffer();
-                setGitHubProgress(35, 'Descarga ZIP completada...', 'Procesando ZIP');
+                zipBlob = await response.blob();
+                setGitHubProgress(35, 'Iniciando...', 'ZIP listo');
             }
 
             githubLogMsg('📦 Abriendo ZIP...');
-            const zip = await JSZip.loadAsync(arrayBuffer);
+            const zip = await JSZip.loadAsync(zipBlob);
             const prefix = `${GITHUB_REPO}-${GITHUB_BRANCH}/`;
             const targetPrefix = `${prefix}${GITHUB_FOLDER}/`;
             const zipEntries = Object.values(zip.files).filter(entry =>
@@ -847,19 +1183,22 @@
                 const relativePath = entry.name.slice(prefix.length);
                 const fileName = relativePath.split('/').pop();
                 const blob = await entry.async('blob');
-                const file = new File([blob], fileName, {
+                const file = makeLoadedFile(blob, relativePath, blob.type, Date.now());
+                virtualFiles.push(file);
+                // Guarda cada archivo inmediatamente para no perderlo si el siguiente
+                // archivo pesado falla y para poder reutilizarlo en el siguiente intento.
+                await cachePut({
+                    key: `file:${currentGameVersion}:${relativePath}`,
+                    version: currentGameVersion,
+                    path: relativePath,
+                    blob,
                     type: blob.type || 'application/octet-stream',
                     lastModified: Date.now()
                 });
-                Object.defineProperty(file, 'webkitRelativePath', {
-                    value: relativePath,
-                    configurable: true
-                });
-                virtualFiles.push(file);
 
                 const p = 35 + ((i + 1) / zipEntries.length) * 63;
                 setGitHubProgress(p, `Extrayendo ${relativePath}`, `${i + 1} / ${zipEntries.length} archivos`);
-                if (i % 10 === 0) await new Promise(requestAnimationFrame);
+                if (i % 10 === 0) await new Promise(resolve => setTimeout(resolve, 0));
             }
 
             await finishLoadedFiles(virtualFiles, 'ZIP de GitHub');
@@ -895,13 +1234,65 @@
             setTimeout(startGame, 200);
         }
 
-        async function loadGitHubAssets() {
+        async function refreshGitHubIfNeeded() {
+            if (githubLoader.dataset.loading === '1') return;
+            startupRefreshButton.disabled = true;
+            try {
+                const oldVersion = localStorage.getItem('ElBromas_GameVersion') || '';
+                const remote = await fetchVersionDirect();
+                if (startupLatestVersion) startupLatestVersion.textContent = remote || '-';
+                if (!remote) {
+                    showStartupError(new Error('No se pudo leer la última versión desde Version.txt.'));
+                    return;
+                }
+
+                if (remote !== oldVersion) {
+                    // Cambió la versión: se limpia la versión anterior y se descargan sus recursos.
+                    localStorage.setItem('ElBromas_GameVersion', remote);
+                    currentGameVersion = remote;
+                    await cacheClearOldVersions(remote);
+                    if (startupCurrentVersion) startupCurrentVersion.textContent = remote;
+                    await loadGitHubAssets(true);
+                    return;
+                }
+
+                // Misma versión: solo comprobamos el árbol de GitHub para encontrar archivos nuevos.
+                if (loadingText) loadingText.textContent = 'Iniciando';
+                const entries = await githubCollectFilesFromTree();
+                const stored = await getStoredCountForVersion(oldVersion || currentGameVersion);
+                entriesTotalForUI = entries.length;
+                savedFilesCount = stored;
+                saveDownloadManifest(oldVersion || currentGameVersion, entries.length);
+                if (startupProgressCount) startupProgressCount.textContent = `${stored}/${entries.length}`;
+
+                if (entries.length === stored) {
+                    // No hay archivos nuevos ni faltantes: no se hace ninguna descarga.
+                    return;
+                }
+
+                await loadGitHubAssets(true);
+            } catch (e) {
+                showStartupError(e);
+            } finally {
+                startupRefreshButton.disabled = false;
+            }
+        }
+
+        async function loadGitHubAssets(forceScan = false) {
             if (githubLoader.dataset.loading === '1') return;
             githubLoader.dataset.loading = '1';
+            githubLoader.dataset.cancelled = '0';
+            startScreen.classList.add('loading');
             githubLoader.style.display = 'none';
             githubLoaderError.style.display = 'none';
             startScreen.classList.remove('ready','error');
+            if (startupErrorActions) startupErrorActions.style.display = 'none';
+            if (viewDebugLog) viewDebugLog.style.display = 'none';
+            if (startupPlayAnyway) startupPlayAnyway.style.display = 'none';
+            if (startupDebugPanel) startupDebugPanel.style.display = 'none';
+            partialVirtualFiles = [];
             if (loadingText) loadingText.textContent = 'Iniciando';
+            currentLoadProgress = 0;
             githubRetryBtn.style.display = 'none';
             playOfflineBtn.style.display = 'none';
             githubLog.textContent = '';
@@ -909,75 +1300,118 @@
             githubLogMsg(`Rama: ${GITHUB_BRANCH}`);
             githubLogMsg(`Ruta raíz del repositorio: /`);
                         githubLogMsg(`URL raíz: ${GITHUB_CONTENTS_URL}?ref=${encodeURIComponent(GITHUB_BRANCH)}`);
-            setGitHubProgress(0, 'Iniciando...', '0/0');
+            setGitHubProgress(0, 'Iniciando...', entriesTotalForUI > 0 ? `0/${entriesTotalForUI}` : '0/0');
 
             try {
+                // Primero mostramos cuántos archivos habían quedado almacenados en el dispositivo.
+                try {
+                    const manifest = readDownloadManifest();
+                    if (manifest && manifest.total) {
+                        entriesTotalForUI = Number(manifest.total) || 0;
+                        savedFilesCount = await getStoredCountForVersion(currentGameVersion)
+                    }
+                } catch (_) {}
                 // Primero revisamos Version y el caché. Esto evita la API de GitHub en cargas posteriores.
-                if (await tryCachedGame()) return;
-                setGitHubProgress(0, 'Iniciando...', '0/0');
-                const rootItems = await githubListFolder('');
-                const bromas = rootItems.find(item => item.type === 'dir' && item.name.toLowerCase() === GITHUB_FOLDER.toLowerCase());
-                if (!bromas) {
-                    const dirs = rootItems.filter(item => item.type === 'dir').map(item => item.name);
-                    githubLogMsg(`❌ No se encontró /${GITHUB_FOLDER}/ en la raíz. Carpetas encontradas: ${dirs.join(', ') || '(ninguna)'}`, 'error');
-                    throw new Error(`No existe la carpeta "${GITHUB_FOLDER}" en la raíz del repositorio. Carpetas encontradas: ${dirs.join(', ') || '(ninguna)'}`);
+                if (!forceScan && await tryCachedGame()) return;
+                setGitHubProgress(0, 'Iniciando...', entriesTotalForUI > 0 ? `0/${entriesTotalForUI}` : '0/0');
+                const entries = await githubCollectFilesFromTree();
+                entriesTotalForUI = entries.length;
+                savedFilesCount = await getStoredCountForVersion(currentGameVersion);
+                failedDownloadEntries = readFailedManifest(currentGameVersion);
+                if (failedDownloadEntries.length) {
+                    const lines = failedDownloadEntries.map((e,i) => `#${i+1} ${e.path}\nMotivo: ${e.error || 'Error desconocido'}${e.status ? `\nHTTP: ${e.status}` : ''}${e.url ? `\nURL intentada: ${e.url}` : ''}${e.stack ? `\nDetalle: ${e.stack}` : ''}`).join('\n\n');
+                    if (startupDebugLog) startupDebugLog.textContent = lines;
+                    if (viewDebugLog) viewDebugLog.style.display = 'inline-block';
                 }
-                githubLogMsg(`✅ Encontrada /${bromas.name}/ en la raíz`, 'ok');
+                saveDownloadManifest(currentGameVersion, entriesTotalForUI);
+                githubLogMsg(`GitHub encontró ${entries.length} archivos en /${GITHUB_FOLDER}/`, 'ok');
+                // Fase 1 = Iniciando: ya mostramos el total detectado.
+                // Fase 2 = Cargando: conserva ese mismo total y deja visibles
+                // los dos contadores y los dos botones, sin volver a poner 0/0.
+                if (loadingText) loadingText.textContent = 'Cargando';
+                currentLoadProgress = 0;
+                // En Cargando se conservan los valores detectados en Iniciando:
+                // primer contador = total detectado; segundo = almacenados.
+                if (startupProgressCount) startupProgressCount.textContent = `0/${entriesTotalForUI}`
+                setGitHubProgress(0, '', `0/${entriesTotalForUI}`);
 
-                const entries = [];
-                const foldersRead = [];
-                await githubCollectFiles(bromas.path, entries, foldersRead);
-                githubLogMsg(`FINALIZÓ LECTURA DEL GIT: ${foldersRead.length} carpetas, ${entries.length} archivos`, 'ok');
-                githubLogMsg(`Carpetas leídas: ${foldersRead.map(x => '/' + x + '/').join(', ')}`);
-                if (!entries.length) throw new Error(`No se encontraron archivos dentro de /${GITHUB_FOLDER}/.`);
-
-                entries.sort((a, b) => a.size - b.size);
+                // Descarga primero los archivos grandes para que los WebView que fallan
+                // por memoria lo hagan al principio, antes de haber acumulado muchos blobs.
+                entries.sort((a, b) => b.size - a.size);
                 const virtualFiles = [];
+                partialVirtualFiles = virtualFiles;
                 let completed = 0;
 
-                for (const entry of entries) {
-                    const relativePath = entry.path;
-                    const fileName = relativePath.split('/').pop();
-                    const baseProgress = completed / entries.length * 100;
-                    const stepProgress = 100 / entries.length;
+                // Dos descargas simultáneas aceleran mucho los navegadores/APK sin
+                // llenar la RAM como ocurriría descargando todos los archivos a la vez.
+                let nextIndex = 0;
+                const downloadWorker = async () => {
+                    while (true) {
+                        const index = nextIndex++;
+                        if (index >= entries.length) return;
+                        const entry = entries[index];
+                        const relativePath = entry.path;
+                        const fileName = relativePath.split('/').pop();
+                        const baseProgress = completed / entries.length * 100;
+                        const stepProgress = 100 / entries.length;
 
-                    // Si este archivo ya se descargó en un intento anterior (o hace un
-                    // momento, antes de que fallara otro archivo), lo reutiliza en vez
-                    // de volver a descargarlo. Esto es lo que permite "retomar" al
-                    // reintentar en vez de empezar todo desde 0.
-                    const existing = await cacheGet(`file:${currentGameVersion}:${relativePath}`);
-                    if (existing && existing.blob) {
-                        const file = new File([existing.blob], fileName, { type: existing.type || 'application/octet-stream', lastModified: existing.lastModified || Date.now() });
-                        Object.defineProperty(file, 'webkitRelativePath', { value: relativePath, configurable: true });
-                        virtualFiles.push(file);
-                        completed++;
-                        githubLogMsg(`♻️ Ya estaba descargado, retomando: ${relativePath}`, 'ok');
-                        setGitHubProgress(completed / entries.length * 100, `✓ Ya tenías: ${fileName}`, `${completed} / ${entries.length} archivos`);
-                        continue;
+                        const existing = await cacheGet(`file:${currentGameVersion}:${relativePath}`);
+                        if (existing && existing.blob) {
+                            const file = makeLoadedFile(existing.blob, relativePath, existing.type, existing.lastModified);
+                            virtualFiles.push(file);
+                            completed++
+                            saveDownloadManifest(currentGameVersion, entriesTotalForUI);
+                            setGitHubProgress(completed / entries.length * 100, '', `${completed}/${entries.length}`);
+                            continue;
+                        }
+
+                        if (loadingText) loadingText.textContent = 'Descargando';
+                        setGitHubProgress(completed / entries.length * 100, '', `${completed}/${entries.length}`);
+                        try {
+                            const blob = await fetchBlobWithProgress(entry.download_url, part => {
+                                const live = ((completed + part) / entries.length) * 100;
+                                setGitHubProgress(live, '', `${completed}/${entries.length}`);
+                            });
+                            const storedOk = await cachePut({
+                                key: `file:${currentGameVersion}:${relativePath}`,
+                                version: currentGameVersion,
+                                path: relativePath,
+                                blob,
+                                type: blob.type || 'application/octet-stream',
+                                lastModified: Date.now()
+                            });
+                            if (!storedOk) throw new Error('No se pudo guardar este archivo en el almacenamiento local (posible cuota, espacio o bloqueo del navegador).');
+                            savedFilesCount++
+                            saveDownloadManifest(currentGameVersion, entriesTotalForUI);
+                            virtualFiles.push(makeLoadedFile(blob, relativePath, blob.type, Date.now()));
+                            completed++;
+                            setGitHubProgress(completed / entries.length * 100, '', `${completed}/${entries.length}`);
+                        } catch (downloadError) {
+                            failedDownloadEntries.push({...entry, error:downloadError?.message||String(downloadError), url:downloadError?.url||entry.download_url||'', status:downloadError?.status||'', stack:downloadError?.stack||'', time:Date.now()});
+                            saveFailedManifest(failedDownloadEntries);
+                            // Un fallo de un archivo NO detiene los demás.
+                            // Se podrá reintentar únicamente este archivo después.
+                            console.warn('Archivo no descargado:', relativePath, downloadError);
+                        }
                     }
+                };
+                await Promise.all([downloadWorker(), downloadWorker()]);
 
-                    setGitHubProgress(baseProgress, `Leyendo ${relativePath}`, `${completed} / ${entries.length} archivos`);
-                    const blob = await fetchBlobWithProgress(entry.download_url, part => {
-                        setGitHubProgress(baseProgress + part * stepProgress, `Leyendo ${relativePath}`, `${completed} / ${entries.length} archivos`);
-                    });
-                    // Guarda el archivo en IndexedDB inmediatamente al terminar de bajarlo,
-                    // no hasta el final de todo, para no perder el progreso si algo falla después.
-                    await cachePut({
-                        key: `file:${currentGameVersion}:${relativePath}`,
-                        version: currentGameVersion,
-                        path: relativePath,
-                        blob,
-                        type: blob.type || 'application/octet-stream',
-                        lastModified: Date.now()
-                    });
-                    const file = new File([blob], fileName, { type: blob.type || 'application/octet-stream', lastModified: Date.now() });
-                    Object.defineProperty(file, 'webkitRelativePath', { value: relativePath, configurable: true });
-                    virtualFiles.push(file);
-                    completed++;
-                    setGitHubProgress(completed / entries.length * 100, `✓ Leído: ${fileName}`, `${completed} / ${entries.length} archivos`);
+                if (failedDownloadEntries.length) {
+                    await finishLoadedFiles(virtualFiles, 'GitHub (parcial)', false);
+                    startScreen.classList.add('hasFailed');
+                    if (startupProgressCount) startupProgressCount.textContent = `${completed}/${entries.length}`
+                    saveDownloadManifest(currentGameVersion, entries.length);
+                    saveFailedManifest(failedDownloadEntries);
+                    try { localStorage.setItem('ElBromas_LastFailedLog', JSON.stringify({version:currentGameVersion,total:entries.length,downloaded:completed,failed:failedDownloadEntries.map(e=>({path:e.path,error:e.error,stack:e.stack,time:e.time})),savedAt:Date.now()})); } catch (_) {}
+                    if (startupDebugLog) startupDebugLog.textContent = failedDownloadEntries.map((e,i) => `#${i+1} ${e.path}\nMotivo: ${e.error || 'Error desconocido'}${e.status ? `\nHTTP: ${e.status}` : ''}${e.url ? `\nURL intentada: ${e.url}` : ''}${e.stack ? `\nDetalle: ${e.stack}` : ''}`).join('\n\n');
+                    if (viewDebugLog) viewDebugLog.style.display = 'inline-block';
+                    return;
                 }
-
                 await finishLoadedFiles(virtualFiles, 'GitHub');
+                saveDownloadManifest(currentGameVersion, entriesTotalForUI);
+                clearFailedManifest();
+                try { localStorage.removeItem('ElBromas_LastFailedLog'); } catch (_) {}
             } catch (error) {
                 console.error('Error cargando recursos de GitHub:', error);
                 const msg = error?.message || String(error);
@@ -986,6 +1420,10 @@
                 // descarga. Entramos directamente en el mismo flujo de "JUGAR".
                 if (typeof currentLoadProgress === 'number' && currentLoadProgress >= 80) {
                     try {
+                        if (partialVirtualFiles && partialVirtualFiles.length) {
+                            await finishLoadedFiles(partialVirtualFiles, 'carga parcial');
+                            return;
+                        }
                         await playWithoutDownload();
                         return;
                     } catch (_) {}
@@ -997,12 +1435,10 @@
                     return;
                 } catch (zipError) {
                     console.error('Error en respaldo ZIP:', zipError);
-                    startScreen.classList.add('error');
-                    if (loadingText) loadingText.textContent = 'Error';
-                    if (startupProgressBar) startupProgressBar.style.width = '0%';
-                    if (startupProgressPercent) startupProgressPercent.textContent = 'Error';
-                    if (startupProgressCount) startupProgressCount.textContent = '0/0';
+                    startScreen.classList.remove('loading');
+                    startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`
                     githubLoader.style.display = 'none';
+                    showStartupError(zipError);
                 }
             } finally {
                 githubLoader.dataset.loading = '0';
@@ -1016,7 +1452,13 @@
             document.getElementById('semenBar').style.display = 'block'; document.getElementById('semenLabel').style.display = 'block';
             const pci = document.getElementById('peneCountInfo'); if (pci) pci.style.display = 'block';
             
-            if (musicTracks.length > 0 && currentTrackIndex === 0) playMusic();
+            // La música debe intentar arrancar justo después de iniciar el juego.
+            // En móviles/WebView el navegador puede bloquear el audio automático;
+            // en ese caso el listener de interacción la desbloquea sin reiniciar pistas.
+            if (musicTracks.length > 0) {
+                audioPlayer.volume = 0.65;
+                playMusic(false);
+            }
             if (fueraSoundUrl) { audioFuera.src = fueraSoundUrl; audioFuera.volume = 0.35; }
             if (rolonSoundUrl) { audioRolon.src = rolonSoundUrl; audioRolon.volume = 0.6; }
             gameStarted = true; initGame();
@@ -1075,33 +1517,79 @@
             texCespedUrl = texTierraUrl = texPiedraUrl = null;
             
             for (let i = 0; i < files.length; i++) {
-                const file = files[i]; const path = (file.webkitRelativePath || file.name).toLowerCase(); const fileName = file.name.toLowerCase(); const ext = fileName.split('.').pop().toLowerCase();
-                if (path.includes('/musica/') || path.includes('\\musica\\')) { if (['mp3','wav','ogg','m4a'].includes(ext)) { musicTracks.push({ name: file.name, url: URL.createObjectURL(file) }); } continue; }
-                if (fileName === 'cesped.jpeg' || fileName === 'cesped.jpg') texCespedUrl = URL.createObjectURL(file);
-                if (fileName === 'tierra.jpeg' || fileName === 'tierra.jpg') texTierraUrl = URL.createObjectURL(file);
-                if (fileName === 'piedra.jpeg' || fileName === 'piedra.jpg') texPiedraUrl = URL.createObjectURL(file);
-                if ((fileName.includes('cornatan') || fileName.includes('ataque') || fileName.includes('attack')) && !fileName.includes('risa') && !fileName.includes('daño') && !fileName.includes('dano') && !fileName.includes('aura') && !fileName.includes('meme')) attackSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('salto') || fileName === 'salto.mp3') jumpSoundUrl = URL.createObjectURL(file);
-                else if (!jumpSoundUrl && (fileName.includes('risa') || fileName.includes('memerisa'))) jumpSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('daño') || fileName.includes('dano') || fileName.includes('damage') || fileName.includes('hit')) damageSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('meme') && fileName.includes('aura') || fileName.includes('aura pura')) auraPuraSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('tarado') || fileName === 'tarado.mp3') taradoSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('pedo') || fileName === 'pedo.mp3') pedoSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('risa') || fileName === 'risa.mp3') risaSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('fuera') || fileName === 'fuera.mp3') fueraSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('explosion')) explosionSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('rolon')) rolonSoundUrl = URL.createObjectURL(file);
-                if (fileName.includes('pum')) pumSoundUrl = URL.createObjectURL(file);
+                const file = files[i];
+                const fileBlob = file?.blob || file;
+                const path = (file.webkitRelativePath || file.name || '').toLowerCase();
+                const fileName = (file.name || '').toLowerCase();
+                const ext = fileName.split('.').pop().toLowerCase();
+                if (!fileBlob) continue;
+                // Acepta las variantes habituales de la carpeta de música, incluso
+                // si un APK/WebView cambia mayúsculas o usa "music" en vez de "musica".
+                const isMusicFolder = path.includes('/musica/') || path.includes('\\musica\\') ||
+                                      path.includes('/música/') || path.includes('\\música\\') ||
+                                      path.includes('/music/') || path.includes('\\music\\');
+                if (isMusicFolder && ['mp3','wav','ogg','m4a','aac','webm'].includes(ext)) {
+                    musicTracks.push({ name: file.name, url: URL.createObjectURL(fileBlob) });
+                    continue;
+                }
+                if (fileName === 'cesped.jpeg' || fileName === 'cesped.jpg') texCespedUrl = URL.createObjectURL(fileBlob);
+                if (fileName === 'tierra.jpeg' || fileName === 'tierra.jpg') texTierraUrl = URL.createObjectURL(fileBlob);
+                if (fileName === 'piedra.jpeg' || fileName === 'piedra.jpg') texPiedraUrl = URL.createObjectURL(fileBlob);
+                if ((fileName.includes('cornatan') || fileName.includes('ataque') || fileName.includes('attack')) && !fileName.includes('risa') && !fileName.includes('daño') && !fileName.includes('dano') && !fileName.includes('aura') && !fileName.includes('meme')) attackSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('salto') || fileName === 'salto.mp3') jumpSoundUrl = URL.createObjectURL(fileBlob);
+                else if (!jumpSoundUrl && (fileName.includes('risa') || fileName.includes('memerisa'))) jumpSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('daño') || fileName.includes('dano') || fileName.includes('damage') || fileName.includes('hit')) damageSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('meme') && fileName.includes('aura') || fileName.includes('aura pura')) auraPuraSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('tarado') || fileName === 'tarado.mp3') taradoSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('pedo') || fileName === 'pedo.mp3') pedoSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('risa') || fileName === 'risa.mp3') risaSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('fuera') || fileName === 'fuera.mp3') fueraSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('explosion')) explosionSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('rolon')) rolonSoundUrl = URL.createObjectURL(fileBlob);
+                if (fileName.includes('pum')) pumSoundUrl = URL.createObjectURL(fileBlob);
                 if ((path.includes('cornatan') && path.includes('textura')) || fileName.includes('cara') || fileName.includes('face') || fileName.includes('textura')) {
-                    if (['png','jpg','jpeg','webp'].includes(ext) && !path.includes('/carteles/')) { faceTextureUrl = URL.createObjectURL(file); faceImageObj.src = faceTextureUrl; }
+                    if (['png','jpg','jpeg','webp'].includes(ext) && !path.includes('/carteles/')) { faceTextureUrl = URL.createObjectURL(fileBlob); faceImageObj.src = faceTextureUrl; }
                 }
                 if (path.includes('/carteles/') || path.includes('\\carteles\\') || fileName.includes('cartel')) {
-                    if (['png','jpg','jpeg','webp','gif'].includes(ext)) { cartelTextureUrls.push(URL.createObjectURL(file)); }
+                    if (['png','jpg','jpeg','webp','gif'].includes(ext)) { cartelTextureUrls.push(URL.createObjectURL(fileBlob)); }
                 }
             }
         }
         
-        function playMusic() { if (!musicTracks.length) return; audioPlayer.src = musicTracks[currentTrackIndex].url; audioPlayer.loop = false; audioPlayer.onended = () => { currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length; playMusic(); }; audioPlayer.play().catch(() => {}); }
+        async function playMusic(force = false) {
+            if (!musicTracks.length) return;
+            if (musicStarting && !force) return;
+            if (!force && !audioPlayer.paused && audioPlayer.src) return;
+            musicStarting = true;
+            const token = ++musicPlaybackToken;
+            currentTrackIndex = ((currentTrackIndex % musicTracks.length) + musicTracks.length) % musicTracks.length;
+            const track = musicTracks[currentTrackIndex];
+            try {
+                audioPlayer.pause();
+                audioPlayer.onended = null;
+                audioPlayer.onerror = null;
+                audioPlayer.src = track.url;
+                audioPlayer.loop = false;
+                audioPlayer.onended = () => {
+                    if (token !== musicPlaybackToken) return;
+                    currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+                    musicStarting = false;
+                    playMusic(true);
+                };
+                audioPlayer.onerror = () => {
+                    if (token !== musicPlaybackToken) return;
+                    currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+                    musicStarting = false;
+                    setTimeout(() => playMusic(true), 150);
+                };
+                audioPlayer.load();
+                await audioPlayer.play();
+            } catch (_) {
+                // El navegador puede bloquear autoplay; el primer toque posterior volverá a intentarlo.
+            } finally {
+                if (token === musicPlaybackToken) musicStarting = false;
+            }
+        }
         function playAttackSound() { if (attackSoundUrl) { const s = new Audio(attackSoundUrl); s.volume = 0.8; s.play().catch(()=>{}); } }
         function playJumpSound() { if (jumpSoundUrl) { const s = new Audio(jumpSoundUrl); s.volume = 0.9; s.play().catch(()=>{}); } }
         function playDamageSound() { if (damageSoundUrl) { const s = new Audio(damageSoundUrl); s.volume = 0.9; s.play().catch(()=>{}); } }
@@ -2306,10 +2794,10 @@
             setTimeout(() => loadGitHubAssets(), 120);
             const unlockAudio = () => {
                 enterFullscreen();
-                if (filesLoaded && musicTracks.length) playMusic();
+                if (gameStarted && musicTracks.length) playMusic(false);
             };
-            document.addEventListener('pointerdown', unlockAudio, { once:true });
-            document.addEventListener('touchstart', unlockAudio, { once:true, passive:true });
+            document.addEventListener('pointerdown', unlockAudio, { passive:true });
+            document.addEventListener('touchstart', unlockAudio, { passive:true });
         });
     </script>
 </body>
