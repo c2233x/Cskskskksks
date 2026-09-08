@@ -1,0 +1,663 @@
+
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tu Rinconcito de Juegos 🎮</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            400: '#818cf8',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#1e1b4b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background: #07090e;
+            background-image: 
+                radial-gradient(at 20% 20%, rgba(99, 102, 241, 0.15) 0px, transparent 50%),
+                radial-gradient(at 80% 80%, rgba(168, 85, 247, 0.12) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: #f8fafc;
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            overflow-x: hidden;
+            min-height: 100vh;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-6px) scale(1.01);
+            border-color: rgba(99, 102, 241, 0.5);
+            box-shadow: 0 20px 40px -12px rgba(99, 102, 241, 0.35);
+        }
+
+        .search-container {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+        }
+
+        .search-container:focus-within {
+            border-color: #6366f1;
+            box-shadow: 0 0 25px rgba(99, 102, 241, 0.4);
+        }
+
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #07090e;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 9999px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+    </style>
+</head>
+<body class="antialiased selection:bg-brand-500 selection:text-white flex flex-col min-h-screen">
+
+    <!-- MAIN APPLICATION CONTAINING SEARCH BAR AND GAMES GRID -->
+    <div id="appContainer" class="flex flex-col min-h-screen w-full">
+        
+        <!-- MINIMALIST SEARCH HEADER -->
+        <header class="sticky top-0 z-30 w-full py-5 px-4 sm:px-8 flex justify-center items-center">
+            <div class="search-container relative w-full max-w-2xl rounded-2xl transition-all duration-300">
+                <i class="fa-solid fa-magnifying-glass absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 text-lg"></i>
+                <input type="text" id="searchInput" oninput="handleSearch()" placeholder="Buscar" class="w-full bg-transparent text-white text-base sm:text-lg rounded-2xl pl-14 pr-6 py-3.5 focus:outline-none placeholder-slate-400 font-medium">
+            </div>
+        </header>
+
+        <!-- GAMES HORIZONTAL / GRID CATALOG DISPLAY -->
+        <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-8 py-4 flex flex-col justify-start">
+
+            <!-- Skeleton Loading Grid -->
+            <div id="loadingGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-4 bg-slate-800/60 rounded-md w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-4 bg-slate-800/60 rounded-md w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-4 bg-slate-800/60 rounded-md w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+                <div class="glass-card rounded-3xl p-5 flex flex-col items-center animate-pulse">
+                    <div class="w-full aspect-video bg-slate-800/80 rounded-2xl mb-4"></div>
+                    <div class="h-6 bg-slate-800/80 rounded-lg w-3/4 mb-2"></div>
+                    <div class="h-4 bg-slate-800/60 rounded-md w-1/3 mb-5"></div>
+                    <div class="h-11 bg-slate-800/80 rounded-2xl w-full mt-auto"></div>
+                </div>
+            </div>
+
+            <!-- Empty / Error Message -->
+            <div id="emptyContainer" class="hidden flex-col items-center justify-center py-20 text-center">
+                <div class="w-20 h-20 rounded-3xl bg-slate-800/50 border border-slate-700/50 flex items-center justify-center text-slate-400 text-3xl mb-4">
+                    <i id="emptyIcon" class="fa-solid fa-gamepad"></i>
+                </div>
+                <h3 id="emptyTitle" class="text-xl font-bold text-white mb-2">¡Ups! No encontramos juegos</h3>
+                <p id="emptyMessage" class="text-sm text-slate-400 max-w-sm mb-6">Prueba buscando con otro nombre a ver si aparece algo.</p>
+                <button onclick="reloadRepository()" class="px-5 py-2.5 bg-brand-600 hover:bg-brand-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-brand-600/30 flex items-center gap-2">
+                    <i class="fa-solid fa-rotate-right"></i> Otra ve
+                </button>
+            </div>
+
+            <!-- Dynamic Games Grid -->
+            <div id="gamesGrid" class="hidden grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                <!-- Dynamically injected game cards -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- PRIMARY FULL-SCREEN GAME PLAYER -->
+    <div id="primaryGameView" class="fixed inset-0 z-50 bg-black hidden flex-col w-screen h-screen overflow-hidden">
+        
+        <!-- Draggable Floating Back Arrow Button -->
+        <div id="draggableBackBtn" onclick="handleBackBtnClick()" class="fixed top-5 left-5 z-50 w-12 h-12 rounded-full bg-slate-900/90 text-white border border-brand-500/60 shadow-2xl flex items-center justify-center cursor-move select-none hover:scale-110 active:scale-95 transition-transform backdrop-blur-md" title="Mover botón • Tocar para salir">
+            <i class="fa-solid fa-arrow-left text-lg text-brand-400"></i>
+        </div>
+
+        <!-- Exit Confirmation Modal Overlay -->
+        <div id="exitConfirmModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+            <div class="bg-slate-900 border border-slate-800 w-full max-w-xs rounded-3xl p-6 shadow-2xl text-center">
+                <div class="w-12 h-12 rounded-2xl bg-brand-500/20 text-brand-400 flex items-center justify-center mx-auto mb-4 text-xl">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                </div>
+                <h3 class="text-base font-bold text-white mb-6">Salir al menusao</h3>
+                
+                <div class="flex flex-col gap-2.5">
+                    <button onclick="confirmExitGame()" class="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white font-semibold text-xs rounded-xl transition shadow-lg shadow-rose-600/30">
+                        sí
+                    </button>
+                    <button onclick="closeExitModal()" class="w-full py-3 bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs rounded-xl transition border border-slate-700">
+                        nelson
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Game Iframe Container -->
+        <div class="relative w-full h-full flex-1 bg-black">
+            <div id="gameLoadingScreen" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-950 text-slate-300 z-10">
+                <i class="fa-solid fa-circle-notch fa-spin text-4xl text-brand-500 mb-4"></i>
+                <p class="text-sm font-medium text-slate-400">Ta cagando</p>
+            </div>
+            <iframe id="primaryGameIframe" class="w-full h-full border-0" 
+                    allow="autoplay; fullscreen; gamepad; microphone; camera; midi; accelerometer; gyroscope; payment"
+                    sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads allow-modals allow-pointer-lock" 
+                    onload="hideGameLoadingScreen()"></iframe>
+        </div>
+    </div>
+
+    <script>
+        const REPO_CONFIG = {
+            owner: 'c2233x',
+            repo: 'Cskskskksks',
+            branch: 'main',
+            cacheKey: 'gh_games_launcher_cache_v3'
+        };
+
+        let state = {
+            games: [],
+            filteredGames: [],
+            isLoading: false
+        };
+
+        let isDragging = false;
+        let dragMoved = false;
+        let startX, startY, initialLeft, initialTop;
+
+        async function fetchRepoTree() {
+            const owner = REPO_CONFIG.owner;
+            const repo = REPO_CONFIG.repo;
+            const branch = REPO_CONFIG.branch;
+
+            try {
+                const url = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.tree && Array.isArray(data.tree)) {
+                        return data.tree;
+                    }
+                }
+            } catch(e) {
+                console.warn('GitHub API falló, probando jsDelivr...', e);
+            }
+
+            try {
+                const url = `https://data.jsdelivr.net/v1/packages/gh/${owner}/${repo}@${branch}?structure=flat`;
+                const res = await fetch(url);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.files && Array.isArray(data.files)) {
+                        return data.files.map(f => ({
+                            path: f.name.startsWith('/') ? f.name.slice(1) : f.name,
+                            type: 'blob'
+                        }));
+                    }
+                }
+            } catch(e) {
+                console.warn('jsDelivr API falló, probando Proxy...', e);
+            }
+
+            try {
+                const rawUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/${branch}?recursive=1`;
+                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rawUrl)}`;
+                const res = await fetch(proxyUrl);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.tree && Array.isArray(data.tree)) {
+                        return data.tree;
+                    }
+                }
+            } catch(e) {
+                console.error('Todas las estrategias de conexión fallaron:', e);
+            }
+
+            return null;
+        }
+
+        async function parseGamesFromTree(treeItems) {
+            const owner = REPO_CONFIG.owner;
+            const repo = REPO_CONFIG.repo;
+            const branch = REPO_CONFIG.branch;
+
+            const rawBaseUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/`;
+            const cdnBaseUrl = `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/`;
+
+            const folderMap = {};
+
+            treeItems.forEach(item => {
+                const path = item.path || item.name || '';
+                const parts = path.split('/');
+                if (parts.length < 2) return;
+
+                const folderPath = parts.slice(0, -1).join('/');
+                const fileName = parts[parts.length - 1];
+                const fileNameLower = fileName.toLowerCase();
+
+                if (!folderMap[folderPath]) {
+                    folderMap[folderPath] = {
+                        folderPath: folderPath,
+                        htmlFiles: [],
+                        iconPath: null,
+                        versionPath: null
+                    };
+                }
+
+                if (fileNameLower.endsWith('.html')) {
+                    folderMap[folderPath].htmlFiles.push({
+                        fileName: fileName,
+                        path: path
+                    });
+                } 
+                else if (
+                    fileNameLower === 'key.png' || fileNameLower === 'icono.png' ||
+                    fileNameLower.startsWith('key.') || fileNameLower.startsWith('icono.') ||
+                    fileNameLower.includes('key') || fileNameLower.includes('icono')
+                ) {
+                    if (!folderMap[folderPath].iconPath || fileNameLower.startsWith('key') || fileNameLower.startsWith('icono')) {
+                        folderMap[folderPath].iconPath = path;
+                    }
+                } 
+                else if (
+                    fileNameLower === 'version.txt' || fileNameLower === 'version' || fileNameLower === 'ver.txt'
+                ) {
+                    folderMap[folderPath].versionPath = path;
+                }
+            });
+
+            const gamesList = [];
+
+            for (const folderPath in folderMap) {
+                const folder = folderMap[folderPath];
+                if (folder.htmlFiles.length === 0) continue;
+
+                for (const htmlFile of folder.htmlFiles) {
+                    let cleanTitle = htmlFile.fileName.replace(/\.html$/i, '');
+                    
+                    if (cleanTitle.toLowerCase() === 'index') {
+                        const folderParts = folderPath.split('/');
+                        cleanTitle = folderParts[folderParts.length - 1];
+                    }
+
+                    const gameUrl = cdnBaseUrl + htmlFile.path;
+                    const rawGameUrl = rawBaseUrl + htmlFile.path;
+                    const iconUrl = folder.iconPath ? (cdnBaseUrl + folder.iconPath) : null;
+                    const versionUrl = folder.versionPath ? (cdnBaseUrl + folder.versionPath) : null;
+
+                    gamesList.push({
+                        id: htmlFile.path,
+                        title: cleanTitle,
+                        folderPath: folderPath,
+                        htmlPath: htmlFile.path,
+                        gameUrl: gameUrl,
+                        rawGameUrl: rawGameUrl,
+                        iconUrl: iconUrl,
+                        versionUrl: versionUrl,
+                        versionText: ''
+                    });
+                }
+            }
+
+            await Promise.all(gamesList.map(async (game) => {
+                if (game.versionUrl) {
+                    try {
+                        const res = await fetch(game.versionUrl);
+                        if (res.ok) {
+                            const txt = await res.text();
+                            const cleaned = txt.trim().replace(/\.+$/, '');
+                            if (cleaned) {
+                                game.versionText = cleaned;
+                            }
+                        }
+                    } catch(e) {
+                        // ignore error
+                    }
+                }
+            }));
+
+            return gamesList;
+        }
+
+        function loadGamesFromCache() {
+            try {
+                const cached = localStorage.getItem(REPO_CONFIG.cacheKey);
+                if (cached) {
+                    const parsed = JSON.parse(cached);
+                    if (Array.isArray(parsed) && parsed.length > 0) {
+                        state.games = parsed;
+                        state.filteredGames = parsed;
+                        renderGamesGrid();
+                        return true;
+                    }
+                }
+            } catch(e) {
+                console.warn('Error al leer caché:', e);
+            }
+            return false;
+        }
+
+        function saveGamesToCache(games) {
+            try {
+                localStorage.setItem(REPO_CONFIG.cacheKey, JSON.stringify(games));
+            } catch(e) {
+                console.warn('Error al guardar caché:', e);
+            }
+        }
+
+        async function loadRepositoryGames() {
+            state.isLoading = true;
+            const hasCache = loadGamesFromCache();
+
+            if (!hasCache) {
+                showLoadingState();
+            }
+
+            try {
+                const treeItems = await fetchRepoTree();
+                if (treeItems && treeItems.length > 0) {
+                    const games = await parseGamesFromTree(treeItems);
+                    if (games && games.length > 0) {
+                        state.games = games;
+                        state.filteredGames = games;
+                        saveGamesToCache(games);
+                        renderGamesGrid();
+                    } else if (!hasCache) {
+                        showEmptyState('sin juegos.');
+                    }
+                } else if (!hasCache) {
+                    showEmptyState('sin señal.');
+                }
+            } catch(err) {
+                console.error('Error de git:', err);
+                if (!hasCache) {
+                    showEmptyState('No Cargo nada.');
+                }
+            } finally {
+                state.isLoading = false;
+            }
+        }
+
+        function showLoadingState() {
+            document.getElementById('loadingGrid').classList.remove('hidden');
+            document.getElementById('gamesGrid').classList.add('hidden');
+            document.getElementById('emptyContainer').classList.add('hidden');
+        }
+
+        function showEmptyState(title, message) {
+            document.getElementById('loadingGrid').classList.add('hidden');
+            document.getElementById('gamesGrid').classList.add('hidden');
+            const empty = document.getElementById('emptyContainer');
+            document.getElementById('emptyTitle').textContent = title;
+            document.getElementById('emptyMessage').textContent = message;
+            empty.classList.remove('hidden');
+            empty.classList.add('flex');
+        }
+
+        function renderGamesGrid() {
+            document.getElementById('loadingGrid').classList.add('hidden');
+            document.getElementById('emptyContainer').classList.add('hidden');
+
+            const grid = document.getElementById('gamesGrid');
+            grid.innerHTML = '';
+
+            if (state.filteredGames.length === 0) {
+                showEmptyState('Vacio no ta ese ');
+                return;
+            }
+
+            state.filteredGames.forEach(game => {
+                const card = document.createElement('div');
+                card.className = 'glass-card rounded-3xl p-5 flex flex-col items-center text-center relative overflow-hidden group';
+
+                const imageHtml = game.iconUrl 
+                    ? `<img src="${escapeHtml(game.iconUrl)}" alt="${escapeHtml(game.title)}" class="w-full h-full object-cover rounded-2xl group-hover:scale-105 transition-transform duration-300" onerror="this.onerror=null; this.parentNode.innerHTML='<div class=\'w-full h-full flex items-center justify-center bg-brand-900/40 text-brand-400 text-4xl rounded-2xl\'><i class=\'fa-solid fa-gamepad\'></i></div>';">`
+                    : `<div class="w-full h-full flex items-center justify-center bg-brand-900/40 text-brand-400 text-4xl rounded-2xl"><i class="fa-solid fa-gamepad"></i></div>`;
+
+                const versionHtml = game.versionText 
+                    ? `<span class="text-xs font-semibold text-slate-400 mt-0.5 tracking-wide">${escapeHtml(game.versionText)}</span>`
+                    : ``;
+
+                card.innerHTML = `
+                    <div class="w-full aspect-video rounded-2xl overflow-hidden mb-4 bg-slate-900/80 border border-slate-800/80 relative">
+                        ${imageHtml}
+                    </div>
+                    <h3 class="text-lg font-bold text-white leading-snug line-clamp-1 w-full" title="${escapeHtml(game.title)}">${escapeHtml(game.title)}</h3>
+                    ${versionHtml}
+                    <button onclick="launchGame('${encodeURIComponent(game.gameUrl)}', '${encodeURIComponent(game.rawGameUrl)}')" class="mt-5 w-full py-3 bg-gradient-to-r from-brand-600 to-indigo-600 hover:from-brand-500 hover:to-indigo-500 text-white font-bold text-sm rounded-2xl transition shadow-lg shadow-brand-600/30 flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-play text-xs"></i>
+                        <span>Jugar</span>
+                    </button>
+                `;
+
+                grid.appendChild(card);
+            });
+
+            grid.classList.remove('hidden');
+        }
+
+        function handleSearch() {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+            if (!query) {
+                state.filteredGames = [...state.games];
+            } else {
+                state.filteredGames = state.games.filter(g => 
+                    g.title.toLowerCase().includes(query) || 
+                    g.folderPath.toLowerCase().includes(query)
+                );
+            }
+            renderGamesGrid();
+        }
+
+        async function launchGame(encodedCdnUrl, encodedRawUrl) {
+            const cdnUrl = decodeURIComponent(encodedCdnUrl);
+            const rawUrl = decodeURIComponent(encodedRawUrl);
+
+            document.getElementById('appContainer').style.display = 'none';
+
+            const iframe = document.getElementById('primaryGameIframe');
+            const loadingScreen = document.getElementById('gameLoadingScreen');
+            loadingScreen.classList.remove('hidden');
+
+            try {
+                let response = await fetch(cdnUrl);
+                if (!response.ok) {
+                    response = await fetch(rawUrl);
+                }
+
+                if (response.ok) {
+                    let htmlContent = await response.text();
+                    
+                    const targetUrl = response.url || cdnUrl;
+                    const lastSlash = targetUrl.lastIndexOf('/');
+                    const baseUrl = targetUrl.substring(0, lastSlash + 1);
+
+                    if (!htmlContent.toLowerCase().includes('<base')) {
+                        if (htmlContent.toLowerCase().includes('<head>')) {
+                            htmlContent = htmlContent.replace(/<head>/i, `<head><base href="${baseUrl}">`);
+                        } else {
+                            htmlContent = `<base href="${baseUrl}">${htmlContent}`;
+                        }
+                    }
+
+                    iframe.srcdoc = htmlContent;
+                } else {
+                    iframe.src = cdnUrl;
+                }
+            } catch(e) {
+                console.warn('Cargando directamente por src:', e);
+                iframe.src = cdnUrl;
+            }
+
+            const primaryView = document.getElementById('primaryGameView');
+            primaryView.classList.remove('hidden');
+            primaryView.classList.add('flex');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function hideGameLoadingScreen() {
+            document.getElementById('gameLoadingScreen').classList.add('hidden');
+        }
+
+        function closePrimaryGame() {
+            const iframe = document.getElementById('primaryGameIframe');
+            iframe.removeAttribute('srcdoc');
+            iframe.src = 'about:blank';
+
+            const primaryView = document.getElementById('primaryGameView');
+            primaryView.classList.add('hidden');
+            primaryView.classList.remove('flex');
+
+            document.getElementById('appContainer').style.display = 'flex';
+            document.body.style.overflow = '';
+        }
+
+        function initDraggableBtn() {
+            const btn = document.getElementById('draggableBackBtn');
+            if (!btn) return;
+
+            btn.addEventListener('mousedown', startDrag);
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', endDrag);
+
+            btn.addEventListener('touchstart', startDrag, { passive: false });
+            document.addEventListener('touchmove', onDrag, { passive: false });
+            document.addEventListener('touchend', endDrag);
+        }
+
+        function startDrag(e) {
+            const btn = document.getElementById('draggableBackBtn');
+            const event = e.touches ? e.touches[0] : e;
+            isDragging = true;
+            dragMoved = false;
+            startX = event.clientX;
+            startY = event.clientY;
+
+            const rect = btn.getBoundingClientRect();
+            initialLeft = rect.left;
+            initialTop = rect.top;
+        }
+
+        function onDrag(e) {
+            if (!isDragging) return;
+            const event = e.touches ? e.touches[0] : e;
+            const dx = event.clientX - startX;
+            const dy = event.clientY - startY;
+
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 5) {
+                dragMoved = true;
+            }
+
+            if (dragMoved) {
+                if (e.cancelable) e.preventDefault();
+                const btn = document.getElementById('draggableBackBtn');
+                let newLeft = initialLeft + dx;
+                let newTop = initialTop + dy;
+
+                const maxLeft = window.innerWidth - btn.offsetWidth - 12;
+                const maxTop = window.innerHeight - btn.offsetHeight - 12;
+
+                newLeft = Math.max(12, Math.min(newLeft, maxLeft));
+                newTop = Math.max(12, Math.min(newTop, maxTop));
+
+                btn.style.left = newLeft + 'px';
+                btn.style.top = newTop + 'px';
+                btn.style.right = 'auto';
+                btn.style.bottom = 'auto';
+            }
+        }
+
+        function endDrag() {
+            isDragging = false;
+        }
+
+        function handleBackBtnClick() {
+            if (dragMoved) return;
+            document.getElementById('exitConfirmModal').classList.remove('hidden');
+        }
+
+        function closeExitModal() {
+            document.getElementById('exitConfirmModal').classList.add('hidden');
+        }
+
+        function confirmExitGame() {
+            closeExitModal();
+            closePrimaryGame();
+        }
+
+        function reloadRepository() {
+            loadRepositoryGames();
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                closeExitModal();
+                closePrimaryGame();
+            }
+        });
+
+        window.addEventListener('DOMContentLoaded', () => {
+            initDraggableBtn();
+            loadRepositoryGames();
+        });
+    </script>
+</body>
+</html>
