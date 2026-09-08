@@ -10,56 +10,25 @@ const io = new Server(server, { cors: { origin: true }, transports: ['websocket'
 const PORT = Number(process.env.PORT) || 10000;
 const players = new Map();
 const MAX_PLAYERS = 64;
+const GAME_FILE = path.join(__dirname, 'Salva a cornatan 👈.html');
 
-const GAME_FILE = path.join(__dirname, 'El Bromas', 'Salva a cornatan 👈.html');
-const MP_UI = `<div id="mpOnline" style="position:fixed;top:12px;right:12px;z-index:9999;padding:7px 11px;border:1px solid #00ffaa;border-radius:14px;background:#000b;color:#fff;font:800 12px Arial;pointer-events:none">🟢 0 online</div><input id="mpName" maxlength="18" value="Jugador" placeholder="Nombre" style="position:fixed;top:48px;right:12px;z-index:9999;width:125px;padding:7px;border-radius:9px;border:1px solid #00ffaa;background:#000b;color:#fff;font-weight:700">`;
-const MP_SCRIPT = `
-(function(){
-const MP={socket:null,id:null,connected:false,remotes:new Map(),last:0};
-const hud=document.getElementById('mpOnline'),nameEl=document.getElementById('mpName');
-try{nameEl.value=localStorage.getItem('ElBromasPlayerName')||'Jugador'}catch(_){ }
-function setHud(t,off){if(hud){hud.textContent=t;hud.style.borderColor=off?'#f44':'#0fa'}}
-function cleanName(){let n=(nameEl.value||'Jugador').replace(/[<>]/g,'').trim().slice(0,18)||'Jugador';nameEl.value=n;try{localStorage.setItem('ElBromasPlayerName',n)}catch(_){ }return n}
-function label(t){const c=document.createElement('canvas');c.width=256;c.height=64;const x=c.getContext('2d');x.font='bold 26px Arial';x.textAlign='center';x.fillStyle='rgba(0,0,0,.75)';x.fillRect(5,7,246,50);x.fillStyle='#fff';x.fillText(t,128,40);const m=new THREE.SpriteMaterial({map:new THREE.CanvasTexture(c),transparent:true,depthTest:false});const s=new THREE.Sprite(m);s.scale.set(5,1.25,1);s.position.y=5;return s}
-function makeRemote(p){const g=new THREE.Group();const b=new THREE.Mesh(new THREE.CylinderGeometry(.75,.9,2.4,8),new THREE.MeshLambertMaterial({color:0x168cff}));b.position.y=1.5;g.add(b);const h=new THREE.Mesh(new THREE.SphereGeometry(.82,12,10),new THREE.MeshLambertMaterial({color:0xffb07a}));h.position.y=3.2;g.add(h);g.add(label(p.name||'Jugador'));g.position.set(p.x||0,p.y||0,p.z||0);g.rotation.y=p.ry||0;g.userData={tx:g.position.x,ty:g.position.y,tz:g.position.z,ry:p.ry||0,flash:0};scene.add(g);return g}
-function syncPlayers(list){if(typeof scene==='undefined'||!scene)return;const seen=new Set();for(const p of list||[]){if(p.id===MP.id)continue;seen.add(p.id);let g=MP.remotes.get(p.id);if(!g){g=makeRemote(p);MP.remotes.set(p.id,g)}g.userData.tx=p.x;g.userData.ty=p.y;g.userData.tz=p.z;g.userData.ry=p.ry||0}for(const [id,g] of MP.remotes){if(!seen.has(id)){if(g.parent)g.parent.remove(g);MP.remotes.delete(id)}}}
-function animateRemote(){for(const g of MP.remotes.values()){g.position.x+=(g.userData.tx-g.position.x)*.3;g.position.y+=(g.userData.ty-g.position.y)*.3;g.position.z+=(g.userData.tz-g.position.z)*.3;let d=g.userData.ry-g.rotation.y;while(d>Math.PI)d-=Math.PI*2;while(d<-Math.PI)d+=Math.PI*2;g.rotation.y+=d*.3;if(performance.now()<g.userData.flash)g.scale.set(1.12,.9,1.12);else g.scale.lerp(new THREE.Vector3(1,1,1),.2)}}
-function send(){if(!MP.connected||!MP.socket||typeof character==='undefined'||!character)return;const now=performance.now();if(now-MP.last<50)return;MP.last=now;MP.socket.emit('player:update',{x:character.position.x,y:character.position.y,z:character.position.z,ry:character.rotation.y,hp:typeof playerHealth==='number'?playerHealth:100,aura:typeof playerAura==='number'?playerAura:0,dead:!!isDead,moving:!!isMoving})}
-window.mpEmitAction=function(a){if(MP.connected)MP.socket.emit('player:action',{action:a})};
-MP.socket=io({transports:['websocket','polling']});
-MP.socket.on('connect',()=>{MP.connected=true;MP.id=MP.socket.id;setHud('🟢 1 online');MP.socket.emit('player:join',{name:cleanName()})});
-MP.socket.on('online:count',n=>setHud('🟢 '+n+' online'));
-MP.socket.on('world:players',syncPlayers);
-MP.socket.on('player:action',p=>{const g=MP.remotes.get(p.id);if(g)g.userData.flash=performance.now()+400});
-MP.socket.on('disconnect',()=>{MP.connected=false;setHud('🔴 Desconectado',true)});
-MP.socket.on('connect_error',()=>setHud('🔴 Servidor offline',true));
-nameEl.addEventListener('change',()=>MP.socket.emit('player:join',{name:cleanName()}));
-const oldStartGame=window.startGame;setInterval(()=>{try{animateRemote();send()}catch(_){ }},50);
-})();
-`;
+const MP_UI = `<div id="mpOnlineHud" style="position:fixed;left:12px;top:12px;z-index:99999;display:flex;align-items:center;gap:7px;font-family:Arial,sans-serif;pointer-events:auto"><button id="mpOnlineBtn" type="button" style="height:38px;padding:0 14px;border:2px solid #39ff88;border-radius:19px;background:rgba(0,0,0,.78);color:#fff;font-weight:900;font-size:14px;box-shadow:0 0 12px rgba(57,255,136,.35);touch-action:manipulation">ONLINE</button><span id="mpOnlineCount" style="display:none;min-width:38px;text-align:center;padding:7px 9px;border-radius:14px;background:rgba(0,0,0,.78);color:#39ff88;font-weight:900;font-size:13px">0</span></div>`;
 
-function cleanName(name){const n=String(name||'Jugador').replace(/[<>]/g,'').replace(/\s+/g,' ').trim().slice(0,18);return n||'Jugador'}
-function num(v,f=0){const n=Number(v);return Number.isFinite(n)?Math.max(-100000,Math.min(100000,n)):f}
-function snapshot(){return [...players.values()].map(p=>({...p}))}
-function broadcast(){io.emit('world:players',snapshot());io.emit('online:count',players.size)}
+const MP_SCRIPT = `<script>(function(){if(window.__elBromasOnlineInjected)return;window.__elBromasOnlineInjected=true;function initOnline(){if(typeof io!=='function')return;const btn=document.getElementById('mpOnlineBtn'),count=document.getElementById('mpOnlineCount');if(!btn)return;let socket=null,enabled=false;btn.addEventListener('click',function(){if(enabled)return;enabled=true;btn.textContent='ONLINE ✓';btn.style.background='rgba(20,100,55,.9)';count.style.display='inline-block';socket=io({transports:['websocket','polling']});socket.on('online:count',function(n){count.textContent=String(n)});socket.on('connect',function(){send()});socket.on('world:players',function(list){if(!window.scene||typeof THREE==='undefined')return;const ids=new Set(list.map(p=>p.id));window.__mpRemote=window.__mpRemote||{};list.forEach(function(p){if(p.id===socket.id)return;let o=window.__mpRemote[p.id];if(!o){const g=new THREE.Group();const body=new THREE.Mesh(new THREE.CylinderGeometry(.35,.45,1.1,10),new THREE.MeshStandardMaterial({color:0x2196f3}));body.position.y=.55;g.add(body);const head=new THREE.Mesh(new THREE.SphereGeometry(.3,10,10),new THREE.MeshStandardMaterial({color:0xffcc99}));head.position.y=1.25;g.add(head);window.scene.add(g);o={g:g};window.__mpRemote[p.id]=o}o.g.position.set(Number(p.x)||0,Number(p.y)||0,Number(p.z)||0);o.g.rotation.y=Number(p.ry)||0});Object.keys(window.__mpRemote).forEach(function(id){if(!ids.has(id)){window.scene.remove(window.__mpRemote[id].g);delete window.__mpRemote[id]}})});function send(){if(!socket||!socket.connected||!window.character)return;const p=window.character.position,r=window.character.rotation;socket.emit('player:update',{name:'Jugador',x:p.x,y:p.y,z:p.z,ry:r.y,hp:Number(window.playerHealth)||100,aura:Number(window.playerAura)||0,dead:!!window.isDead,moving:!!window.isMoving})}setInterval(send,50)}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',initOnline);else initOnline()})();</script>`;
 
-app.get('/health',(_q,r)=>r.json({ok:true,game:'El Bromas Online',online:players.size}));
-app.get('/api/online',(_q,r)=>r.json({online:players.size,maxPlayers:MAX_PLAYERS}));
-app.get('/El%20Bromas/Salva%20a%20cornatan%20%F0%9F%91%88.html',(req,res)=>serveGame(res));
-app.get('/El Bromas/Salva a cornatan 👈.html',(req,res)=>serveGame(res));
-function serveGame(res){try{let html=fs.readFileSync(GAME_FILE,'utf8');html=html.replace('<body>','<body>'+MP_UI);const marker='// ============ VARIABLES GLOBALES ============';if(html.includes(marker)){html=html.replace(marker,MP_SCRIPT+'\n'+marker)}res.type('html').send(html)}catch(e){console.error(e);res.status(500).send('No se pudo cargar El Bromas: '+e.message)}}
+function cleanName(v){return String(v||'Jugador').replace(/[<>]/g,'').trim().slice(0,20)||'Jugador'}
+function num(v,d=0){const x=Number(v);return Number.isFinite(x)?x:d}
+function snapshot(){return [...players.values()]}
+function broadcast(){const s=snapshot();io.emit('world:players',s);io.emit('online:count',players.size)}
+app.get('/health',(_q,r)=>r.json({ok:true,online:players.size}));
+app.get('/api/online',(_q,r)=>r.json({online:players.size}));
+function serveGame(_q,r){let html=fs.readFileSync(GAME_FILE,'utf8');html=html.replace('<body>','<body>'+MP_UI);const marker='// ============ VARIABLES GLOBALES ============';if(html.includes(marker))html=html.replace(marker,MP_SCRIPT+'\\n'+marker);r.type('html').send(html)}
+app.get('/Salva%20a%20cornatan%20%F0%9F%91%88.html',serveGame);
+app.get('/Salva a cornatan 👈.html',serveGame);
+app.get('/El%20Bromas/Salva%20a%20cornatan%20%F0%9F%91%88.html',serveGame);
+app.get('/El Bromas/Salva a cornatan 👈.html',serveGame);
 app.use(express.static(__dirname,{maxAge:'1h'}));
-app.get('/',(_q,r)=>r.redirect('/El%20Bromas/Salva%20a%20cornatan%20%F0%9F%91%88.html'));
-
-io.on('connection',socket=>{
- if(players.size>=MAX_PLAYERS){socket.emit('server:full',{maxPlayers:MAX_PLAYERS});return socket.disconnect(true)}
- players.set(socket.id,{id:socket.id,name:'Jugador',x:0,y:0,z:0,ry:0,hp:100,aura:0,dead:false,moving:false,action:null,actionAt:0});
- socket.emit('welcome',{id:socket.id,maxPlayers:MAX_PLAYERS});broadcast();
- socket.on('player:join',d=>{const p=players.get(socket.id);if(!p)return;p.name=cleanName(d&&d.name);broadcast()});
- socket.on('player:update',d=>{const p=players.get(socket.id);if(!p||!d)return;p.x=num(d.x,p.x);p.y=num(d.y,p.y);p.z=num(d.z,p.z);p.ry=num(d.ry,p.ry);p.hp=Math.max(0,Math.min(100,Math.round(num(d.hp,p.hp))));p.aura=Math.round(num(d.aura,p.aura));p.dead=!!d.dead;p.moving=!!d.moving});
- socket.on('player:stats',d=>{const p=players.get(socket.id);if(!p||!d)return;p.hp=Math.max(0,Math.min(100,Math.round(num(d.hp,p.hp))));p.aura=Math.round(num(d.aura,p.aura));p.dead=!!d.dead});
- socket.on('player:action',d=>{const p=players.get(socket.id);if(!p||!d)return;if(!['attack','special','jump','poop','buff','tubo','mortero'].includes(d.action))return;p.action=d.action;p.actionAt=Date.now();io.emit('player:action',{id:p.id,name:p.name,action:p.action,actionAt:p.actionAt})});
- socket.on('disconnect',()=>{players.delete(socket.id);broadcast()});
-});
+app.get('/',(_q,r)=>r.redirect('/Salva%20a%20cornatan%20%F0%9F%91%88.html'));
+io.on('connection',socket=>{if(players.size>=MAX_PLAYERS){socket.emit('server:full');socket.disconnect(true);return}players.set(socket.id,{id:socket.id,name:'Jugador',x:0,y:0,z:0,ry:0,hp:100,aura:0,dead:false,moving:false});broadcast();socket.on('player:update',d=>{const p=players.get(socket.id);if(!p)return;p.name=cleanName(d.name);p.x=num(d.x);p.y=num(d.y);p.z=num(d.z);p.ry=num(d.ry);p.hp=num(d.hp,100);p.aura=num(d.aura);p.dead=!!d.dead;p.moving=!!d.moving});socket.on('player:action',d=>{if(!d||!d.action)return;socket.broadcast.emit('player:action',{id:socket.id,action:String(d.action).slice(0,30)})});socket.on('disconnect',()=>{players.delete(socket.id);broadcast()});});
 setInterval(broadcast,50);
-server.listen(PORT,'0.0.0.0',()=>console.log('El Bromas Online escuchando en '+PORT));
+server.listen(PORT,'0.0.0.0',()=>console.log('El Bromas online server listening on '+PORT));
