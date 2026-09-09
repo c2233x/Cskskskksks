@@ -423,6 +423,9 @@
 <div class="settingsRow"><label>⚡ Ajuste rápido</label><select id="gPreset" class="settingsSelect"><option value="default">Gráficos defecto</option><option value="animated">Animados</option><option value="realistic">Realistas</option><option value="soft">Suaves</option><option value="vivid">Bonitos llamativos</option></select></div>
 <div class="settingsRow"><label>Distancia máxima</label><input id="gShadowDistance" type="range" min="80" max="500" value="280"><span class="settingsVal" id="vShadowDistance">280</span></div>
 <div class="settingsRow"><label>⚡ Optimizar manchas de NPC</label><input id="gOptimizeNpcStains" type="checkbox" checked></div>
+<div class="settingsRow"><label>⚡ Optimizador</label><input id="gAutoOptimizer" type="checkbox" checked></div>
+<div class="settingsRow"><label>🌍 Distancia de chunks</label><input id="gChunkDistance" type="range" min="2" max="16" value="8"><span class="settingsVal" id="vChunkDistance">8 chunks</span></div>
+<div class="settingsRow"><label>🌍 Optimizador de mundo</label><input id="gWorldOptimizer" type="checkbox" checked></div>
 </div>
 </div>
 <div id="flightControls">
@@ -2493,6 +2496,11 @@
 
                     normalMusicResumedAfterSupreme = true;
                     normalMusicResumePending = true;
+                    // Al terminar el combate del Supremo, avanzar a la SIGUIENTE
+                    // canción en vez de volver a reproducir la que sonaba antes del boss.
+                    if (musicTracks.length > 0) {
+                        currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
+                    }
                     setTimeout(() => {
                         if (bossDefeated && !boss && gameStarted && musicTracks.length) {
                             audioPlayer.volume = 0.65;
@@ -2598,7 +2606,7 @@
         
         function spawnNextWave() {
             waveNumber++; waitingNextWave = false; const textUI = document.getElementById('statusText'); textUI.style.display = 'block';
-            if (waveNumber > 0 && waveNumber % 10 === 0) { textUI.textContent = `¡ALERTA MÁXIMA: IMPACTO SUPREMO!`; startGiantBossMission(); } else if (waveNumber > 0 && waveNumber % 5 === 0) { textUI.textContent = `¡EVENTO: PROTESTA VANDÁLICA!`; startProtestMission(); } else { let count = Math.min(18, 5 + waveNumber * 2); if (window.extraPenesPenalty) { count += window.extraPenesPenalty; window.extraPenesPenalty = 0; } spawnWave(count); updatePeneCountUI(); textUI.textContent = `Oleada ${waveNumber}: ${count} penes`; }
+            if (waveNumber > 0 && waveNumber % 10 === 0) { textUI.textContent = ''; textUI.style.display = 'none'; startGiantBossMission(); } else if (waveNumber > 0 && waveNumber % 5 === 0) { textUI.textContent = `¡EVENTO: PROTESTA VANDÁLICA!`; startProtestMission(); } else { let count = Math.min(18, 5 + waveNumber * 2); if (window.extraPenesPenalty) { count += window.extraPenesPenalty; window.extraPenesPenalty = 0; } spawnWave(count); updatePeneCountUI(); textUI.textContent = `Oleada ${waveNumber}: ${count} penes`; }
             setTimeout(() => { textUI.textContent = ''; }, 3000);
         }
         
@@ -2655,7 +2663,7 @@
 
         function startGiantBossMission() {
             isCinematic = true; cinematicPhase = 1; cinematicTimer = 0;
-            document.getElementById('statusText').textContent = '¡ADVERTENCIA: IMPACTO INMINENTE!'; document.getElementById('statusText').style.display = 'block';
+            document.getElementById('statusText').textContent = ''; document.getElementById('statusText').style.display = 'none';
             supremeEffectActive = true; musicPlaybackToken++; try { audioPlayer.pause(); } catch (_) {} if(audioRolon.src) { bossMusicStarted = true; bossRolonActive = false; try { audioRolon.pause(); audioRolon.currentTime = 0; } catch(_) {} } cinematicBosses = []; activeMiniBosses = []; const numMinis = Math.floor(waveNumber / 10);
             boss = createBoss(waveNumber); boss.scale.set(3, 3, 3); boss.userData.maxHealth = 1500 + waveNumber * 150; boss.userData.health = boss.userData.maxHealth; boss.userData.isGiant = true; boss.userData.attackCooldown = 120;
             boss.position.set(character.position.x + 30, 800, character.position.z + 30); boss.rotation.x = Math.PI; scene.add(boss); bossDefeated = false; normalMusicResumedAfterSupreme = false; normalMusicResumePending = false; cinematicBosses.push(boss); if(audioRolon.src) { startBossRolonCombat(); }
@@ -2670,7 +2678,7 @@
         }
 
         function startEpicBossCinematic() {
-            isCinematic = true; cinematicPhase = 10; cinematicTimer = 0; boss.userData.hasDoneEpicAttack = true; document.getElementById('statusText').textContent = '¡EL SUPREMO PREPARA UN ATAQUE ESPACIAL!'; document.getElementById('statusText').style.display = 'block'; playSupremeAttackSound();
+            isCinematic = true; cinematicPhase = 10; cinematicTimer = 0; boss.userData.hasDoneEpicAttack = true; document.getElementById('statusText').style.display = 'none'; playSupremeAttackSound();
         }
 
         function createCrater(x, z, radius=30, depth=6) {
@@ -2789,8 +2797,69 @@
             }
         }
         
+        let optimizerFrameCounter = 0;
+        let worldCullFrameCounter = 0;
+        function collectWorldChunkRoots(){
+            const roots = [];
+            const add = obj => { if(obj && obj.isObject3D && obj.parent === scene && !roots.includes(obj)) roots.push(obj); };
+            if(typeof buildingColliders !== 'undefined') buildingColliders.forEach(c=>add(c && c.group));
+            if(typeof destructibleProps !== 'undefined') destructibleProps.forEach(add);
+            if(typeof civilianHouses !== 'undefined') civilianHouses.forEach(add);
+            if(typeof posters !== 'undefined') posters.forEach(add);
+            if(typeof lifeCardStands !== 'undefined') lifeCardStands.forEach(add);
+            if(typeof bathZones !== 'undefined') bathZones.forEach(add);
+            if(typeof vegetationZones !== 'undefined') vegetationZones.forEach(z=>add(z && (z.group || z.mesh || z)));
+            if(typeof smallPenes !== 'undefined') smallPenes.forEach(add);
+            return roots;
+        }
+        function updateWorldChunkVisibility(force=false){
+            if(!scene || !character || !graphicsSettings) return;
+            const enabled = graphicsSettings.worldOptimizer !== false;
+            const roots = collectWorldChunkRoots();
+            const radius = Math.max(2, Number(graphicsSettings.chunkDistance) || 8) * 50;
+            const radius2 = radius * radius;
+            for(const root of roots){
+                if(!root.userData.__worldOptimizerOriginalVisible) root.userData.__worldOptimizerOriginalVisible = root.visible;
+                if(!enabled){ root.visible = root.userData.__worldOptimizerOriginalVisible !== false; continue; }
+                const dx=root.position.x-character.position.x; const dz=root.position.z-character.position.z;
+                const near=force || (dx*dx+dz*dz <= radius2);
+                root.visible = near && root.userData.__worldOptimizerOriginalVisible !== false;
+            }
+        }
+        function runAutoOptimizer(){
+            if(!graphicsSettings || graphicsSettings.autoOptimizer === false) return;
+            const cleanArray=(arr,limit)=>{
+                if(!Array.isArray(arr)) return;
+                for(let i=arr.length-1;i>=0;i--){
+                    const o=arr[i];
+                    if(!o || !o.parent || o.userData && o.userData.life !== undefined && o.userData.life <= 0) arr.splice(i,1);
+                }
+                while(arr.length>limit){
+                    const old=arr.shift();
+                    if(old && old.parent) old.parent.remove(old);
+                }
+            };
+            cleanArray(fireParticles,90);
+            cleanArray(debrisParticles,70);
+            cleanArray(fartParticles,24);
+            cleanArray(window.greySmokeParticles,90);
+            cleanArray(projectiles,45);
+            cleanArray(tuboProjectiles,30);
+            cleanArray(cacaProjectiles,45);
+            cleanArray(semenStains,10);
+            cleanArray(cacaStains,24);
+            if(typeof epicDeflectMeteors !== 'undefined') cleanArray(epicDeflectMeteors,24);
+            // El navegador puede conservar nodos huérfanos de efectos si una animación fue interrumpida.
+            scene.traverse(o=>{
+                if(o !== scene && o.parent === scene && o.userData && o.userData.__tempEffect && o.userData.life <= 0) scene.remove(o);
+            });
+        }
+
         function animate() {
             if (!gameStarted) return; requestAnimationFrame(animate);
+            optimizerFrameCounter++; worldCullFrameCounter++;
+            if(graphicsSettings && graphicsSettings.worldOptimizer !== false && (worldCullFrameCounter % 12 === 0)) updateWorldChunkVisibility();
+            if(graphicsSettings && graphicsSettings.autoOptimizer !== false && (optimizerFrameCounter % 600 === 0)) runAutoOptimizer();
             for (let stand of lifeCardStands) {
                 if (stand.userData.cards < stand.userData.maxCards) { stand.userData.respawnTimer--; if (stand.userData.respawnTimer <= 0) { stand.userData.cards++; stand.userData.respawnTimer = 600; if (stand.userData.cards === stand.userData.maxCards) stand.userData.signMesh.material.emissive.setHex(0x00ff00); } }
                 if (!isDead && character.position.distanceTo(stand.position) < 8) {
@@ -2827,7 +2896,7 @@
                 asteroidRainTimer--;
                 const mf = document.getElementById('meteorRainFill'); const ml = document.getElementById('meteorRainLabel');
                 if (mf) mf.style.width = Math.max(0, asteroidRainTimer / METEOR_RAIN_DURATION * 100) + '%';
-                if (ml) ml.textContent = '☄️ Meteoros cayendo — ' + Math.ceil(asteroidRainTimer / 60) + 's';
+                if (ml) { ml.textContent = ''; ml.style.display = 'none'; }
                 if (asteroidRainTimer % 22 === 0 && !isCinematic) { const angle = Math.random() * Math.PI * 2; const dist = 45 + Math.random() * 95; spawnAsteroidSemen(character.position.x + Math.cos(angle)*dist, character.position.z + Math.sin(angle)*dist); }
                 if (asteroidRainTimer <= 0) { const mr = document.getElementById('meteorRainBar'); const ml2 = document.getElementById('meteorRainLabel'); if (mr) mr.style.display = 'none'; if (ml2) ml2.style.display = 'none'; }
             }
@@ -3295,7 +3364,7 @@
                         const trailGeo = new THREE.BufferGeometry().setFromPoints([epicSemen.position.clone(), epicSemen.position.clone()]);
                         epicTrail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:0.9})); scene.add(epicTrail);
                         playExplosionSound();
-                        document.getElementById('statusText').textContent = '☄️ ¡EL SUPREMO LANZA EL PROYECTIL AL ESPACIO!';
+                        document.getElementById('statusText').style.display = 'none';
                     }
                 } else if (cinematicPhase === 11) {
                     // 3-9s: trayectoria claramente visible hasta el espacio.
@@ -3474,9 +3543,9 @@
         
 
         const GRAPHICS_KEY = 'cornatan_graphics_settings_v1';
-        const defaultGraphics = {contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:true,shadowQuality:1,shadowDetail:55,resolution:100,resolutionTarget:"auto",shadowDistance:280,optimizeNpcStains:true};
+        const defaultGraphics = {contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:true,shadowDetail:55,resolution:100,resolutionTarget:"auto",shadowDistance:280,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:8,worldOptimizer:true};
         let graphicsSettings = Object.assign({}, defaultGraphics);
-        function loadGraphicsSettings(){ try{ const saved=JSON.parse(localStorage.getItem(GRAPHICS_KEY)||'null'); if(saved) graphicsSettings=Object.assign({},defaultGraphics,saved); }catch(e){} }
+        function loadGraphicsSettings(){ try{ const saved=JSON.parse(localStorage.getItem(GRAPHICS_KEY)||'null'); if(saved) graphicsSettings=Object.assign({},defaultGraphics,saved); delete graphicsSettings.shadowQuality; }catch(e){} }
         function getTargetResolutionScale(target){
             if(target==='auto') return 1;
             const h=window.innerHeight||720;
@@ -3498,7 +3567,9 @@
                 // Sombras es independiente del resto de los ajustes.
                 renderer.shadowMap.enabled = !!g.shadows;
                 if(window.sunLight) window.sunLight.castShadow = !!g.shadows;
-                const q=[512,1024,2048][Math.max(0,Math.min(2,Math.round(g.shadowQuality)))];
+                // Calidad de sombras fija al valor por defecto: 1024x1024.
+                // Los presets no pueden cambiarla porque ese control fue eliminado.
+                const q=1024;
                 if(window.sunLight){
                     window.sunLight.shadow.mapSize.width=q; window.sunLight.shadow.mapSize.height=q;
                     const d=Math.max(70,g.shadowDistance*0.68); const c=window.sunLight.shadow.camera;
@@ -3508,26 +3579,32 @@
                     c.updateProjectionMatrix(); window.sunLight.shadow.needsUpdate=true;
                 }
             }
+            // Niebla de chunks: fuera de la distancia seleccionada el mundo desaparece suavemente.
+            if(scene && scene.fog){
+                const chunkRadius = Math.max(2, Number(g.chunkDistance) || 8) * 50;
+                scene.fog.near = Math.max(45, chunkRadius * 0.62);
+                scene.fog.far = Math.max(scene.fog.near + 40, chunkRadius * 1.04);
+            }
             localStorage.setItem(GRAPHICS_KEY,JSON.stringify(g)); updateGraphicsLabels();
         }
         function updateGraphicsLabels(){
-            const ids={gContrast:'vContrast',gSaturation:'vSaturation',gBrightness:'vBrightness',gBloom:'vBloom',gMetallic:'vMetallic',gShadowDetail:'vShadowDetail',gResolution:'vResolution',gShadowDistance:'vShadowDistance'};
-            Object.keys(ids).forEach(id=>{const e=document.getElementById(id),v=document.getElementById(ids[id]); if(e&&v)v.textContent=e.value+(id==='gShadowDistance'?'':'%');});
+            const ids={gContrast:'vContrast',gSaturation:'vSaturation',gBrightness:'vBrightness',gBloom:'vBloom',gMetallic:'vMetallic',gShadowDetail:'vShadowDetail',gResolution:'vResolution',gShadowDistance:'vShadowDistance',gChunkDistance:'vChunkDistance'};
+            Object.keys(ids).forEach(id=>{const e=document.getElementById(id),v=document.getElementById(ids[id]); if(e&&v)v.textContent=id==='gShadowDistance'?e.value:(id==='gChunkDistance'?e.value+' chunks':e.value+'%');});
         }
         function syncGraphicsControls(){
-            const map={contrast:'gContrast',saturation:'gSaturation',brightness:'gBrightness',bloom:'gBloom',metallic:'gMetallic',shadowDetail:'gShadowDetail',resolution:'gResolution',shadowDistance:'gShadowDistance'};
+            const map={contrast:'gContrast',saturation:'gSaturation',brightness:'gBrightness',bloom:'gBloom',metallic:'gMetallic',shadowDetail:'gShadowDetail',resolution:'gResolution',shadowDistance:'gShadowDistance',chunkDistance:'gChunkDistance'};
             Object.keys(map).forEach(k=>{const e=document.getElementById(map[k]); if(e)e.value=graphicsSettings[k];});
-            const sh=document.getElementById('gShadows'); if(sh)sh.checked=!!graphicsSettings.shadows; const opt=document.getElementById('gOptimizeNpcStains'); if(opt)opt.checked=graphicsSettings.optimizeNpcStains!==false;
+            const sh=document.getElementById('gShadows'); if(sh)sh.checked=!!graphicsSettings.shadows; const opt=document.getElementById('gOptimizeNpcStains'); if(opt)opt.checked=graphicsSettings.optimizeNpcStains!==false; const ao=document.getElementById('gAutoOptimizer'); if(ao)ao.checked=graphicsSettings.autoOptimizer!==false; const wo=document.getElementById('gWorldOptimizer'); if(wo)wo.checked=graphicsSettings.worldOptimizer!==false;
             const rt=document.getElementById('gResolutionTarget'); if(rt)rt.value=graphicsSettings.resolutionTarget||'auto';
             updateGraphicsLabels();
         }
         function setGraphicsPreset(name){
             const presets={
-                default:{contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:true,shadowQuality:1,shadowDetail:55,resolution:100,resolutionTarget:'auto',shadowDistance:280,optimizeNpcStains:true},
-                animated:{contrast:105,saturation:125,brightness:103,bloom:12,metallic:8,shadows:true,shadowQuality:1,shadowDetail:52,resolution:105,resolutionTarget:'1080',shadowDistance:300,optimizeNpcStains:true},
-                realistic:{contrast:104,saturation:100,brightness:98,bloom:6,metallic:55,shadows:true,shadowQuality:2,shadowDetail:85,resolution:120,resolutionTarget:'1080',shadowDistance:360,optimizeNpcStains:true},
-                soft:{contrast:96,saturation:92,brightness:106,bloom:4,metallic:5,shadows:true,shadowQuality:0,shadowDetail:38,resolution:75,resolutionTarget:'720',shadowDistance:220,optimizeNpcStains:true},
-                vivid:{contrast:112,saturation:145,brightness:105,bloom:28,metallic:18,shadows:true,shadowQuality:2,shadowDetail:68,resolution:115,resolutionTarget:'1080',shadowDistance:330}
+                default:{contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:true,shadowDetail:55,resolution:100,resolutionTarget:'auto',shadowDistance:280,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:8,worldOptimizer:true},
+                animated:{contrast:105,saturation:125,brightness:103,bloom:12,metallic:8,shadows:true,shadowDetail:52,resolution:105,resolutionTarget:'1080',shadowDistance:300,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:8,worldOptimizer:true},
+                realistic:{contrast:104,saturation:100,brightness:98,bloom:6,metallic:55,shadows:true,shadowDetail:85,resolution:120,resolutionTarget:'1080',shadowDistance:360,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:8,worldOptimizer:true},
+                soft:{contrast:96,saturation:92,brightness:106,bloom:4,metallic:5,shadows:true,shadowDetail:38,resolution:75,resolutionTarget:'720',shadowDistance:220,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:8,worldOptimizer:true},
+                vivid:{contrast:112,saturation:145,brightness:105,bloom:28,metallic:18,shadows:true,shadowDetail:68,resolution:115,resolutionTarget:'1080',shadowDistance:330,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:8,worldOptimizer:true}
             };
             if(!presets[name]) return; graphicsSettings=Object.assign({},presets[name]); syncGraphicsControls(); applyGraphicsSettings();
         }
@@ -3605,7 +3682,7 @@
             if(open)open.addEventListener('click',()=>setHudEditMode(true));
             if(save)save.addEventListener('click',()=>{saveHudLayout();setHudEditMode(false);});
             if(reset)reset.addEventListener('click',resetHudLayout);
-            window.addEventListener('resize',()=>{ if(!hudEditing) loadHudLayout(); });
+            window.addEventListener('resize',()=>{ if(!hudEditing) loadHudLayout(); if(typeof applyGraphicsSettings==='function') applyGraphicsSettings(); if(typeof updateWorldChunkVisibility==='function') updateWorldChunkVisibility(true); });
         }
 
         function setupGraphicsUI(){
@@ -3632,10 +3709,10 @@
                 if(mainScroll) { mainScroll.style.display='block'; mainScroll.scrollTop=0; }
             });
             syncGraphicsControls();
-            const ids=['gContrast','gSaturation','gBrightness','gBloom','gMetallic','gShadows','gShadowDetail','gResolution','gShadowDistance','gOptimizeNpcStains'];
+            const ids=['gContrast','gSaturation','gBrightness','gBloom','gMetallic','gShadows','gShadowDetail','gResolution','gShadowDistance','gOptimizeNpcStains','gAutoOptimizer','gChunkDistance','gWorldOptimizer'];
             ids.forEach(id=>{const e=document.getElementById(id); if(!e)return; e.addEventListener(e.type==='checkbox'?'change':'input',()=>{
-                if(e.type==='checkbox') { if(id==='gShadows') graphicsSettings.shadows=e.checked; else if(id==='gOptimizeNpcStains') graphicsSettings.optimizeNpcStains=e.checked; } else { const key=id.slice(1).replace(/^./,m=>m.toLowerCase()); graphicsSettings[key]=Number(e.value); }
-                applyGraphicsSettings();
+                if(e.type==='checkbox') { if(id==='gShadows') graphicsSettings.shadows=e.checked; else if(id==='gOptimizeNpcStains') graphicsSettings.optimizeNpcStains=e.checked; else if(id==='gAutoOptimizer') graphicsSettings.autoOptimizer=e.checked; else if(id==='gWorldOptimizer') graphicsSettings.worldOptimizer=e.checked; } else { const key=id.slice(1).replace(/^./,m=>m.toLowerCase()); graphicsSettings[key]=Number(e.value); } 
+                applyGraphicsSettings(); if(id==='gChunkDistance' || id==='gWorldOptimizer') updateWorldChunkVisibility(true);
             });});
             const rt=document.getElementById('gResolutionTarget'); if(rt)rt.addEventListener('change',()=>{graphicsSettings.resolutionTarget=rt.value;applyGraphicsSettings();});
             const preset=document.getElementById('gPreset'); if(preset)preset.addEventListener('change',()=>setGraphicsPreset(preset.value));
