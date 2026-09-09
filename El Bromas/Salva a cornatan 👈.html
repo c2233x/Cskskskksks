@@ -312,9 +312,142 @@
 #startScreen:not(.error) #startupErrorActions{display:none!important}
 #startScreen.error #startupRetryButton{display:flex!important}
 #startScreen:not(.error) #startupDebugPanel{display:none!important}
+
+#mpChat.collapsed #mpChatLog{display:none!important}
+#mpChat.collapsed #mpChatForm{display:none!important}
+#mpChat.collapsed{max-height:44px!important;overflow:hidden}
+#mpChatToggle{cursor:pointer}
+</style>
+
+<style id="online-reset-hide">
+body.online-active #sysRestartBtn{display:none!important}
 </style>
 </head>
 <body>
+<!-- EL BROMAS ONLINE: integrado directamente en el juego -->
+<style>
+#mpOnlineHud{position:fixed;left:12px;top:12px;z-index:99999;display:none;font-family:Arial,sans-serif}
+#mpOnlineBtn{width:50px;height:50px;padding:0;border-radius:50%;border:2px solid #fff;background:rgba(0,0,0,.82);color:#fff;font-size:27px;line-height:46px;cursor:pointer;box-shadow:0 0 14px rgba(0,0,0,.55);touch-action:manipulation}
+#mpOnlineBtn.connected{border-color:#39ff88;box-shadow:0 0 16px rgba(57,255,136,.65)}
+#mpOnlineCount{display:none;margin-left:7px;padding:7px 10px;border-radius:14px;background:rgba(0,0,0,.82);color:#39ff88;font-weight:900;font-size:13px}
+#mpJoinMessage{display:none;position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:100000;padding:9px 15px;border-radius:12px;background:rgba(0,0,0,.9);border:1px solid #39ff88;color:#fff;font:900 13px Arial;text-align:center;pointer-events:none}
+#mpChat{position:fixed;right:10px;bottom:10px;width:min(320px,78vw);z-index:99999;display:none;font-family:Arial,sans-serif}
+#mpChatLog{height:145px;overflow-y:auto;padding:8px;border-radius:12px 12px 0 0;background:rgba(0,0,0,.72);color:#fff;font-size:12px;line-height:1.35}
+#mpChatForm{display:flex;background:rgba(0,0,0,.86);padding:6px;border-radius:0 0 12px 12px}
+#mpChatInput{flex:1;border:0;border-radius:8px;padding:8px;min-width:0}
+#mpChatForm button{margin-left:5px;border:0;border-radius:8px;padding:0 11px;background:#39ff88;font-weight:900}
+</style>
+<div id="mpOnlineHud">
+  <button id="mpOnlineBtn" type="button" aria-label="Jugar online" title="Entrar / salir del juego online">🌐</button>
+  <span id="mpOnlineCount">0</span>
+</div>
+<div id="mpJoinMessage"></div>
+<div id="mpChat">
+  <div id="mpChatLog"></div>
+  <form id="mpChatForm"><input id="mpChatInput" maxlength="120" autocomplete="off" placeholder="Escribe un mensaje..."><button type="submit">➤</button></form>
+</div>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const hud=$('mpOnlineHud'),btn=$('mpOnlineBtn'),count=$('mpOnlineCount');
+  const joinMsg=$('mpJoinMessage'),chatBox=$('mpChat'),chatLog=$('mpChatLog'),chatForm=$('mpChatForm'),chatInput=$('mpChatInput');
+  let socket=null,sendTimer=null,nick='',nameAsked=false;
+  const remotes={};
+
+  function safe(v){return String(v??'').replace(/[<>]/g,'')}
+  function showMessage(t){
+    joinMsg.textContent=t; joinMsg.style.display='block';
+    clearTimeout(joinMsg._timer); joinMsg._timer=setTimeout(()=>joinMsg.style.display='none',3000);
+  }
+  function showHud(){
+    hud.style.display=(typeof gameStarted!=='undefined' && gameStarted)?'block':'none';
+  }
+  function getNick(){
+    let saved='';
+    try{saved=(localStorage.getItem('ElBromas_OnlineNick')||'').trim()}catch(_){}
+    if(saved) return saved.slice(0,20);
+    const asked=(prompt('Pon tu nick para jugar online:','Jugador')||'').trim().slice(0,20);
+    if(asked){try{localStorage.setItem('ElBromas_OnlineNick',asked)}catch(_){}}
+    return asked||'Jugador';
+  }
+  function sendState(){
+    if(!socket||!socket.connected||!window.character)return;
+    const p=character.position||{},r=character.rotation||{};
+    socket.emit('player:update',{
+      name:nick,x:Number(p.x)||0,y:Number(p.y)||0,z:Number(p.z)||0,
+      ry:Number(r.y)||0,hp:Number(window.playerHealth)||100,
+      aura:Number(window.playerAura)||0,dead:!!window.isDead,moving:!!window.isMoving
+    });
+  }
+  function addChat(n,t){
+    const d=document.createElement('div');
+    d.innerHTML='<b>'+safe(n)+'</b>: '+safe(t);
+    chatLog.appendChild(d);chatLog.scrollTop=chatLog.scrollHeight;
+  }
+  function makeRemote(){
+    if(typeof THREE==='undefined'||!window.scene)return null;
+    const g=new THREE.Group();
+    const body=new THREE.Mesh(new THREE.BoxGeometry(.7,1.4,.5),new THREE.MeshStandardMaterial({color:0x2196f3}));
+    body.position.y=.7;g.add(body);scene.add(g);
+    const label=document.createElement('div');
+    label.style.cssText='position:absolute;transform:translate(-50%,-100%);color:#fff;font:bold 12px Arial;text-shadow:0 2px 4px #000;pointer-events:none;text-align:center;white-space:nowrap';
+    label.innerHTML='<span></span><div style="width:70px;height:6px;background:#300;border:1px solid #000;border-radius:4px;overflow:hidden"><i style="display:block;width:100%;height:100%;background:#39ff66"></i></div>';
+    document.body.appendChild(label);
+    return {g,label};
+  }
+  function drawRemotes(list){
+    if(typeof THREE==='undefined'||!window.scene||!window.camera)return;
+    const ids=new Set((list||[]).map(x=>x.id));
+    (list||[]).forEach(x=>{
+      if(!socket||x.id===socket.id)return;
+      const o=remotes[x.id]||(remotes[x.id]=makeRemote()); if(!o)return;
+      o.g.position.set(Number(x.x)||0,Number(x.y)||0,Number(x.z)||0);
+      o.g.rotation.y=Number(x.ry)||0;
+      o.label.firstChild.textContent=safe(x.name||'Jugador');
+      o.label.lastChild.firstChild.style.width=Math.max(0,Math.min(100,Number(x.hp)||100))+'%';
+      const v=o.g.position.clone();v.y+=2.2;v.project(camera);
+      o.label.style.left=((v.x+1)/2*innerWidth)+'px';
+      o.label.style.top=((1-v.y)/2*innerHeight)+'px';
+      o.label.style.display=x.dead?'none':'block';
+    });
+    Object.keys(remotes).forEach(id=>{
+      if(!ids.has(id)){scene.remove(remotes[id].g);remotes[id].label.remove();delete remotes[id]}
+    });
+  }
+  function clearRemotes(){
+    Object.values(remotes).forEach(o=>{try{scene&&scene.remove(o.g)}catch(_){}try{o.label.remove()}catch(_){}});
+    Object.keys(remotes).forEach(k=>delete remotes[k]);
+  }
+  function connect(){
+    nick=getNick(); btn.textContent='⏳';
+    socket=io(location.origin,{transports:['websocket','polling'],reconnection:true,reconnectionAttempts:Infinity,timeout:10000});
+    socket.on('connect',()=>{document.body.classList.add('online-active');
+      btn.textContent='🌐';btn.classList.add('connected');count.style.display='inline-block';chatBox.style.display='block';
+      socket.emit('player:hello',{name:nick});sendState();showMessage('¡Te has unido al juego online, '+nick+'!');
+    });
+    socket.on('connect_error',()=>{btn.textContent='🌐';btn.classList.remove('connected');showMessage('No se pudo conectar al juego online. Reintentando...')});
+    socket.on('disconnect',()=>{document.body.classList.remove('online-active');btn.textContent='🌐';btn.classList.remove('connected');count.style.display='none';chatBox.style.display='none';clearRemotes()});
+    socket.on('online:count',n=>count.textContent='👥 '+String(n));
+    socket.on('world:players',drawRemotes);
+    socket.on('player:joined',x=>{if(x&&x.name)showMessage(x.name+' se unió al juego');});
+    socket.on('player:left',x=>{if(x&&x.name)addChat('SISTEMA',x.name+' salió del juego')});
+    socket.on('chat:message',x=>{if(x)addChat(x.name,x.text)});
+    socket.on('server:full',()=>showMessage('El servidor online está lleno'));
+    clearInterval(sendTimer);sendTimer=setInterval(sendState,100);
+  }
+  function disconnect(){
+    if(socket){socket.disconnect();socket=null}
+    clearInterval(sendTimer);sendTimer=null;btn.textContent='🌐';btn.classList.remove('connected');
+    count.style.display='none';chatBox.style.display='none';clearRemotes();showMessage('Has salido del juego online');
+  }
+  btn.addEventListener('click',()=>{if(socket&&socket.connected)disconnect();else connect()});
+  chatForm.addEventListener('submit',e=>{e.preventDefault();const t=chatInput.value.trim();if(t&&socket&&socket.connected){socket.emit('chat:message',t);chatInput.value=''}});
+  setInterval(showHud,500);showHud();
+})();
+</script>
+<!-- FIN EL BROMAS ONLINE -->
+
 <div id="startScreen">
 <div id="loadingText">Iniciando</div>
 <div id="startupProgressTrack"><div id="startupProgressBar"></div></div>
@@ -736,6 +869,27 @@
         // Lectura de árbol en una sola petición: reduce fallos de red y límites
         // de WebView/APK que aparecen al recorrer carpeta por carpeta.
         async function githubCollectFilesFromTree() {
+            // Cuando el juego corre desde El Bromas en Render, usamos el propio
+            // servidor para listar sus archivos. Así no dependemos de la API de
+            // GitHub ni nos quedamos congelados en 0%.
+            if (location.protocol === 'http:' || location.protocol === 'https:') {
+                try {
+                    const localResponse = await fetch('/api/assets', { cache:'no-store' });
+                    if (localResponse.ok) {
+                        const localData = await localResponse.json();
+                        if (Array.isArray(localData.files) && localData.files.length) {
+                            githubLogMsg(`Servidor local encontró ${localData.files.length} archivos.`, 'ok');
+                            return localData.files.map(x => ({
+                                path: String(x.path || ''),
+                                size: Number(x.size) || 0,
+                                download_url: String(x.url || '')
+                            })).filter(x => x.path && x.download_url);
+                        }
+                    }
+                } catch (e) {
+                    githubLogMsg(`Servidor local no disponible; se usará GitHub. ${e.message || e}`, 'error');
+                }
+            }
             const treeUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${encodeURIComponent(GITHUB_BRANCH)}?recursive=1`;
             let response, lastError;
             for (let attempt = 1; attempt <= 3; attempt++) {
@@ -926,6 +1080,8 @@
 
         async function fetchVersionDirect() {
             const candidates = [
+                `/Version.txt`,
+                `/Version`,
                 `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodeURIComponent(GITHUB_FOLDER)}/Version.txt`,
                 `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Version`,
                 `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Version.txt`,
@@ -2849,6 +3005,10 @@
             document.addEventListener('touchstart', unlockAudio, { passive:true });
         });
     </script>
+
+<script id="online-chat-collapse">
+(()=>{const c=document.getElementById('mpChat'),b=document.getElementById('mpChatToggle');
+if(c&&b){c.classList.add('collapsed');b.textContent='⌃';b.onclick=()=>{c.classList.toggle('collapsed');b.textContent=c.classList.contains('collapsed')?'⌃':'⌄';};}})();
+</script>
 </body>
 </html>
-   
