@@ -14,7 +14,7 @@ const poseClean=p=>{const o={};if(!p||typeof p!=='object')return o;for(const [k,
 const snapshot=()=>[...players.values()];
 function broadcast(){io.emit('world:players',snapshot());io.emit('enhanced:players',snapshot());io.emit('online:count',players.size)}
 const HOOK=`<script>(function(){var f=window.io;if(!f)return;window.io=function(){var s=f.apply(this,arguments);window.__ebSocket=s;return s}})();</script>`;
-const ENHANCED="";
+const ENHANCED='<script src="/online-sync.js"></script>';
 function serveGame(_q,r){try{let h=fs.readFileSync(GAME_FILE,'utf8');h=h.replace('<script src="/socket.io/socket.io.js"></script>','<script src="/socket.io/socket.io.js"></script>'+HOOK);h=h.replace('</body>',ENHANCED+'</body>');r.type('html').send(h)}catch(e){r.status(500).send('No se pudo cargar el juego')}}
 app.get('/health',(_q,r)=>r.json({ok:true,online:players.size,max:MAX_PLAYERS,host:!!hostId,synchronized:true}));
 app.get('/api/online',(_q,r)=>r.json({ok:true,online:players.size,max:MAX_PLAYERS,synchronized:true}));
