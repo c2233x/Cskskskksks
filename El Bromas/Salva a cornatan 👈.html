@@ -386,6 +386,90 @@
 <div id="peneCountInfo">🍆 Vivos: 0</div>
 <div id="auraPopup"></div>
 <div id="interactionPrompt"></div>
+<style>
+/* === Vehículos conducibles + radio integrada === */
+
+#carRadioPanel{position:fixed;right:10px;top:70px;z-index:72;display:none;width:min(182px,calc(100vw - 20px));padding:5px;border-radius:10px;background:rgba(5,10,20,.94);border:1px solid rgba(98,234,255,.5);box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 12px rgba(0,214,255,.08);backdrop-filter:blur(10px);overflow:hidden}
+#carRadioPanel.active{display:block}
+#carRadioTop{display:flex;align-items:center;gap:5px}
+#carRadioLogo{width:30px;height:30px;border-radius:9px;object-fit:cover;background:#0a1020;border:1px solid #2d4665;box-shadow:0 0 8px rgba(0,184,255,.16);flex:none}
+#carRadioInfo{min-width:0;flex:1;overflow:hidden}
+#carRadioTitle{font-size:10px;font-weight:1000;white-space:nowrap;overflow:hidden;color:#fff;display:block;position:relative;line-height:30px}
+#carRadioNow,#carRadioNext{display:none}
+#carRadioControls{display:grid;grid-template-columns:26px minmax(0,1fr) 26px 27px 27px 27px 27px;gap:2px;margin-top:4px}
+.carRadioBtn{min-width:27px;height:27px;border-radius:8px;border:1px solid #36506f;background:rgba(15,26,46,.96);color:#fff;font-weight:1000;display:flex;align-items:center;justify-content:center;transition:.15s transform,.15s background;padding:0}
+.carRadioBtn:active{transform:scale(.94)}
+#carRadioStationBadge{height:27px;border-radius:8px;border:1px solid #29425f;background:rgba(7,15,28,.92);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:1000;color:#7fefff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 5px}
+#carRadioPrev,#carRadioNextBtn{font-size:19px}
+#carRadioRefresh{background:linear-gradient(145deg,#2d2144,#171127);border-color:#b979ff;color:#ddaaff;font-size:14px}
+#carRadioVolDown{background:linear-gradient(145deg,#3b241b,#1a120e);border-color:#ffad70;color:#ffd0ae}
+#carRadioMute{background:linear-gradient(145deg,#1d3340,#0c1820);border-color:#6bdcff;font-size:12px}
+#carRadioVolUp{background:linear-gradient(145deg,#173e2b,#0b2117);border-color:#67ffad;color:#a0ffc9}
+#carRadioPrev{background:linear-gradient(145deg,#17233b,#0b1221);border-color:#4e8dff;color:#9dc5ff}
+#carRadioNextBtn{background:linear-gradient(145deg,#153a42,#08181d);border-color:#4dffe1;color:#7ffff0}
+#carRadioSyncLabel{display:none}
+.carRadioMarquee{display:inline-block;padding-left:100%;animation:carRadioScroll 9s linear infinite;animation-play-state:running}
+@keyframes carRadioScroll{0%{transform:translateX(0)}100%{transform:translateX(-100%)}}
+.carRadioTitleStatic{display:inline-block;max-width:100%}
+#carDrivingButtons{position:fixed;right:18px;bottom:126px;z-index:75;display:none;flex-direction:column;align-items:center;gap:12px}
+#carDrivingButtons.active{display:flex}
+#carLightsBtn,#carExitBtn{position:static!important;width:58px!important;height:54px!important;border-radius:15px}
+#carLightsBtn{border:2px solid #8fdfff;background:rgba(5,36,55,.92);color:#fff;font-size:27px;box-shadow:0 0 16px rgba(70,210,255,.26);padding:0;line-height:1}
+#carLightsBtn.on{background:linear-gradient(145deg,#fff38a,#e6a900);box-shadow:0 0 20px rgba(255,220,60,.55)}
+#carExitBtn{border:2px solid #ffcc55;background:rgba(80,50,0,.92);color:#fff;font-weight:900;font-size:11px;box-shadow:0 0 16px rgba(255,190,50,.35)}
+#carEnterHint{position:fixed;left:50%;bottom:170px;transform:translateX(-50%);z-index:70;display:none;padding:9px 14px;border-radius:12px;background:rgba(0,0,0,.85);border:2px solid #00ffaa;color:#fff;font-size:12px;font-weight:900;box-shadow:0 0 18px rgba(0,255,170,.3);pointer-events:auto}
+#carEnterHint.active{display:block}
+#carDriveHud{position:fixed;inset:0;z-index:73;display:none;pointer-events:none}
+#carDriveHud.active{display:block}
+.carDriveBtn{pointer-events:auto;touch-action:none;-webkit-user-select:none;user-select:none;border:2px solid rgba(255,255,255,.78);color:#fff;font-weight:1000;box-shadow:0 7px 20px rgba(0,0,0,.38),inset 0 1px 0 rgba(255,255,255,.12);text-shadow:0 2px 4px rgba(0,0,0,.65)}
+#carSteerPad{position:absolute;left:18px;bottom:22px;display:flex;align-items:center;gap:8px}
+#carSteerPad .steerBtn{width:66px;height:66px;border-radius:18px;background:rgba(15,25,45,.9);font-size:28px}
+#carSteerPad .steerBtn:active{transform:scale(.92);background:rgba(35,70,110,.95)}
+.steerCenter{width:86px;height:46px;border-radius:13px;background:rgba(0,0,0,.58);border:1px solid rgba(255,255,255,.24);display:flex;align-items:center;justify-content:center;color:#9fcfff;font-size:9px;font-weight:1000;letter-spacing:.5px;pointer-events:none}
+#carPedals{position:absolute;right:18px;bottom:22px;display:flex;align-items:flex-end;gap:10px}
+#carPedals .carDriveBtn{width:74px;height:84px;border-radius:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;font-size:28px}
+#carPedals .carDriveBtn span{font-size:9px;line-height:1;font-weight:1000;letter-spacing:.4px}
+#carReverseBtn{background:rgba(85,55,15,.92)}
+#carAccelBtn{background:linear-gradient(180deg,rgba(0,170,88,.96),rgba(0,105,55,.96));border-color:#72ffb0}
+#carDriveHud .carDriveBtn:active{filter:brightness(1.18)}
+#carDriftBtn{position:absolute;left:50%;bottom:112px;transform:translateX(-50%);width:112px;height:42px;border-radius:14px;background:rgba(100,55,180,.94);border:2px solid #d0a8ff;color:#fff;font-size:10px;font-weight:1000;pointer-events:auto;touch-action:none;box-shadow:0 7px 20px rgba(0,0,0,.38)}
+#carDriftBtn.on{background:linear-gradient(145deg,#ff7a00,#b62b00);border-color:#ffd08a;box-shadow:0 0 18px rgba(255,120,20,.65)}
+#carSteerPad.driftHidden{display:none!important}
+#carSportBtn{min-width:86px;height:32px;border-radius:10px;border:1px solid #36506f;background:rgba(15,26,46,.96);color:#fff;font-weight:1000;pointer-events:auto;touch-action:none;box-shadow:0 7px 20px rgba(0,0,0,.38)}
+#carSportBtn.on{background:linear-gradient(145deg,#00e676,#008f4d);border-color:#9affc8;box-shadow:0 0 18px rgba(0,230,118,.48);color:#001b0d}
+.carRadioBtn{touch-action:manipulation}.carExhaustSmoke{pointer-events:none}
+</style>
+<div id="carRadioPanel">
+    <div id="carRadioTop">
+        <img id="carRadioLogo" src="" alt="HN">
+        <div id="carRadioInfo"><div id="carRadioTitle">Radio</div></div>
+    </div>
+    <div id="carRadioControls">
+        <button id="carRadioPrev" class="carRadioBtn" aria-label="Radio anterior">‹</button>
+        <div id="carRadioStationBadge"></div>
+        <button id="carRadioNextBtn" class="carRadioBtn" aria-label="Siguiente radio">›</button>
+        <button id="carRadioVolDown" class="carRadioBtn" aria-label="Bajar volumen">−</button>
+        <button id="carRadioMute" class="carRadioBtn" aria-label="Silenciar radio">🔊</button>
+        <button id="carRadioVolUp" class="carRadioBtn" aria-label="Subir volumen">+</button>
+        <button id="carRadioRefresh" class="carRadioBtn" aria-label="Sincronizar radios" title="Sincronizar radios">↻</button>
+    </div>
+</div>
+<div id="carDrivingButtons"><button id="carLightsBtn" class="car-action-btn" aria-label="Prender o apagar luces" title="Luces">💡</button><button id="carExitBtn">🚗<br>SALIR</button></div>
+<div id="carDriveHud" aria-label="Controles del carro">
+  <div id="carSteerPad">
+    <button id="carLeftBtn" class="carDriveBtn steerBtn" aria-label="Girar izquierda">◀</button>
+    <div class="steerCenter">DIRECCIÓN</div>
+    <button id="carRightBtn" class="carDriveBtn steerBtn" aria-label="Girar derecha">▶</button>
+  </div>
+  <div id="carPedals">
+    <button id="carReverseBtn" class="carDriveBtn reverseBtn" aria-label="Retroceso">↩<span>ATRÁS</span></button>
+    <button id="carAccelBtn" class="carDriveBtn accelBtn" aria-label="Acelerar">▲<span>ACELERAR</span></button>
+    <button id="carDriftBtn" aria-label="Alternar modo drift">DRIFT: NO</button>
+    <button id="carSportBtn" aria-label="Alternar modo sport">SPORT: NO</button>
+  </div>
+</div>
+<div id="carEnterHint">🚗 ENTRAR AL CARRO</div>
+
 <div id="sysRestartBtn">🔄</div>
 <div id="restartModal">
 <h3>Reiniciar mundo</h3>
@@ -555,6 +639,187 @@
         let cameraTheta = 0; let cameraPhi = Math.PI / 3; let cameraDistance = 25; 
         let timeOfDay = 0.3; let walkCycle = 0; let isMoving = false;
         let scene, camera, renderer, character, boss;
+        // ===== Sistema de vehículos conducibles =====
+        let drivableCars = [];
+        let drivenCar = null;
+        let isDriving = false;
+        let carEngineCtx = null, carEngineMaster = null, carEngineOsc = null, carEngineOsc2 = null, carEngineFilter = null;
+        let carEngineRunning = false;
+        let carInput = { steer: 0, throttle: 0, reverse: 0 };
+        let carDriftMode = false;
+        let carSportMode = false;
+        let carCrashCooldown = 0;
+        let carSmokeParticles = [];
+        let carSmokeClock = 0;
+        let carSmokeMaterial = null;
+        let carRadioAudio = new Audio();
+        carRadioAudio.preload = 'none';
+        carRadioAudio.crossOrigin = '';
+        carRadioAudio.controls = false;
+        let carRadioCtx = null, carRadioSource = null, carRadioGain = null;
+        carRadioAudio.setAttribute('playsinline','');
+        let carRadioStations = [];
+        let carRadioStationIndex = 0;
+        let carRadioEnabled = false;
+        let carRadioMuted = false;
+        let carRadioVolume = Number(localStorage.getItem('hn_car_radio_volume') || '1');
+        carRadioVolume = Math.max(0, Math.min(1, carRadioVolume));
+        const MAX_DRIVABLE_CARS = 8;
+        const CAR_ZONE_SPAWNS = [
+            {x:-300,z:-190,yaw:0},{x:-95,z:-95,yaw:Math.PI},{x:95,z:-190,yaw:0},{x:300,z:-95,yaw:Math.PI},
+            {x:-300,z:95,yaw:0},{x:-95,z:190,yaw:Math.PI},{x:95,z:95,yaw:0},{x:300,z:190,yaw:Math.PI}
+        ];
+        let carCollisionTick = 0;
+        // Misma base de emisoras que el archivo "Radios de Honduras.html".
+        const CURATED_HONDURAS_STATIONS = [
+                    {
+                        id: "hrn-tegucigalpa",
+                        name: "Radio HRN (La Voz de Honduras)",
+                        freq: "92.9 FM / 680 AM",
+                        city: "Tegucigalpa",
+                        genre: "Noticias",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://ice42.securenetsystems.net/HRN",
+                        backupUrls: ["https://stream.zeno.fm/yg1gkzwabzzuv", "https://stream.zeno.fm/f133bf8498zuv"],
+                        description: "La decana de la radiodifusión en Honduras. Noticias en vivo, deportes y opinión.",
+                        bitrate: "128 kbps AAC"
+                    },
+                    {
+                        id: "radio-america",
+                        name: "Radio América",
+                        freq: "94.7 FM / 610 AM",
+                        city: "Tegucigalpa",
+                        genre: "Noticias",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/yg1gkzwabzzuv",
+                        backupUrls: ["https://stream.zeno.fm/v9032616y8zuv", "https://ice42.securenetsystems.net/RAMERICA"],
+                        description: "La voz informativa del pueblo hondureño. Noticias y deportes nacional.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "musiquera-hn",
+                        name: "Radio Musiquera",
+                        freq: "93.3 FM",
+                        city: "San Pedro Sula",
+                        genre: "Música Latina",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/83h238tqsceuv",
+                        backupUrls: ["https://ice42.securenetsystems.net/MUSIQUERA"],
+                        description: "La mera mera. Música ranchera, grupera, cumbia y la mejor animación.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "radio-globo-hn",
+                        name: "Radio Globo Honduras",
+                        freq: "88.5 FM",
+                        city: "Tegucigalpa",
+                        genre: "Noticias",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/fh8qfg75puquv",
+                        backupUrls: ["https://stream.zeno.fm/3srm5b8n408uv"],
+                        description: "Noticias, debates independientes y música variada con cobertura nacional.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "power-fm-sps",
+                        name: "Power FM Honduras",
+                        freq: "90.1 FM / 95.7 FM",
+                        city: "San Pedro Sula",
+                        genre: "Urbano & Pop",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://ice42.securenetsystems.net/POWERFM",
+                        backupUrls: ["https://stream.zeno.fm/8763076y8zuv"],
+                        description: "Música urbana, reggaetón, pop y los éxitos juveniles del momento.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "radioactiva-sps",
+                        name: "Radioactiva 99.7 FM",
+                        freq: "99.7 FM",
+                        city: "San Pedro Sula",
+                        genre: "Urbano & Pop",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/6n7fp9t2pceuv",
+                        backupUrls: ["https://stream.zeno.fm/8r882a2mptzuv"],
+                        description: "La estación del género urbano, reggaetón y reggae en el norte de Honduras.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "vox-fm-tegucigalpa",
+                        name: "Vox FM 101.7",
+                        freq: "101.7 FM",
+                        city: "Tegucigalpa",
+                        genre: "Urbano & Pop",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://ice42.securenetsystems.net/VOXFM",
+                        backupUrls: ["https://stream.zeno.fm/65e52q2mptzuv"],
+                        description: "Éxitos pop en español e inglés, lo mejor de las listas contemporáneas.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "stereo-luz-hn",
+                        name: "Stereo Luz",
+                        freq: "103.7 FM",
+                        city: "Tegucigalpa",
+                        genre: "Cristiana",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/k6grbcx0zceuv",
+                        backupUrls: ["https://stream.zeno.fm/0puzba96v48uv"],
+                        description: "Música cristiana contemporánea, reflexión y mensajes de fe.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "radio-satelite",
+                        name: "Radio Satélite",
+                        freq: "104.5 FM",
+                        city: "Tegucigalpa",
+                        genre: "Clásicos",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://ice42.securenetsystems.net/SATELITE",
+                        backupUrls: ["https://stream.zeno.fm/e2eb3q2mptzuv"],
+                        description: "La música romántica que llega al corazón. Baladas en español.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "exa-fm-honduras",
+                        name: "EXA FM Honduras",
+                        freq: "89.3 FM",
+                        city: "San Pedro Sula",
+                        genre: "Urbano & Pop",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/0n4tnx3wd5zuv",
+                        backupUrls: ["https://stream.zeno.fm/r4spmb8n408uv"],
+                        description: "Ponte Exacto. Éxitos pop internacionales y entretenimiento.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "radio-progreso-yoro",
+                        name: "Radio Progreso",
+                        freq: "103.3 FM",
+                        city: "El Progreso",
+                        genre: "Noticias",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/mb5f69fk0d0uv",
+                        backupUrls: [],
+                        description: "La voz de las comunidades. Noticiero, análisis comunitario y música popular.",
+                        bitrate: "128 kbps MP3"
+                    },
+                    {
+                        id: "la-top-107",
+                        name: "La Top 107.7 FM",
+                        freq: "107.7 FM",
+                        city: "Tegucigalpa",
+                        genre: "Urbano & Pop",
+                        logo: "https://upload.wikimedia.org/wikipedia/commons/8/82/Flag_of_Honduras.svg",
+                        streamUrl: "https://stream.zeno.fm/7r882a2mptzuv",
+                        backupUrls: [],
+                        description: "La número uno en música juvenil urbana, reggaetón y sorpresas en vivo.",
+                        bitrate: "128 kbps MP3"
+                    }
+                ];
+        carRadioStations = [...CURATED_HONDURAS_STATIONS];
+
+
         let daySunMesh = null, nightMoonMesh = null, moonLight = null;
         let morteroHoldTimer = null, morteroHoldGeneration = 0, morteroLockedYaw = 0;
         let groundPlane, dirtPlane, stonePlane;
@@ -1047,7 +1312,7 @@
             } catch (_) {}
             musicTracks.length = 0;
             currentTrackIndex = 0;
-            try { audioPlayer.pause(); audioPlayer.removeAttribute('src'); audioPlayer.load(); } catch (_) {}
+            try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; } audioPlayer.removeAttribute('src'); audioPlayer.load(); } catch (_) {}
             partialVirtualFiles = [];
             virtualFileMap.clear();
             filesLoaded = false;
@@ -1635,6 +1900,7 @@
         }
 
         function fullRestartGame() {
+            if (isDriving) exitDrivenCar();
             restartModal.style.display = 'none';
             playerHealth = playerMaxHealth; playerAura = 0; semenStainLevel = 0; isDead = false;
             isFlying = false; flightControls.style.display = 'none';
@@ -1674,7 +1940,7 @@
             civilianHouses.forEach(h => scene.remove(h)); civilianHouses = []; posters.forEach(p => scene.remove(p)); posters = [];
             if(epicAsteroid) { scene.remove(epicAsteroid); epicAsteroid = null; } if(epicSemen) { scene.remove(epicSemen); epicSemen = null; } if(epicTrail) { scene.remove(epicTrail); epicTrail = null; } epicSpaceStart = null; epicDeflectMeteors.forEach(m => scene.remove(m)); epicDeflectMeteors = [];
 
-            createRoads(); createBuildings(); createStreetLamps(); createCityProps(); initDrones(); createBillboards(); applyBillboardTextures();
+            createRoads(); createDrivableCars(); createBuildings(); createStreetLamps(); createCityProps(); initDrones(); createBillboards(); applyBillboardTextures();
 
             waveNumber = 0; totalPenesKilled = 0; isCinematic = false; cinematicPhase = 0; waitingNextWave = false;
             missionActive = false; document.getElementById('missionUI').style.display = 'none'; asteroidRainTimer = 0; document.getElementById('meteorRainBar').style.display = 'none'; document.getElementById('meteorRainLabel').style.display = 'none';
@@ -1734,6 +2000,7 @@
         }
         
         async function playMusic(force = false) {
+            if (carRadioEnabled) return false;
             if (supremeEffectActive) return false;
             if (!musicTracks.length) return false;
             if (musicStarting && !force) return false;
@@ -1746,7 +2013,7 @@
                 currentTrackIndex = ((currentTrackIndex % total) + total) % total;
                 const track = musicTracks[currentTrackIndex];
                 try {
-                    audioPlayer.pause();
+                    if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; }
                     audioPlayer.onended = null;
                     audioPlayer.onerror = null;
                     audioPlayer.src = track.url;
@@ -1757,7 +2024,7 @@
                         currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
                         musicStarting = false;
                         setTimeout(() => {
-                            if (gameStarted && !supremeEffectActive && !bossRolonActive) playMusic(true).catch(() => {});
+                            if (gameStarted && !carRadioEnabled && !supremeEffectActive && !bossRolonActive) playMusic(true).catch(() => {});
                         }, 30);
                     };
                     audioPlayer.onerror = () => {
@@ -1765,7 +2032,7 @@
                         track.failures = (track.failures || 0) + 1;
                         currentTrackIndex = (currentTrackIndex + 1) % musicTracks.length;
                         musicStarting = false;
-                        setTimeout(() => playMusic(true), 50);
+                        setTimeout(() => { if (!carRadioEnabled) playMusic(true); }, 50);
                     };
                     audioPlayer.load();
                     await audioPlayer.play();
@@ -1786,6 +2053,8 @@
         function playJumpSound() { playOneShot(jumpSoundUrl, 0.9); }
         function playDamageSound() { playOneShot(damageSoundUrl, 0.9); }
         function resumeNormalMusicAfterSupreme() {
+            // Nunca reanudar la música normal mientras la radio del carro está activa.
+            if (carRadioEnabled) return;
             // Solo se usa como ayuda de reanudación. La condición real es la
             // muerte del boss, que se confirma en updateBossHealth().
             supremeEffectActive = false;
@@ -1803,7 +2072,7 @@
             supremeEffectActive = true;
             musicPlaybackToken++;
 
-            try { audioPlayer.pause(); } catch (_) {}
+            try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; } } catch (_) {}
             if (supremeEffectAudio) {
                 try { supremeEffectAudio.pause(); supremeEffectAudio.currentTime = 0; } catch (_) {}
                 supremeEffectAudio = null;
@@ -1820,17 +2089,17 @@
             // Solo se reanudará cuando el Boss Supremo sea derrotado.
             s.onended = () => {
                 if (supremeEffectAudio === s) supremeEffectAudio = null;
-                try { audioPlayer.pause(); } catch (_) {}
+                try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; } } catch (_) {}
             };
 
             s.onerror = () => {
                 if (supremeEffectAudio === s) supremeEffectAudio = null;
-                try { audioPlayer.pause(); } catch (_) {}
+                try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; } } catch (_) {}
             };
 
             s.play().catch(() => {
                 if (supremeEffectAudio === s) supremeEffectAudio = null;
-                try { audioPlayer.pause(); } catch (_) {}
+                try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; } } catch (_) {}
             });
         }
         function playAuraPuraSound() { playOneShot(auraPuraSoundUrl, 1.0); }
@@ -1864,7 +2133,7 @@
             scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a1526); scene.fog = new THREE.Fog(0x0a1526, 140, 420);
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.35, 1800); camera.position.set(0, 25, 40);
             renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance", alpha: false });
-            renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+            renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
         // Filtrado de alta calidad para evitar parpadeo/pixelado al alejar la cámara.
         renderer.capabilities.getMaxAnisotropy(); renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -1872,7 +2141,7 @@
             
             window.ambientLight = new THREE.AmbientLight(0x1a2c3a, 1.2); scene.add(window.ambientLight);
             window.sunLight = new THREE.DirectionalLight(0xffffee, 1.3); window.sunLight.position.set(120, 180, 80); window.sunLight.castShadow = true;
-            window.sunLight.shadow.mapSize.width = 1024; window.sunLight.shadow.mapSize.height = 1024;
+            window.sunLight.shadow.mapSize.width = 768; window.sunLight.shadow.mapSize.height = 768;
             const d = 190; window.sunLight.shadow.camera.left = -d; window.sunLight.shadow.camera.right = d; window.sunLight.shadow.camera.top = d; window.sunLight.shadow.camera.bottom = -d;
             window.sunLight.shadow.camera.near = 5; window.sunLight.shadow.camera.far = 650;
             window.sunLight.shadow.normalBias = 0.035; window.sunLight.shadow.bias = -0.0002; scene.add(window.sunLight);
@@ -1908,12 +2177,12 @@
             stoneMat.polygonOffset = true; stoneMat.polygonOffsetFactor = 1; stoneMat.polygonOffsetUnits = 1; stoneMat.depthWrite = true;
             stonePlane = new THREE.Mesh(stoneGeo, stoneMat); stonePlane.receiveShadow = true; stonePlane.position.y = -5; stonePlane.renderOrder = 0; scene.add(stonePlane);
 
-            applyWorldTextures(); createRoads(); createBuildings(); createStreetLamps(); createCityProps(); initDrones();
+            applyWorldTextures(); createRoads(); createDrivableCars(); createBuildings(); createStreetLamps(); createCityProps(); initDrones();
             posterTextureObj = createPosterTexture(); createBillboards(); applyBillboardTextures(); stabilizeTexturedMaterials();
             character = createCharacterWithSkeleton(); scene.add(character); character.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
             if (faceTextureUrl) applyFaceTexture();
             
-            setupControls(); updatePlayerHealth(); updateAuraUI(); setupGraphicsUI(); setupHudEditor(); applyGraphicsSettings();
+            setupControls(); setupCarUI(); updatePlayerHealth(); updateAuraUI(); setupGraphicsUI(); setupHudEditor(); applyGraphicsSettings();
             setInterval(() => { if (cartelTextures.length > 1) { currentCartelIndex = (currentCartelIndex + 1) % cartelTextures.length; updateBillboardsWithCurrentTexture(); } }, 5000);
             animate(); startWaves();
         }
@@ -1970,6 +2239,658 @@
                 for (let iz = minZ; iz <= maxZ; iz++) { for (let ix = minX; ix <= maxX; ix++) { const i = iz * (segs + 1) + ix; const currY = positions.getY(i); if (currY < 0) { positions.setY(i, Math.min(0, currY + 0.5)); updated = true; } } }
                 if (updated) { positions.needsUpdate = true; }
             }
+        }
+
+
+        
+const CAR_DESIGN_TYPES = ["sedan","lambo","pickup","suv","truck","sport","van","offroad"];
+
+function createVehicleLights(vehicle) {
+    const lights = [];
+    const makeLamp = (x, y, z, color) => {
+        const g = new THREE.Group();
+        const bulb = new THREE.Mesh(
+            new THREE.BoxGeometry(0.34, 0.18, 0.10),
+            new THREE.MeshStandardMaterial({color, emissive: color, emissiveIntensity: 0})
+        );
+        bulb.position.set(x, y, z);
+        g.add(bulb);
+        const spot = new THREE.SpotLight(color, 0, 13, Math.PI / 7, 0.42, 1.35);
+        spot.position.set(x, y, z + 0.05);
+        spot.target.position.set(x * 0.98, y - 0.1, z + 10);
+        vehicle.add(g, spot, spot.target);
+        lights.push({bulb, spot, baseIntensity: 2.4});
+    };
+    // Frente del carro = +Z: bombillos y conos de luz reales.
+    makeLamp(-0.62, 0.48, 1.78, 0xfff4cc);
+    makeLamp( 0.62, 0.48, 1.78, 0xfff4cc);
+    const makeRearLamp = (x) => {
+        const bulb = new THREE.Mesh(new THREE.BoxGeometry(.52,.20,.10), new THREE.MeshStandardMaterial({color:0xff1616,emissive:0x990000,emissiveIntensity:.55}));
+        bulb.position.set(x,.98,-3.70); vehicle.add(bulb);
+        return bulb;
+    };
+    vehicle.userData.rearLamps=[makeRearLamp(-1.35),makeRearLamp(1.35)];
+    vehicle.userData.vehicleLights = lights;
+    return lights;
+    return lights;
+}
+
+function applyVehicleDesign(vehicle, type) {
+    vehicle.userData.design = type;
+    const scale = {sedan:[1,1,1],lambo:[.96,.82,1.02],pickup:[1.05,1.05,1.12],suv:[1.08,1.10,1.05],truck:[1.20,1.18,1.35],sport:[1.02,.82,1.10],van:[1.12,1.18,1.08],offroad:[1.10,1.12,1.10]}[type] || [1,1,1];
+
+    vehicle.scale.set(...scale);
+
+    if (type === "lambo" || type === "sport") {
+        const splitter = new THREE.Mesh(new THREE.BoxGeometry(3.8,.12,.55), new THREE.MeshStandardMaterial({color:0x080808,metalness:.7,roughness:.25}));
+        splitter.position.set(0,.72,3.55); vehicle.add(splitter);
+        const spoiler = new THREE.Mesh(new THREE.BoxGeometry(3.0,.10,.55), new THREE.MeshStandardMaterial({color:0x090909,metalness:.65}));
+        spoiler.position.set(0,1.55,-3.15); vehicle.add(spoiler);
+        vehicle.userData.sportKit=splitter;
+    } else if (type === "van") {
+        const box = new THREE.Mesh(new THREE.BoxGeometry(3.7,1.35,2.6), new THREE.MeshStandardMaterial({color:0x20242a,roughness:.6}));
+        box.position.set(0,2.0,-.55); vehicle.add(box);
+    } else if (type === "offroad") {
+        const bull = new THREE.Mesh(new THREE.BoxGeometry(3.8,.20,.22), new THREE.MeshStandardMaterial({color:0x161616,metalness:.8}));
+        bull.position.set(0,1.0,3.75); vehicle.add(bull);
+        const spare = new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,.28,10), new THREE.MeshStandardMaterial({color:0x090909,roughness:.9}));
+        spare.rotation.z=Math.PI/2; spare.position.set(0,1.25,-3.45); vehicle.add(spare);
+    } else if (type === "pickup") {
+        const bed = new THREE.Mesh(
+            new THREE.BoxGeometry(1.75, 0.45, 1.35),
+            new THREE.MeshStandardMaterial({color: 0x263238, roughness: 0.75})
+        );
+        bed.position.set(0, 0.62, -1.05);
+        vehicle.add(bed);
+        vehicle.userData.pickupBed = bed;
+    } else if (type === "suv") {
+        const roof = new THREE.Mesh(
+            new THREE.BoxGeometry(1.85, 0.22, 2.1),
+            new THREE.MeshStandardMaterial({color: 0x171717, roughness: 0.55})
+        );
+        roof.position.set(0, 1.38, -0.05);
+        vehicle.add(roof);
+        vehicle.userData.suvRoof = roof;
+    } else if (type === "truck") {
+        const cargo = new THREE.Mesh(
+            new THREE.BoxGeometry(1.95, 1.05, 1.55),
+            new THREE.MeshStandardMaterial({color: 0x424242, roughness: 0.8})
+        );
+        cargo.position.set(0, 0.98, -1.02);
+        vehicle.add(cargo);
+        vehicle.userData.truckCargo = cargo;
+    }
+}
+
+function toggleVehicleLights() {
+    if (!isDriving || !drivenCar) return;
+    drivenCar.userData.lightsOn = !drivenCar.userData.lightsOn;
+    const lightBtn=document.getElementById('carLightsBtn');
+    if(lightBtn) lightBtn.classList.toggle('on', drivenCar.userData.lightsOn);
+    (drivenCar.userData.vehicleLights || []).forEach(l => {
+        l.bulb.material.emissiveIntensity = drivenCar.userData.lightsOn ? 18 : 0;
+        l.spot.intensity = drivenCar.userData.lightsOn ? l.baseIntensity : 0; l.spot.visible = !!drivenCar.userData.lightsOn;
+    });
+    (drivenCar.userData.headBeams || []).forEach(b => { b.visible=!!drivenCar.userData.lightsOn; });
+    (drivenCar.userData.rearLamps || drivenCar.userData.tailLights || []).forEach(l => { l.material.emissiveIntensity = drivenCar.userData.lightsOn ? .20 : .10; });
+    (drivenCar.userData.rearGlows || []).forEach(g => { g.material.opacity = drivenCar.userData.lightsOn ? .035 : .012; });
+    (drivenCar.userData.rearRedLights || []).forEach(l => { l.intensity = drivenCar.userData.lightsOn ? .025 : 0; });
+    if (typeof updateCarUI === "function") updateCarUI();
+}
+
+function updateCarUI() {
+    const btn = document.getElementById("carLightsBtn");
+    if (btn) btn.textContent = "💡";
+}
+
+function createCarMesh(color = 0x1769aa) {
+            const car = new THREE.Group();
+            car.userData.isDrivableCar = true;
+            car.userData.speed = 0;
+            car.userData.steer = 0;
+            car.userData.wheels = [];
+            car.userData.maxSpeed = 0.95;
+            car.userData.accel = 0.055;
+            car.userData.brake = 0.075;
+            car.userData.collisionRadius = 2.55;
+            car.userData.driftGrip = 0.34;
+
+            const bodyMat = new THREE.MeshStandardMaterial({color, roughness:0.42, metalness:0.55});
+            const darkMat = new THREE.MeshStandardMaterial({color:0x10151d, roughness:0.25, metalness:0.25});
+            const glassMat = new THREE.MeshStandardMaterial({color:0x5fc8e8, roughness:0.12, metalness:0.25, transparent:true, opacity:0.72});
+            const lightMat = new THREE.MeshStandardMaterial({color:0xfff1b0, emissive:0xffaa33, emissiveIntensity:3.6});
+            const redLightMat = new THREE.MeshStandardMaterial({color:0xff2222, emissive:0xaa0000, emissiveIntensity:.20});
+
+            const body = new THREE.Mesh(new THREE.BoxGeometry(4.3,1.15,7.2), bodyMat);
+            body.position.y=1.05; body.castShadow=true; body.receiveShadow=true; car.add(body);
+
+            const hood = new THREE.Mesh(new THREE.BoxGeometry(4.0,.45,1.8), bodyMat);
+            hood.position.set(0,1.7,2.05); hood.castShadow=true; car.add(hood);
+
+            const cabin = new THREE.Mesh(new THREE.BoxGeometry(3.65,1.35,3.45), glassMat);
+            cabin.position.set(0,2.05,-0.35); cabin.castShadow=true; car.add(cabin);
+
+            const roof = new THREE.Mesh(new THREE.BoxGeometry(3.8,.18,3.55), darkMat);
+            roof.position.set(0,2.75,-.35); car.add(roof);
+
+            const frontBar = new THREE.Mesh(new THREE.BoxGeometry(3.7,.22,.25), darkMat);
+            frontBar.position.set(0,1.28,3.58); car.add(frontBar);
+
+            const bumper = new THREE.Mesh(new THREE.BoxGeometry(4.1,.32,.3), darkMat);
+            bumper.position.set(0,.62,3.62); car.add(bumper);
+
+            const head1 = new THREE.Mesh(new THREE.BoxGeometry(.72,.28,.16), lightMat);
+            const head2 = head1.clone();
+            head1.position.set(-1.38,1.35,3.65); head2.position.set(1.38,1.35,3.65);
+            car.add(head1,head2);
+
+            const headBeamMat = new THREE.MeshBasicMaterial({color:0xfff8d8, transparent:true, opacity:.88, blending:THREE.AdditiveBlending, depthWrite:false});
+            const beam1 = new THREE.Mesh(new THREE.ConeGeometry(.48,3.8,16,1,true), headBeamMat);
+            const beam2 = beam1.clone();
+            beam1.rotation.x=-Math.PI/2; beam2.rotation.x=-Math.PI/2;
+            beam1.position.set(-1.38,1.15,5.0); beam2.position.set(1.38,1.15,5.0);
+            car.add(beam1,beam2);
+            const spot1=new THREE.SpotLight(0xfff2c7,0,34,Math.PI/9,.32,1.05);
+            const spot2=spot1.clone();
+            spot1.position.set(-1.38,1.35,3.66); spot2.position.set(1.38,1.35,3.66); spot1.visible=false; spot2.visible=false;
+            spot1.target.position.set(-1.38,.55,17); spot2.target.position.set(1.38,.55,17);
+            car.add(spot1,spot2,spot1.target,spot2.target);
+            car.userData.vehicleLights=[{bulb:head1,spot:spot1,baseIntensity:22},{bulb:head2,spot:spot2,baseIntensity:22}];
+            beam1.visible=false; beam2.visible=false; car.userData.headBeams=[beam1,beam2];
+
+            const tail1 = new THREE.Mesh(new THREE.BoxGeometry(.72,.28,.16), redLightMat);
+            const tail2 = tail1.clone();
+            tail1.position.set(-1.38,1.25,-3.65); tail2.position.set(1.38,1.25,-3.65);
+            car.add(tail1,tail2);
+            const rearGlowMat = new THREE.MeshBasicMaterial({color:0xff1b1b,transparent:true,opacity:.12,side:THREE.DoubleSide,blending:THREE.AdditiveBlending,depthWrite:false});
+            const glow1=new THREE.Mesh(new THREE.PlaneGeometry(1.15,.55),rearGlowMat);
+            const glow2=glow1.clone();
+            glow1.position.set(-1.38,1.24,-3.76); glow2.position.set(1.38,1.24,-3.76);
+            glow1.rotation.y=Math.PI; glow2.rotation.y=Math.PI; car.add(glow1,glow2);
+            car.userData.rearGlows=[glow1,glow2];
+            const rearRed1=new THREE.PointLight(0xff1010,0,4,.55);
+            const rearRed2=new THREE.PointLight(0xff1010,0,4,.55);
+            rearRed1.position.set(-1.38,1.28,-3.78); rearRed2.position.set(1.38,1.28,-3.78);
+            car.add(rearRed1,rearRed2);
+            car.userData.rearRedLights=[rearRed1,rearRed2];
+
+            const exhaustMat = new THREE.MeshStandardMaterial({color:0x252525, roughness:.85, metalness:.15});
+            const ex1 = new THREE.Mesh(new THREE.CylinderGeometry(.09,.09,.22,8), exhaustMat);
+            const ex2 = ex1.clone();
+            ex1.rotation.x=Math.PI/2; ex2.rotation.x=Math.PI/2;
+            ex1.position.set(-1.28,.58,-3.78); ex2.position.set(1.28,.58,-3.78);
+            car.add(ex1,ex2);
+            car.userData.exhaustPoints=[ex1,ex2];
+            car.userData.lightsOn=false;
+
+            const wheelGeo = new THREE.CylinderGeometry(.82,.82,.48,8);
+            const wheelMat = new THREE.MeshStandardMaterial({color:0x090909, roughness:.9, metalness:.05});
+            const hubMat = new THREE.MeshStandardMaterial({color:0xb7c0ca, roughness:.35, metalness:.75});
+            [[-2.18,0.85,2.35],[2.18,0.85,2.35],[-2.18,0.85,-2.35],[2.18,0.85,-2.35]].forEach((p,idx)=>{
+                const holder=new THREE.Group();
+                holder.position.set(p[0],p[1],p[2]);
+                const w=new THREE.Mesh(wheelGeo,wheelMat);
+                w.rotation.z=Math.PI/2; w.castShadow=true; holder.add(w);
+                const hub=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.5,6),hubMat);
+                hub.rotation.z=Math.PI/2; holder.add(hub);
+                car.add(holder);
+                car.userData.wheels.push({holder,wheel:w,front:idx<2});
+            });
+            car.userData.steerWheels = car.userData.wheels.slice(0,2);
+            car.userData.tailLights = [tail1, tail2];
+            return car;
+        }
+
+        function getRoadCarSpawn(i) {
+            return CAR_ZONE_SPAWNS[i % CAR_ZONE_SPAWNS.length];
+        }
+
+        function createDrivableCars() {
+            if(drivableCars.length===MAX_DRIVABLE_CARS && drivableCars.every(c=>c && c.parent===scene)) return;
+            drivableCars.forEach(c=>{ if(c && c.parent) c.parent.remove(c); });
+            drivableCars=[];
+            const colors=[0x1769aa,0xd63b32,0x18a65b,0xe0a51a,0x7a49c9,0xe8e8e8,0x303840];
+            for(let i=0;i<MAX_DRIVABLE_CARS;i++){
+                const s=getRoadCarSpawn(i);
+                const design=CAR_DESIGN_TYPES[i%CAR_DESIGN_TYPES.length];
+                const car=createCarMesh(colors[i%colors.length]);
+                applyVehicleDesign(car,design);
+                car.userData.design=design;
+                car.position.set(s.x, getTerrainY(s.x,s.z,null)+.05, s.z);
+                car.rotation.y=s.yaw;
+                car.userData.cruiseYaw=s.yaw;
+                car.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});
+                scene.add(car);
+                drivableCars.push(car);
+            }
+        }
+
+        function removeDrivenCarState() {
+            const drivingButtons=document.getElementById('carDrivingButtons');
+            if(drivingButtons) drivingButtons.classList.remove('active');
+            if(joystickArea) joystickArea.style.display='block';
+            if(actionButtons) actionButtons.style.display='flex';
+            const driveHud=document.getElementById('carDriveHud'); if(driveHud) driveHud.classList.remove('active');
+            carInput={steer:0, throttle:0, reverse:0};
+            carDriftMode=false; carSportMode=false;
+            const db=document.getElementById("carDriftBtn"); if(db){db.classList.remove("on");db.textContent="DRIFT: NO";} const sb=document.getElementById("carSportBtn"); if(sb){sb.classList.remove("on");sb.textContent="SPORT: NO";}
+
+            if(!drivenCar) return;
+            drivenCar.userData.speed=0; drivenCar.userData.steer=0;
+            drivenCar.traverse(o=>{if(o.isMesh){o.castShadow=false;o.receiveShadow=false;}});
+            try { stopCarEngineSound(); } catch(_){}
+            try { stopCarRadio(true); } catch(_){}
+            drivenCar=null; isDriving=false;
+            if(character){ character.visible=true; }
+            const exit=document.getElementById('carExitBtn'); if(exit) exit.classList.remove('active');
+            const panel=document.getElementById('carRadioPanel'); if(panel) panel.classList.remove('active');
+            const hint=document.getElementById('carEnterHint'); if(hint) hint.classList.remove('active');
+        }
+
+        function findNearestCar(maxDist=7) {
+            if(!character) return null;
+            let best=null,bd=maxDist;
+            for(const car of drivableCars){
+                if(!car || !car.visible) continue;
+                const d=character.position.distanceTo(car.position);
+                if(d<bd){bd=d;best=car;}
+            }
+            return best;
+        }
+
+        function showCarHint(car) {
+            const hint=document.getElementById('carEnterHint');
+            if(!hint) return;
+            if(car && !isDriving && !isDead && !isCinematic){
+                hint.textContent='🚗 ENTRAR AL CARRO';
+                hint.classList.add('active');
+            }else hint.classList.remove('active');
+        }
+
+        function enterNearestCar() {
+            const car=findNearestCar(8);
+            if(!car || isDead || isCinematic) return;
+            drivenCar=car; isDriving=true;
+            car.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}}); car.userData.speed=0; car.userData.steer=0;
+            carInput={steer:0, throttle:0, reverse:0};
+            character.position.copy(car.position); character.position.y=car.position.y;
+            character.visible=false;
+            const exit=document.getElementById('carExitBtn'); if(exit) exit.classList.add('active');
+            const drivingButtons=document.getElementById('carDrivingButtons'); if(drivingButtons) drivingButtons.classList.add('active');
+            const driveHud=document.getElementById('carDriveHud'); if(driveHud) driveHud.classList.add('active');
+            if(joystickArea) joystickArea.style.display='none';
+            if(actionButtons) actionButtons.style.display='none';
+            const pad=document.getElementById('carSteerPad'); if(pad) pad.classList.remove('driftHidden');
+            carDriftMode=false; carSportMode=false; const db=document.getElementById('carDriftBtn'); if(db){db.classList.remove('on');db.textContent='DRIFT: NO';}
+            const sb=document.getElementById('carSportBtn'); if(sb){sb.classList.remove('on');sb.textContent='SPORT: NO';}
+            car.userData.lightsOn=false; (car.userData.vehicleLights||[]).forEach(l=>{l.bulb.material.emissiveIntensity=0;l.spot.intensity=0;l.spot.visible=false;}); (car.userData.rearLamps||[]).forEach(l=>l.material.emissiveIntensity=.10); (car.userData.rearGlows||[]).forEach(g=>g.material.opacity=.012); (car.userData.rearRedLights||[]).forEach(l=>l.intensity=0);
+            const panel=document.getElementById('carRadioPanel'); if(panel) panel.classList.add('active');
+            const hint=document.getElementById('carEnterHint'); if(hint) hint.classList.remove('active');
+            updateCarRadioUI();
+            startCarEngineSound();
+            startCarRadio(true);
+            if (typeof forceHudVisible==='function') forceHudVisible();
+        }
+
+        function exitDrivenCar() {
+    const radioPanel=document.getElementById('carRadioPanel'); if(radioPanel) radioPanel.classList.remove('active');
+
+            if(!drivenCar) return;
+            const car=drivenCar;
+            const back=new THREE.Vector3(0,0,-5.2).applyQuaternion(car.quaternion);
+            character.position.set(car.position.x+back.x, getTerrainY(car.position.x+back.x,car.position.z+back.z,null), car.position.z+back.z);
+            character.rotation.y=car.rotation.y;
+            removeDrivenCarState();
+        }
+
+        function initCarEngineAudio() {
+            if(carEngineCtx) return;
+            try{
+                const AC=window.AudioContext||window.webkitAudioContext;
+                if(!AC) return;
+                carEngineCtx=new AC();
+                carEngineMaster=carEngineCtx.createGain(); carEngineMaster.gain.value=0;
+                carEngineFilter=carEngineCtx.createBiquadFilter(); carEngineFilter.type='lowpass'; carEngineFilter.frequency.value=850;
+                carEngineOsc=carEngineCtx.createOscillator(); carEngineOsc.type='sawtooth'; carEngineOsc.frequency.value=70;
+                carEngineOsc2=carEngineCtx.createOscillator(); carEngineOsc2.type='triangle'; carEngineOsc2.frequency.value=36;
+                const g2=carEngineCtx.createGain(); g2.gain.value=.28;
+                carEngineOsc.connect(carEngineFilter); carEngineOsc2.connect(g2); g2.connect(carEngineFilter);
+                carEngineFilter.connect(carEngineMaster); carEngineMaster.connect(carEngineCtx.destination);
+                carEngineOsc.start(); carEngineOsc2.start();
+            }catch(_){ carEngineCtx=null; }
+        }
+
+        function startCarEngineSound() {
+            initCarEngineAudio();
+            if(!carEngineCtx) return;
+            try{ if(carEngineCtx.state==='suspended') carEngineCtx.resume(); }catch(_){}
+            carEngineRunning=true;
+            carEngineMaster.gain.cancelScheduledValues(carEngineCtx.currentTime);
+            carEngineMaster.gain.linearRampToValueAtTime(.16,carEngineCtx.currentTime+.18);
+        }
+        function stopCarEngineSound() {
+            carEngineRunning=false;
+            if(!carEngineCtx || !carEngineMaster) return;
+            carEngineMaster.gain.cancelScheduledValues(carEngineCtx.currentTime);
+            carEngineMaster.gain.linearRampToValueAtTime(0,carEngineCtx.currentTime+.18);
+        }
+        function updateCarEngineSound() {
+            if(!carEngineRunning || !carEngineCtx || !drivenCar) return;
+            const s=Math.min(1,Math.abs(drivenCar.userData.speed)/drivenCar.userData.maxSpeed);
+            const rpm=65+s*145;
+            carEngineOsc.frequency.setTargetAtTime(rpm,carEngineCtx.currentTime,.04);
+            carEngineOsc2.frequency.setTargetAtTime(rpm*.5,carEngineCtx.currentTime,.05);
+            carEngineFilter.frequency.setTargetAtTime(500+s*1300,carEngineCtx.currentTime,.05);
+            carEngineMaster.gain.setTargetAtTime(.10+s*.14,carEngineCtx.currentTime,.07);
+        }
+
+        function updateCarRadioUI() {
+            const station=carRadioStations[carRadioStationIndex];
+            const logo=document.getElementById('carRadioLogo'), title=document.getElementById('carRadioTitle');
+            if(!station) return;
+            if(logo) { const hnSvg='data:image/svg+xml;charset=UTF-8,'+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><defs><linearGradient id="g" x1="0" x2="1"><stop stop-color="#0c2038"/><stop offset="1" stop-color="#08101c"/></linearGradient></defs><rect width="128" height="128" rx="22" fill="url(#g)"/><text x="64" y="78" text-anchor="middle" font-family="Arial" font-size="44" font-weight="900" fill="#62eaff">HN</text></svg>'); logo.src=station.logo||hnSvg; logo.alt='HN'; logo.onerror=()=>{logo.onerror=null; logo.src=hnSvg;}; }
+            if(title){
+                title.classList.remove('carRadioMarquee');
+                title.textContent=station.name || 'Radio HN';
+                requestAnimationFrame(()=>{
+                    if(title.scrollWidth>title.clientWidth+3) title.classList.add('carRadioMarquee');
+                });
+            }
+            const badge=document.getElementById('carRadioStationBadge');
+            if(badge) badge.textContent='';
+            const mute=document.getElementById('carRadioMute');
+            if(mute) mute.textContent=carRadioMuted?'🔇':'🔊';
+            const volUp=document.getElementById('carRadioVolUp'), volDown=document.getElementById('carRadioVolDown');
+            if(volUp) volUp.title='Volumen '+Math.round(carRadioVolume*220)+'%'; if(volDown) volDown.title='Volumen '+Math.round(carRadioVolume*220)+'%';
+        }
+
+        function initCarRadioBoost(){
+            // No WebAudio por defecto: algunos streams HTTPS no permiten CORS y el grafo puede dejarlos mudos.
+            // La radio usa el volumen nativo del elemento Audio para máxima compatibilidad en Android.
+            return false;
+        }
+
+        function startCarRadio(auto=false) {
+            if(!drivenCar || !carRadioStations.length) return;
+            carRadioEnabled=true; carRadioMuted=false; carRadioAudio.muted=false;
+            musicPlaybackToken++; musicStarting=false;
+            try{ if(audioPlayer){ audioPlayer.pause(); audioPlayer.onended=null; audioPlayer.onerror=null; } }catch(_){}
+            const station=carRadioStations[carRadioStationIndex];
+            if(!station || !station.streamUrl){ updateCarRadioUI(); return; }
+            try{
+                carRadioAudio.pause();
+                carRadioAudio.src=station.streamUrl;
+                carRadioAudio.volume=carRadioVolume;
+                carRadioAudio.load();
+                const pr=carRadioAudio.play();
+                if(pr&&pr.catch) pr.catch(()=>{ setTimeout(()=>{ try{ carRadioAudio.play(); }catch(_){} },350); });
+            }catch(_){}
+            updateCarRadioUI();
+        }
+
+        function stopCarRadio(resumeMusic=true) {
+            carRadioEnabled=false;
+            try{carRadioAudio.pause();carRadioAudio.currentTime=0;}catch(_){}
+            updateCarRadioUI();
+            if(resumeMusic && !isDriving && gameStarted && musicTracks.length && !supremeEffectActive && !bossRolonActive){
+                normalMusicResumePending=true;
+                try{audioPlayer.volume=.65;}catch(_){}
+                playMusic(true).then(()=>{normalMusicResumePending=false;}).catch(()=>{});
+            }
+        }
+
+        function cycleCarRadio(dir) {
+            if(!carRadioStations.length) return;
+            carRadioStationIndex=(carRadioStationIndex+dir+carRadioStations.length)%carRadioStations.length;
+            if(carRadioEnabled) startCarRadio(false); else updateCarRadioUI();
+        }
+
+        async function refreshCarRadioStations(){
+            const btn=document.getElementById('carRadioRefresh');
+            if(btn) { btn.disabled=true; btn.textContent='⟳'; }
+            const apiMirrors=['https://de1.api.radio-browser.info','https://nl1.api.radio-browser.info','https://at1.api.radio-browser.info'];
+            let found=0;
+            try{
+                for(const mirror of apiMirrors){
+                    try{
+                        const res=await fetch(`${mirror}/json/stations/bycountrycodeexact/hn?order=votes&reverse=true&limit=1200`,{signal:AbortSignal.timeout(4500)});
+                        if(!res.ok) continue;
+                        const apiData=await res.json();
+                        if(!Array.isArray(apiData)) continue;
+                        const existing=new Map(carRadioStations.map(st=>[String(st.name||'').trim().toLowerCase(),st]));
+                        for(const item of apiData){
+                            const name=String(item.name||'').trim();
+                            const streamUrl=item.url_resolved||item.url;
+                            if(!name || !streamUrl || !/^https:\/\//i.test(streamUrl)) continue;
+                            let genre='Variada'; const tags=String(item.tags||'').toLowerCase();
+                            if(tags.includes('news')||tags.includes('noticias')) genre='Noticias';
+                            else if(tags.includes('pop')||tags.includes('urban')) genre='Urbano & Pop';
+                            else if(tags.includes('christian')||tags.includes('relig')) genre='Cristiana';
+                            else if(tags.includes('latin')||tags.includes('ranchera')) genre='Música Latina';
+                            const key=name.toLowerCase();
+                            if(!existing.has(key)){
+                                const station={id:'api-'+(item.stationuuid||Math.random().toString(36).slice(2)),name,freq:item.frequency?item.frequency+' FM':'Online',city:item.state||'Honduras',genre,logo:item.favicon||'',streamUrl,backupUrls:[],description:'Emisora transmitiendo desde Honduras.',bitrate:item.bitrate?item.bitrate+' kbps':'128 kbps'};
+                                carRadioStations.push(station); existing.set(key,station); found++;
+                            }
+                        }
+                    }catch(e){ console.log('Siguiente servidor de radios...',mirror); }
+                }
+                carRadioStationIndex=Math.min(carRadioStationIndex,Math.max(0,carRadioStations.length-1));
+                updateCarRadioUI();
+                if(found) showToast(`Radios HN: ${carRadioStations.length} disponibles`,'success'); else showToast(`Lista actualizada: ${carRadioStations.length} radios`,'info');
+            }finally{ if(btn){btn.disabled=false;btn.textContent='↻';} }
+        }
+
+        function setCarRadioVolume(v){
+            carRadioVolume=Math.max(0,Math.min(1,v));
+            try{ carRadioAudio.volume=carRadioVolume; carRadioAudio.muted=carRadioMuted; }catch(_){}
+            localStorage.setItem('hn_car_radio_volume',String(carRadioVolume));
+            updateCarRadioUI();
+        }
+
+        function setupCarUI() {
+    const drivingButtons = document.getElementById('carDrivingButtons');
+    const driveHud = document.getElementById('carDriveHud');
+    if (drivingButtons) drivingButtons.classList.toggle('active', !!isDriving);
+    if (driveHud) driveHud.classList.toggle('active', !!isDriving);
+    const carLightsBtn = document.getElementById('carLightsBtn');
+    if (carLightsBtn) carLightsBtn.addEventListener('click', toggleVehicleLights);
+    updateCarUI();
+
+            const prev=document.getElementById('carRadioPrev');
+            const next=document.getElementById('carRadioNextBtn');
+            const mute=document.getElementById('carRadioMute');
+            const refresh=document.getElementById('carRadioRefresh');
+            const volDown=document.getElementById('carRadioVolDown');
+            const volUp=document.getElementById('carRadioVolUp');
+            const exit=document.getElementById('carExitBtn');
+            const hint=document.getElementById('carEnterHint');
+            const enter=()=>enterNearestCar();
+            if(hint) hint.addEventListener('click',enter);
+            if(prev) prev.addEventListener('click',()=>cycleCarRadio(-1));
+            if(next) next.addEventListener('click',()=>cycleCarRadio(1));
+            if(mute) mute.addEventListener('click',()=>{ carRadioMuted=!carRadioMuted; carRadioAudio.muted=carRadioMuted; updateCarRadioUI(); });
+            if(refresh) refresh.addEventListener('click',()=>refreshCarRadioStations());
+            if(volDown) volDown.addEventListener('click',()=>setCarRadioVolume(carRadioVolume-.1));
+            if(volUp) volUp.addEventListener('click',()=>setCarRadioVolume(carRadioVolume+.1));
+            carRadioAudio.addEventListener('error',()=>{
+                const title=document.getElementById('carRadioTitle');
+                if(title) title.textContent='Toca ↻ para cambiar radio';
+            });
+            if(exit) exit.addEventListener('click',exitDrivenCar);
+            const steerLeft=document.getElementById('carLeftBtn'), steerRight=document.getElementById('carRightBtn');
+            const accel=document.getElementById('carAccelBtn'), reverse=document.getElementById('carReverseBtn');
+            const bindHold=(el,onStart,onEnd)=>{
+                if(!el) return;
+                const start=(e)=>{e.preventDefault();e.stopPropagation();try{el.setPointerCapture(e.pointerId);}catch(_){} onStart();};
+                const end=(e)=>{if(e){e.preventDefault();e.stopPropagation();} onEnd();};
+                el.addEventListener('pointerdown',start,{passive:false});
+                el.addEventListener('pointerup',end,{passive:false});
+                el.addEventListener('pointercancel',end,{passive:false});
+            };
+            bindHold(steerLeft,()=>{carInput.steer=-1;},()=>{if(carInput.steer===-1)carInput.steer=0;});
+            bindHold(steerRight,()=>{carInput.steer=1;},()=>{if(carInput.steer===1)carInput.steer=0;});
+            bindHold(accel,()=>{carInput.throttle=1;},()=>{carInput.throttle=0;});
+            bindHold(reverse,()=>{carInput.reverse=1;},()=>{carInput.reverse=0;});
+            const driftBtn=document.getElementById('carDriftBtn');
+            if(driftBtn) driftBtn.addEventListener('pointerdown',e=>{
+                e.preventDefault(); e.stopPropagation();
+                carDriftMode=!carDriftMode;
+                driftBtn.classList.toggle('on',carDriftMode);
+                driftBtn.textContent=carDriftMode?'DRIFT: SÍ':'DRIFT: NO';
+                const pad=document.getElementById('carSteerPad'); if(pad) pad.classList.toggle('driftHidden',carDriftMode);
+                if(joystickArea) joystickArea.style.display=carDriftMode&&isDriving?'block':'none';
+                joystickActive=false; joystickVector={x:0,y:0};
+                if(joystickKnob) joystickKnob.style.transform='translate(-50%,-50%)';
+            },{passive:false});
+            const sportBtn=document.getElementById('carSportBtn');
+            if(sportBtn) sportBtn.addEventListener('pointerdown',e=>{
+                e.preventDefault(); e.stopPropagation();
+                carSportMode=!carSportMode;
+                sportBtn.classList.toggle('on',carSportMode);
+                sportBtn.textContent=carSportMode?'SPORT: SÍ':'SPORT: NO';
+            },{passive:false});
+            window.addEventListener('keydown',e=>{
+                const k=e.key.toLowerCase();
+                if(k==='e' && !isDriving) enterNearestCar();
+                if(k==='f' && isDriving) exitDrivenCar();
+                if(isDriving){
+                    if(k==='arrowleft' || k==='a') carInput.steer=-1;
+                    if(k==='arrowright' || k==='d') carInput.steer=1;
+                    if(k==='arrowup' || k==='w') carInput.throttle=1;
+                    if(k==='arrowdown' || k==='s') carInput.reverse=1;
+                }
+            });
+            window.addEventListener('keyup',e=>{
+                if(!isDriving) return;
+                const k=e.key.toLowerCase();
+                if(k==='arrowleft' || k==='a'){ if(carInput.steer===-1) carInput.steer=0; }
+                if(k==='arrowright' || k==='d'){ if(carInput.steer===1) carInput.steer=0; }
+                if(k==='arrowup' || k==='w') carInput.throttle=0;
+                if(k==='arrowdown' || k==='s') carInput.reverse=0;
+            });
+            updateCarRadioUI();
+            refreshCarRadioStations();
+        }
+
+        function spawnCarSmoke(car) {
+            if(!scene || !car || !car.userData.exhaustPoints) return;
+            if(carSmokeParticles.length>18) return;
+            if(!carSmokeMaterial) carSmokeMaterial=new THREE.SpriteMaterial({color:0x8f8f8f,transparent:true,opacity:0.14,depthWrite:false});
+            for(const ep of car.userData.exhaustPoints){
+                if(carSmokeParticles.length>=18) break;
+                const wpos=new THREE.Vector3(); ep.getWorldPosition(wpos);
+                const sprite=new THREE.Sprite(carSmokeMaterial); sprite.scale.set(.18,.18,.18); sprite.position.copy(wpos); scene.add(sprite);
+                carSmokeParticles.push({sprite,life:22+Math.random()*14,maxLife:36,vy:.005+Math.random()*.008,vx:(Math.random()-.5)*.004,vz:(Math.random()-.5)*.004});
+            }
+        }
+        function updateCarSmoke(){
+            carSmokeClock++;
+            if(isDriving && drivenCar && Math.abs(drivenCar.userData.speed)>.03 && carSmokeClock%8===0) spawnCarSmoke(drivenCar);
+            for(let i=carSmokeParticles.length-1;i>=0;i--){
+                const p=carSmokeParticles[i]; p.life--; p.sprite.position.y+=p.vy; p.sprite.position.x+=p.vx; p.sprite.position.z+=p.vz;
+                const t=Math.max(0,p.life/p.maxLife); p.sprite.material.opacity=.15*t; p.sprite.scale.multiplyScalar(1.02);
+                if(p.life<=0){scene.remove(p.sprite); carSmokeParticles.splice(i,1);}
+            }
+        }
+
+        function updateDrivenCar() {
+            if(!drivenCar || !character) return;
+            const car=drivenCar;
+            const now=performance.now();
+            if(carCrashCooldown>0) carCrashCooldown--;
+
+            // Dirección: izquierda/derecha corregidas. El giro visual ahora usa el signo invertido.
+            let steer = carDriftMode ? joystickVector.x : carInput.steer;
+            if(carDriftMode && !joystickActive) steer=0;
+            let f=carInput.throttle ? 1 : (carInput.reverse ? -1 : 0);
+            const sportMax = (car.userData.maxSpeed || .95) * (carSportMode ? 1.45 : 1);
+            const sportAccel = (car.userData.accel || .055) * (carSportMode ? 1.35 : 1);
+            if(Math.abs(f)>0.08) car.userData.speed += f*sportAccel;
+            else car.userData.speed *= carDriftMode ? .972 : .93;
+            car.userData.speed=THREE.MathUtils.clamp(car.userData.speed,-sportMax,sportMax);
+            const grip=carDriftMode ? car.userData.driftGrip : .48;
+            car.userData.steer += (steer*grip-car.userData.steer)*.22;
+
+            const oldX=car.position.x, oldZ=car.position.z;
+            if(Math.abs(car.userData.speed)>.015){
+                // Giro progresivo: al retroceder el volante responde de forma opuesta, como un vehículo real.
+                const reverseFactor = car.userData.speed < 0 ? -1 : 1;
+                const turnRate=carDriftMode?.044:.050;
+                car.rotation.y -= car.userData.steer * Math.abs(car.userData.speed) * turnRate * reverseFactor;
+                const dir=new THREE.Vector3(0,0,1).applyQuaternion(car.quaternion);
+                if(carDriftMode){
+                    // Derrape real: conserva parte del avance y desplaza el carro lateralmente.
+                    const right=new THREE.Vector3(1,0,0).applyQuaternion(car.quaternion);
+                    const slip=Math.min(.62,Math.abs(car.userData.speed)*1.35);
+                    car.position.addScaledVector(dir,car.userData.speed*(1-slip*.32));
+                    car.position.addScaledVector(right,car.userData.steer*Math.abs(car.userData.speed)*slip*1.05);
+                }else{
+                    car.position.addScaledVector(dir,car.userData.speed);
+                }
+            }
+
+            // Colisiones sólidas: se evalúan cada 2 frames para reducir carga sin perder respuesta.
+            carCollisionTick=(carCollisionTick+1)%2;
+            let blocked=false;
+            const r=car.userData.collisionRadius||2.55;
+            if(carCollisionTick===0) for(const c of buildingColliders){
+                if(Math.abs(car.position.x-c.x)<c.width/2+r && Math.abs(car.position.z-c.z)<c.depth/2+r){blocked=true;break;}
+            }
+            if(!blocked && carCollisionTick===0){
+                for(const other of drivableCars){
+                    if(other===car || !other.visible) continue;
+                    const dx=car.position.x-other.position.x, dz=car.position.z-other.position.z;
+                    const minD=r+(other.userData.collisionRadius||2.55);
+                    if(dx*dx+dz*dz<minD*minD){
+                        blocked=true;
+                        const d=Math.max(.001,Math.hypot(dx,dz));
+                        const push=.08;
+                        car.position.x += dx/d*push; car.position.z += dz/d*push;
+                        other.position.x -= dx/d*push; other.position.z -= dz/d*push;
+                        if(carCrashCooldown<=0 && Math.abs(car.userData.speed)>.12){ playExplosionSound(); carCrashCooldown=28; }
+                        car.userData.speed *= -.28;
+                        other.userData.speed = (other.userData.speed||0) + car.userData.speed*.35;
+                        break;
+                    }
+                }
+            }
+            if(blocked){
+                car.position.x=oldX; car.position.z=oldZ;
+                if(carCrashCooldown<=0 && Math.abs(car.userData.speed)>.12){ playExplosionSound(); carCrashCooldown=28; }
+                car.userData.speed *= -.22;
+                car.userData.steer *= .55;
+            }
+
+            // Atropello: daño fuerte a enemigos/NPCs.
+            if(Math.abs(car.userData.speed)>.10){
+                const hitR=carDriftMode?3.0:2.7;
+                for(let i=smallPenes.length-1;i>=0;i--){
+                    const npc=smallPenes[i]; if(!npc || !npc.visible || npc.userData.health<=0) continue;
+                    const dx=npc.position.x-car.position.x, dz=npc.position.z-car.position.z;
+                    if(dx*dx+dz*dz<hitR*hitR){
+                        npc.userData.health=Math.max(0,npc.userData.health-(Math.abs(car.userData.speed)>0.35?25:12));
+                        const d=Math.max(.001,Math.hypot(dx,dz)); npc.position.x+=dx/d*1.8; npc.position.z+=dz/d*1.8;
+                        if(npc.userData.health<=0){ if(npc.userData.sign) dropProtesterSign(npc,getTerrainY(npc.position.x,npc.position.z,npc.position.y)); scene.remove(npc); smallPenes.splice(i,1); onPeneKilled(); }
+                    }
+                }
+            }
+
+            const ty=getTerrainY(car.position.x,car.position.z,car.position.y);
+            car.position.y += (ty+.05-car.position.y)*.45;
+            character.position.copy(car.position); character.position.y=car.position.y; character.rotation.y=car.rotation.y;
+            const rolling=car.userData.speed*.52;
+            car.userData.wheels.forEach(w=>{ w.wheel.rotation.x += rolling; if(w.front) w.holder.rotation.y=THREE.MathUtils.clamp(car.userData.steer,-.52,.52); });
+            const braking=carInput.reverse && Math.abs(car.userData.speed)>.01;
+            (car.userData.rearLamps||car.userData.tailLights||[]).forEach(l=>{ l.material.emissiveIntensity=braking?.28:(car.userData.lightsOn?.20:.10); });
+            (car.userData.rearGlows||[]).forEach(g=>{ g.material.opacity=braking?.07:(car.userData.lightsOn?.035:.012); });
+            (car.userData.rearRedLights||[]).forEach(l=>{ l.intensity=braking?.08:(car.userData.lightsOn?.025:0); });
+            updateCarEngineSound();
+        }
+
+        function updateCarProximity() {
+            if(isDriving || !character || isDead || isCinematic) { showCarHint(null); return; }
+            showCarHint(findNearestCar(8));
         }
 
         function createRoads() {
@@ -2127,7 +3048,7 @@
             const head = new THREE.Mesh(new THREE.SphereGeometry(0.7, 6, 6), _smallHeadMat); head.position.y = 6.2; head.scale.set(1, 0.8, 1); group.add(head);
             const ballGeo = new THREE.SphereGeometry(0.7, 6, 6); const ball1 = new THREE.Mesh(ballGeo, _smallBallMat); ball1.position.set(-0.7, 1.2, 0); ball1.scale.set(1, 0.7, 0.8); group.add(ball1); const ball2 = new THREE.Mesh(ballGeo, _smallBallMat); ball2.position.set(0.7, 1.2, 0); ball2.scale.set(1, 0.7, 0.8); group.add(ball2);
             const eye1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 4, 4), _smallEyeMat); eye1.position.set(-0.3, 6.2, 0.55); group.add(eye1); const eye2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 4, 4), _smallEyeMat); eye2.position.set(0.3, 6.2, 0.55); group.add(eye2);
-            group.scale.set(scale, scale, scale); group.position.set(x, 0, z); group.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); group.userData = { health: 25, maxHealth: 25, speed: 0.12 + Math.random()*0.08, attackCooldown: 0, walkCycle: Math.random()*10, shaft, ball1, ball2, head, isProtester: false, flyTimer: 0 }; return group;
+            group.scale.set(scale, scale, scale); group.position.set(x, 0, z); group.traverse(o => { if (o.isMesh) { o.castShadow = true; o.receiveShadow = true; } }); group.userData = { health: 25, maxHealth: 25, speed: 0.12 + Math.random()*0.08, attackCooldown: 0, walkCycle: Math.random()*10, shaft, ball1, ball2, head, isProtester: false, isNPC: true, flyTimer: 0 }; return group;
         }
 
         function dropProtesterSign(p, groundY) {
@@ -2184,11 +3105,11 @@
             joystickArea.addEventListener('touchmove', (e) => { e.preventDefault(); e.stopPropagation(); if (joystickActive) updateJoystick(e.touches[0]); });
             joystickArea.addEventListener('touchend', (e) => { e.preventDefault(); joystickActive = false; joystickTouchId = null; joystickVector = { x: 0, y: 0 }; joystickKnob.style.transform = 'translate(-50%, -50%)'; });
             runBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isCinematic && !isDead) isRunning = true; }); runBtn.addEventListener('touchend', () => { isRunning = false; });
-            jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (!isJumping && !isCinematic && !isFlying && !isDead) { isJumping = true; jumpVelocity = 6.2; playJumpSound(); } });
+            jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (!isJumping && !isCinematic && !isFlying && !isDead && !isDriving) { isJumping = true; jumpVelocity = 6.2; playJumpSound(); } });
             
             attackBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault(); e.stopPropagation();
-                if (!isAttacking && !isSpecialAttacking && !morteroActive && !isCinematic && !isDead && !isTuboActive) {
+                if (!isAttacking && !isSpecialAttacking && !morteroActive && !isCinematic && !isDead && !isTuboActive && !isDriving) {
                     isAttacking = true; attackPhase = 1; playPumSound(); const bonusDamage = isBuffActive ? Math.floor(playerAura / 1000) * 10 : 0;
                     if (boss && boss.userData.health > 0 && character.position.distanceTo(boss.position) < (boss.userData.isGiant ? 25 : 12)) { boss.userData.health -= (13 + bonusDamage); updateBossHealth(); }
                     for (let i = activeMiniBosses.length - 1; i >= 0; i--) { let mb = activeMiniBosses[i]; if (character.position.distanceTo(mb.position) < 12) { mb.userData.health -= (25 + bonusDamage); if (mb.userData.health <= 0) { scene.remove(mb); activeMiniBosses.splice(i, 1); changeAura(200); } } }
@@ -2206,11 +3127,11 @@
                 }
             });
             
-            specialBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (specialReady && !isSpecialAttacking && !isAttacking && !morteroActive && !isCinematic && !isDead && !isTuboActive) activateSpecialAttack(); });
-            flyBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 10000 && flyCooldownLeft <= 0 && !isFlying && !isCinematic && !isDead) { isFlying = true; flyTimer = 1200; flyCooldownLeft = 1500; flyAltitudeOffset = 15; flightControls.style.display = 'flex'; } });
-            poopBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 20000 && poopCooldownLeft <= 0 && !isCinematic && !isDead && !isTuboActive) { changeAura(-10); poopCooldownLeft = 300; const nalgasWorld = new THREE.Vector3(); if(character && character.userData.nalgasGroup) character.userData.nalgasGroup.getWorldPosition(nalgasWorld); const backAngle = character.rotation.y + Math.PI; spawnCacaFromNalgas(nalgasWorld, backAngle, 0.45, 1); playPedoSound(); } });
-            buffBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 40000 && buffCooldownLeft <= 0 && !isBuffActive && !isCinematic && !isDead) { isBuffActive = true; buffTimer = 1800; buffCooldownLeft = 2400; changeAura(0); playAuraPuraSound(); } });
-            tuboBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 50000 && tuboCooldownLeft <= 0 && !isTuboActive && !isCinematic && !isDead && !morteroActive) { isTuboActive = true; tuboTimer = 900; tuboCooldownLeft = 3000; tuboTick = 0; if(character.userData.tuboGroup) character.userData.tuboGroup.visible = true; document.getElementById('tuboBigFireBtn').style.display = 'flex'; playPumSound(); } });
+            specialBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (specialReady && !isSpecialAttacking && !isAttacking && !morteroActive && !isCinematic && !isDead && !isTuboActive && !isDriving) activateSpecialAttack(); });
+            flyBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 10000 && flyCooldownLeft <= 0 && !isFlying && !isCinematic && !isDead && !isDriving) { isFlying = true; flyTimer = 1200; flyCooldownLeft = 1500; flyAltitudeOffset = 15; flightControls.style.display = 'flex'; } });
+            poopBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 20000 && poopCooldownLeft <= 0 && !isCinematic && !isDead && !isTuboActive && !isDriving) { changeAura(-10); poopCooldownLeft = 300; const nalgasWorld = new THREE.Vector3(); if(character && character.userData.nalgasGroup) character.userData.nalgasGroup.getWorldPosition(nalgasWorld); const backAngle = character.rotation.y + Math.PI; spawnCacaFromNalgas(nalgasWorld, backAngle, 0.45, 1); playPedoSound(); } });
+            buffBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 40000 && buffCooldownLeft <= 0 && !isBuffActive && !isCinematic && !isDead && !isDriving) { isBuffActive = true; buffTimer = 1800; buffCooldownLeft = 2400; changeAura(0); playAuraPuraSound(); } });
+            tuboBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 50000 && tuboCooldownLeft <= 0 && !isTuboActive && !isCinematic && !isDead && !morteroActive && !isDriving) { isTuboActive = true; tuboTimer = 900; tuboCooldownLeft = 3000; tuboTick = 0; if(character.userData.tuboGroup) character.userData.tuboGroup.visible = true; document.getElementById('tuboBigFireBtn').style.display = 'flex'; playPumSound(); } });
 
             const flyUpBtn = document.getElementById('flyUpBtn'); const flyDownBtn = document.getElementById('flyDownBtn');
             flyUpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyUp = true; }); flyUpBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyUp = false; });
@@ -2492,7 +3413,7 @@
                         supremeEffectAudio = null;
                     }
                     musicPlaybackToken++;
-                    try { audioPlayer.pause(); } catch (_) {}
+                    try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; } } catch (_) {}
 
                     normalMusicResumedAfterSupreme = true;
                     normalMusicResumePending = true;
@@ -2664,7 +3585,7 @@
         function startGiantBossMission() {
             isCinematic = true; cinematicPhase = 1; cinematicTimer = 0;
             document.getElementById('statusText').textContent = ''; document.getElementById('statusText').style.display = 'none';
-            supremeEffectActive = true; musicPlaybackToken++; try { audioPlayer.pause(); } catch (_) {} if(audioRolon.src) { bossMusicStarted = true; bossRolonActive = false; try { audioRolon.pause(); audioRolon.currentTime = 0; } catch(_) {} } cinematicBosses = []; activeMiniBosses = []; const numMinis = Math.floor(waveNumber / 10);
+            supremeEffectActive = true; musicPlaybackToken++; try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = audioPlayer.currentTime || 0; } } catch (_) {} if(audioRolon.src) { bossMusicStarted = true; bossRolonActive = false; try { audioRolon.pause(); audioRolon.currentTime = 0; } catch(_) {} } cinematicBosses = []; activeMiniBosses = []; const numMinis = Math.floor(waveNumber / 10);
             boss = createBoss(waveNumber); boss.scale.set(3, 3, 3); boss.userData.maxHealth = 1500 + waveNumber * 150; boss.userData.health = boss.userData.maxHealth; boss.userData.isGiant = true; boss.userData.attackCooldown = 120;
             boss.position.set(character.position.x + 30, 800, character.position.z + 30); boss.rotation.x = Math.PI; scene.add(boss); bossDefeated = false; normalMusicResumedAfterSupreme = false; normalMusicResumePending = false; cinematicBosses.push(boss); if(audioRolon.src) { startBossRolonCombat(); }
             for(let i=0; i<numMinis; i++){
@@ -2901,6 +3822,9 @@
                 if (asteroidRainTimer <= 0) { const mr = document.getElementById('meteorRainBar'); const ml2 = document.getElementById('meteorRainLabel'); if (mr) mr.style.display = 'none'; if (ml2) ml2.style.display = 'none'; }
             }
 
+            updateCarProximity();
+            if (isDriving) updateDrivenCar();
+            updateCarSmoke();
             const ud = character.userData; let moveX = 0, moveZ = 0; let speed = isRunning ? 0.50 : 0.30;
             if (isFlying) speed = isRunning ? 0.9 : 0.6;
             
@@ -2914,7 +3838,7 @@
             } else if (isDead) {
                 ragdollTimer++; character.rotation.x += (-Math.PI / 2.2 - character.rotation.x) * 0.1; character.position.y += (getTerrainY(character.position.x, character.position.z, character.position.y) + 0.25 - character.position.y) * 0.1;
                 ud.leftThigh.rotation.x *= 0.9; ud.rightThigh.rotation.x *= 0.9;
-            } else {
+            } else if (!isDriving) {
                 if (joystickActive && !isAttacking && !isSpecialAttacking && !isCinematic && !isTuboActive) {
                     const forwardX = -Math.sin(cameraTheta); const forwardZ = -Math.cos(cameraTheta); const rightX = Math.cos(cameraTheta); const rightZ = -Math.sin(cameraTheta);
                     const f = -joystickVector.y; const r = joystickVector.x;
@@ -3415,7 +4339,7 @@
                         if (mr) mr.style.display = 'block'; if (ml) ml.style.display = 'none'; if (mf) mf.style.width = '100%';
                         document.getElementById('statusText').style.display = 'none';
                         for (let i = 0; i < 14; i++) {
-                            const m = new THREE.Mesh(new THREE.SphereGeometry(3 + Math.random()*2.5, 10, 10), new THREE.MeshStandardMaterial({color:0x554433, emissive:0xff4400, emissiveIntensity:1.5}));
+                            const m = new THREE.Mesh(new THREE.SphereGeometry(3 + Math.random()*2.5, 10, 10), new THREE.MeshStandardMaterial({color:0x554433, emissive:0xff4400, emissiveIntensity:3.6}));
                             m.position.set(epicAsteroid.position.x + (Math.random()-0.5)*60, epicAsteroid.position.y - Math.random()*35, epicAsteroid.position.z + (Math.random()-0.5)*60);
                             m.userData.velocity = new THREE.Vector3((Math.random()-0.5)*3.5, -3.5-Math.random()*3, (Math.random()-0.5)*3.5); scene.add(m); epicDeflectMeteors.push(m);
                         }
