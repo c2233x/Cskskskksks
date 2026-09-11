@@ -57,6 +57,7 @@ function bind(){
   s.on('game:state',d=>{window.__EB_SERVER_GAME_STATE=d||null});
   s.on('round:state',r=>{window.__EB_SERVER_ROUND=N(r)});
   s.on('world:ui',d=>{window.__EB_SERVER_WORLD_UI=d||null});
+  try{s.emit('room:join',{name:(localStorage.getItem('elBromasNick')||'Jugador').trim().slice(0,20)||'Jugador'})}catch{}
   setInterval(()=>{if(joined&&!source)cleanLocalNpcs()},700);
   requestAnimationFrame(attackMonitor);
 }
