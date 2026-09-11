@@ -1,0 +1,1 @@
+Los modelos GLB no se usan en El Bromas y fueron retirados para reducir carga local y evitar consumo innecesario de memoria.
