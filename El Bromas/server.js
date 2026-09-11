@@ -17,8 +17,8 @@ fs.readFileSync = function(file, enc){
   }
   if (typeof out === 'string' && /online-final14\.js$/.test(name)) {
     return out
-      .replace(/function collectFx\(\)\{[\s\S]*?\}\nfunction applyFx\(a\)/, 'function collectFx(){return[]}\nfunction applyFx(a){}\nfunction ')
-      .replace(/function applyFx\(a\)\{[\s\S]*?\}\nfunction /, 'function applyFx(a){}\nfunction ');
+      .replace(/function collectFx\(\)\{[\s\S]*?\}\n(?=function applyFx)/, 'function collectFx(){return[]}\n')
+      .replace(/function applyFx\(a\)\{[\s\S]*?\}\n(?=function )/, 'function applyFx(a){}\n');
   }
   if (typeof out === 'string' && /online-final18\.js$/.test(name)) {
     return out
