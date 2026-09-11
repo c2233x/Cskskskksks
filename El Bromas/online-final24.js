@@ -1,12 +1,12 @@
 (()=>{
 if(window.__EB_FINAL24)return;window.__EB_FINAL24=1;
 const s=window.__ebSocket;
-let source=false,joined=false,lastAttack=0,lastAttackState=false,cleanTimer=0;
+let source=false,joined=false,lastAttack=0,lastAttackState=false;
 const N=(v,d=0)=>Number.isFinite(+v)?+v:d;
 function isRemoteNpc(o){return !!o?.userData?.__ebRemoteNpc}
 function removeLocalNpc(o){try{if(!o||isRemoteNpc(o))return false;o.parent?.remove(o);o.userData&&(o.userData.__ebLocalNpcRemoved=true);return true}catch{return false}}
 function cleanLocalNpcs(){
-  if(source||typeof scene==='undefined')return;
+  if(source)return;
   try{
     for(const arrName of ['smallPenes','activeMiniBosses']){
       const arr=window[arrName];
@@ -15,12 +15,6 @@ function cleanLocalNpcs(){
       }
     }
     if(window.boss&&!isRemoteNpc(window.boss)){removeLocalNpc(window.boss);try{window.boss=null}catch{}}
-    scene.traverse(o=>{
-      if(o===window.character||o?.userData?.__ebRemote||o?.userData?.__ebRemoteNpc)return;
-      const u=o?.userData||{};
-      if(u.__ebLocalNpcRemoved)return;
-      if(u.isProtester||u.isGiant||(u.health!==undefined&&u.maxHealth!==undefined&&u.__ebNetId===undefined))removeLocalNpc(o);
-    });
   }catch{}
 }
 function nearestServerNpc(){
@@ -47,8 +41,9 @@ function sendAttack(special){
   s.emit('combat:attack',{id,damage:attackDamage(special),special:!!special});
 }
 function attackMonitor(){
-  if(typeof isAttacking==='undefined'&&typeof isSpecialAttacking==='undefined'){requestAnimationFrame(attackMonitor);return}
-  const a=!!(typeof isAttacking!=='undefined'&&isAttacking),sp=!!(typeof isSpecialAttacking!=='undefined'&&isSpecialAttacking),now=a||sp;
+  const a=typeof isAttacking!=='undefined'&&!!isAttacking;
+  const sp=typeof isSpecialAttacking!=='undefined'&&!!isSpecialAttacking;
+  const now=a||sp;
   if(now&&!lastAttackState)sendAttack(sp);
   lastAttackState=now;
   requestAnimationFrame(attackMonitor);
