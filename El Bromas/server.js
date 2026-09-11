@@ -12,6 +12,7 @@ fs.readFileSync = function(file, enc){
     x = x.replace(/\.slice\(0,180\)/g, '.slice(0,60)')
          .replace(/items\.slice\(-300\)/g, 'items.slice(-80)')
          .replace(/s\.on\('fx:player',[\s\S]*?s\.on\('world:ui'/, "s.on('fx:player',()=>{});s.on('fx:snapshot',()=>{});s.on('world:ui'");
+    x = x.replace(/s\.emit\('room:sync',syncPack\(\)\)/g, "s.emit('room:sync',{...syncPack(),npcSource:s.id===npcSource})");
     x = x.replace(/s\.on\('disconnect',reason=>\{/, "s.on('combat:attack',d=>{const now=Date.now();if(now-(p._combatAt||0)<220)return;p._combatAt=now;const target=String(d?.id||'').slice(0,80);if(!target)return;const damage=Math.max(1,Math.min(60,num(d?.damage,25)));io.emit('combat:attack',{id:s.id,target,damage,special:!!d?.special,serverTime:now});if(s.id!==npcSource)io.to(npcSource).emit('npc:hit',{source:s.id,id:target,damage});});\ns.on('disconnect',reason=>{");
     return x.replace(/setInterval\(broadcastPlayers,50\)/g, 'setInterval(broadcastPlayers,250)');
   }
