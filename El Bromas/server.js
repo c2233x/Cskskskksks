@@ -5,14 +5,16 @@ fs.readFileSync=function(file,enc){
  const out=originalRead.apply(this,arguments),name=String(file);
  if(typeof out==='string'&&/server-base\.js$/.test(name)){
   let x=out;
-  // Late joiners get the same authoritative snapshot before gameplay starts.
-  x=x.replace(/s\.emit\('room:sync',syncPack\(\)\)/g,"s.emit('room:sync',{...syncPack(),npcSource:s.id===npcSource,authoritativeJoin:true})");
-  x=x.replace(/items:\(Array\.isArray\(d\?\.items\)\?d\.items:\[\]\)\.slice\(0,140\)/,'items:(Array.isArray(d?.items)?d.items:[]).slice(0,round===1?7:140)');
-  x=x.replace(/missionType:String\(d\?\.missionType\|\|''\)\.slice\(0,40\)/g,"missionType:''");
-  x=x.replace(/\.slice\(0,180\)/g,'.slice(0,60)').replace(/items\.slice\(-300\)/g,'items.slice(-80)');
-  x=x.replace(/s\.on\('fx:player',[\s\S]*?s\.on\('world:ui'/,"s.on('fx:player',()=>{});s.on('fx:snapshot',()=>{});s.on('world:ui'");
-  x=x.replace(/s\.on\('disconnect',reason=>\{/ ,"s.on('combat:attack',d=>{const now=Date.now();if(now-(p._combatAt||0)<220)return;p._combatAt=now;const target=String(d?.id||'').slice(0,80);if(!target)return;const damage=Math.max(1,Math.min(60,num(d?.damage,25)));if(s.id!==npcSource)io.to(npcSource).emit('npc:hit',{source:s.id,id:target,damage});});s.on('disconnect',reason=>{");
-  return x.replace(/setInterval\(broadcastPlayers,50\)/g,'setInterval(broadcastPlayers,250)');
+  // The server is the only authority for the live NPC roster. A joining client gets
+  // an immutable join snapshot immediately after room:join, instead of rebuilding a round locally.
+  x=x.replace(/s\.emit\('room:sync',syncPack\(\)\)/g,"s.emit('room:sync',{...syncPack(),npcSource:s.id===npcSource,authoritativeJoin:true,npcJoinSnapshot:{round,alive:gameState.alive,seq:npcSnapshot.seq,serverTime:npcSnapshot.serverTime,items:npcSnapshot.items}})");
+  x=x.replace(/s\.on\('room:join',d=>\{p\.name=clean\(d\?\.name\);p\.round=round;s\.emit\('room:sync',syncPack\(\)\)\}\);/g,"s.on('room:join',d=>{p.name=clean(d?.name);p.round=round;s.emit('room:sync',{...syncPack(),npcSource:s.id===npcSource,authoritativeJoin:true,npcJoinSnapshot:{round,alive:gameState.alive,seq:npcSnapshot.seq,serverTime:npcSnapshot.serverTime,items:npcSnapshot.items}});s.emit('npc:join:sync',{round,alive:gameState.alive,seq:npcSnapshot.seq,serverTime:npcSnapshot.serverTime,items:npcSnapshot.items});});");
+  // Never accept an NPC snapshot from a non-authoritative client.
+  x=x.replace(/s\.on\('npc:snapshot',d=>\{/g,"s.on('npc:snapshot',d=>{if(s.id!==npcSource)return;");
+  // Keep the server's alive count tied to the authoritative NPC roster whenever a snapshot arrives.
+  x=x.replace(/npcSnapshot=safeNpc\(d\);/g,"npcSnapshot=safeNpc(d);gameState.alive=npcSnapshot.items.length;gameState.round=npcSnapshot.round;");
+  x=x.replace(/setInterval\(broadcastPlayers,50\)/g,'setInterval(broadcastPlayers,250)');
+  return x;
  }
  if(typeof out==='string'&&/online-final14\.js$/.test(name)){
   let x=out;
@@ -32,11 +34,17 @@ fs.readFileSync=function(file,enc){
   return x;
  }
  if(typeof out==='string'&&/online-final25\.js$/.test(name)){
-  return out;
+  let x=out;
+  // Join snapshot is authoritative and is applied before the normal round/NPC events.
+  const inject="s.on('npc:join:sync',m=>{if(source)return;serverRound=N(m?.round);serverAlive=Math.max(0,Math.floor(N(m?.alive)));serverNpc=Array.isArray(m?.items)?m.items:[];synced=true;applyAuthoritativeState();removeLateJoinNpcs();try{window.__EB_AUTHORITATIVE_JOIN_SNAPSHOT={round:serverRound,alive:serverAlive,items:serverNpc}}catch{};});";
+  x=x.replace(/s\.on\('room:welcome'/,inject+"s.on('room:welcome'");
+  // Do not infer alive from a local round spawn. The server roster is the source of truth.
+  x=x.replace(/if\(!serverAlive&&serverNpc\.length\)serverAlive=serverNpc\.length;/g,'');
+  return x;
  }
  if(typeof out==='string'&&/Salva a cornatan .*\.html$/.test(name)){
   const clean=out.replace(/<script[^>]*src=["']\/?online-final(?:14|17|18|20|21|22|23|24|25|26)\.js[^"']*["'][^>]*><\/script>/gi,'');
-  const tag='<script src="/online-final14.js?v=15"></script><script src="/online-final18.js?v=26"></script><script src="/online-final17.js?v=24"></script><script src="/online-final24.js?v=3"></script><script src="/online-final25.js?v=3"></script>';
+  const tag='<script src="/online-final14.js?v=16"></script><script src="/online-final18.js?v=27"></script><script src="/online-final17.js?v=25"></script><script src="/online-final24.js?v=4"></script><script src="/online-final25.js?v=4"></script>';
   return clean.replace(/<\/body>/i,tag+'</body>');
  }
  return out;
