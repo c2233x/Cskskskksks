@@ -10,6 +10,10 @@ fs.readFileSync=function(file,enc){
     x += "\nsetInterval(()=>{if(players.size===0){ebCancelIdleNpc();return}if(npcSnapshot.items.length===0&&gameState.alive===0)ebScheduleIdleNpc();else if(npcSnapshot.items.length>0)ebCancelIdleNpc();ebDayClock=((Date.now()/1000)%1200)/1200*24;worldTime=ebDayClock;io.emit('world:time',{time:ebDayClock,serverTime:Date.now()})},1000);\n";
     return x;
   }
+  if(typeof out==='string'&&/Salva a cornatan .*\.html$/.test(name)){
+    const tag='<script src="/online-final26.js?v=1"></script>';
+    return out.replace(/<\/body>/i,tag+'</body>');
+  }
   return out;
 };
 require('./server.js');
