@@ -10,4 +10,4 @@ COPY ["El Bromas/", "./"]
 ENV NODE_ENV=production
 EXPOSE 10000
 
-CMD ["node", "server.js"]
+CMD ["node", "server2.js"]
