@@ -4283,8 +4283,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
             Object.keys(FARM_GOODS).forEach((type,index)=>{
                 const x=FARM_STORAGE_POS.x-8+(index%4)*5.2,z=FARM_STORAGE_POS.z-13+Math.floor(index/4)*5,y=farmGroundAt(x,z);
                 const bin=new THREE.Mesh(new THREE.BoxGeometry(4.1,2.3,3.8),new THREE.MeshLambertMaterial({color:0x775538}));bin.position.set(x,y+1.15,z);farmGroup.add(bin);
-                const items=new THREE.InstancedMesh(new THREE.BoxGeometry(.82,.72,.82),new THREE.MeshLambertMaterial({color:FARM_GOODS[type].color}),18),dummy=new THREE.Object3D();
-                for(let i=0;i<18;i++){const row=Math.floor(i/6),col=i%6;dummy.position.set(x-1.35+(col%3)*1.2,y+2.05+row*.86,z-1.05+Math.floor(col/3)*1.35);dummy.rotation.y=(i%3)*.24;dummy.updateMatrix();items.setMatrixAt(i,dummy.matrix);}
+                const items=new THREE.InstancedMesh(new THREE.BoxGeometry(.82,.72,.82),new THREE.MeshLambertMaterial({color:FARM_GOODS[type].color}),60),dummy=new THREE.Object3D();
+                for(let i=0;i<60;i++){const col=i%5,row=Math.floor(i/5)%4,layer=Math.floor(i/20);dummy.position.set(x-1.4+col*.7,y+2.1+layer*.68,z-1.2+row*.78);dummy.rotation.y=(i%3)*.18;dummy.updateMatrix();items.setMatrixAt(i,dummy.matrix);}
                 items.count=0;items.instanceMatrix.needsUpdate=true;items.computeBoundingSphere();farmGroup.add(items);farmStorageVisuals[type]=items;farmStorageBins[type]=bin;
             });
             const fieldY=farmGroundAt(FARM_CROP_POS.x,FARM_CROP_POS.z),soil=new THREE.Mesh(new THREE.CircleGeometry(28,32),new THREE.MeshLambertMaterial({color:0x775438}));
@@ -4328,7 +4328,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 makeFarmFence(farmDefenseGroup,x1,z1,x2,z1,wood);makeFarmFence(farmDefenseGroup,x2,z1,x2,z2,wood);makeFarmFence(farmDefenseGroup,x2,z2,x1,z2,wood);makeFarmFence(farmDefenseGroup,x1,z2,x1,z1+7,wood);}
         }
         function refreshFarmStorageVisuals(){
-            Object.keys(farmStorageVisuals).forEach(type=>{const mesh=farmStorageVisuals[type];if(mesh){mesh.count=Math.max(0,Math.min(18,Number(farmWarehouseStock[type])||0));mesh.instanceMatrix.needsUpdate=true;}});
+            Object.keys(farmStorageVisuals).forEach(type=>{const mesh=farmStorageVisuals[type];if(mesh){mesh.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();}});
         }
         function createFarmWorld(){
             deformFarmTerrain();
