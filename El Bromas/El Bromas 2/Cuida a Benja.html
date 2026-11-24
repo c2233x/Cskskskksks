@@ -417,7 +417,15 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 .farmMediaButton{min-width:38px;min-height:36px;border:1px solid #78684b;border-radius:9px;background:#253744;color:#fff;font-size:16px;font-weight:950}
 .farmMediaVolume{flex:1;min-width:100px;accent-color:#d7ad5d}
 .farmMediaValue{min-width:35px;text-align:right;color:#f4dcae;font-size:10px;font-weight:950}
-#farmTVScreenOverlay{position:fixed;left:0;top:0;width:1000px;height:625px;display:none;z-index:8;pointer-events:none;transform-origin:0 0;overflow:hidden;background:#000}
+#farmTVScreenOverlay{position:fixed;left:-2500px;top:0;width:2px;height:2px;display:block;z-index:-1;pointer-events:none;opacity:0;transform:none;overflow:hidden;background:transparent}
+#farmTVDiscovery{display:grid;grid-template-columns:1fr 1fr;gap:7px;padding:8px;border:1px solid rgba(230,202,143,.35);border-radius:10px;background:rgba(255,255,255,.045)}
+#farmTVCategory,#farmTVSearch{width:100%;min-width:0;min-height:38px;padding:8px;border:1px solid #627c7b;border-radius:8px;background:#101e25;color:#fff;font-size:11px}
+#farmTVScanStart,#farmTVScanStop{min-height:38px;border:1px solid #8a754e;border-radius:8px;padding:8px;background:#365c49;color:#fff;font-size:10px;font-weight:950}
+#farmTVScanStop{background:#713d3d;border-color:#a56565}
+#farmTVScanStop:disabled{opacity:.45}
+#farmTVScanStatus{grid-column:1/-1;color:#d9e4dc;font-size:10px;line-height:1.4;min-height:14px}
+#farmTVScanHost{position:fixed;left:-2400px;top:0;width:2px;height:2px;overflow:hidden;opacity:0;pointer-events:none}
+@media(max-width:600px){#farmTVDiscovery{grid-template-columns:1fr 1fr}#farmTVScanStatus{font-size:9px}}
 #farmTVWorldFrame,#farmTVWorldVideo{position:absolute;inset:0;display:none;width:100%;height:100%;border:0;background:#000;pointer-events:none}
 #farmTVWorldVideo{object-fit:cover}
 #farmRadioPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1530;display:none;flex-direction:column;gap:9px;width:min(430px,94vw);max-height:88vh;max-height:88dvh;overflow-y:auto;padding:12px;border:2px solid #7f9a9d;border-radius:15px;background:linear-gradient(145deg,rgba(10,22,30,.98),rgba(5,12,18,.99));color:#fff;box-shadow:0 18px 50px rgba(0,0,0,.72);touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
@@ -509,8 +517,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="farmInventoryHint">los productos guardados se quedan en tu partida</div></div>
 <div id="farmQuickActions">
 <button id="farmQuickJobs" class="jobs" type="button" style="display:none">TRABAJOS</button>
-<button id="farmGoCity" class="travel" type="button" style="display:none">🚗 IR A CIUDAD</button>
-<button id="farmGoCity" class="travel" type="button" style="display:none">🚗 IR A CIUDAD</button>
+<button id="farmGoCity" class="travel" type="button" style="display:none">🚗 RUMBO A CIUDAD</button>
 </div>
 <div id="farmSubtitles" aria-live="polite"></div>
 <div id="cityJobPanel" role="dialog" aria-label="Trabajos de la ciudad">
@@ -524,11 +531,19 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
   <div id="farmTVScreenShell"><div id="farmTVPlayerStatus">TELEVISOR APAGADO<br/>Enciéndelo para ver la señal en la pantalla de la granja</div></div>
   <div id="farmTVPowerControls"><button id="farmTVPowerBtn" type="button">⏻ ENCENDER TV</button><span id="farmTVPowerLabel" class="farmMediaValue">APAGADA</span></div>
   <div id="farmTVVolumeControls"><button id="farmTVVolDown" class="farmMediaButton" type="button" aria-label="Bajar volumen de TV">−</button><input id="farmTVVolume" class="farmMediaVolume" type="range" min="0" max="100" value="55"><button id="farmTVVolUp" class="farmMediaButton" type="button" aria-label="Subir volumen de TV">+</button><span id="farmTVVolumeValue" class="farmMediaValue">55%</span></div>
-  <div id="farmTVHint">El canal se ve directamente en la pantalla física del televisor aunque cierres este menú. El sonido solo se escucha cerca del aparato.</div>
+  <div id="farmTVHint">La imagen se dibuja sobre la pantalla 3D del televisor. Busca por nombre o categoría y prueba las señales en este dispositivo.</div>
+  <div id="farmTVDiscovery">
+    <select id="farmTVCategory" aria-label="Categoría de canales"><option value="TODOS">Todas las categorías</option><option value="NOTICIAS">Noticias</option><option value="GENERAL">General</option><option value="ENTRETENIMIENTO">Entretenimiento</option><option value="EDUCATIVO">Educativo</option><option value="RELIGIOSO">Religioso</option><option value="MÚSICA">Música</option><option value="DEPORTES">Deportes</option><option value="INTERNACIONAL">Internacional</option></select>
+    <input id="farmTVSearch" type="search" placeholder="Buscar canal…" autocomplete="off" aria-label="Buscar canales">
+    <button id="farmTVScanStart" type="button">🔎 BUSCAR Y PROBAR</button>
+    <button id="farmTVScanStop" type="button" disabled>■ DETENER BÚSQUEDA</button>
+    <div id="farmTVScanStatus" role="status" aria-live="polite">Canales listos. Pulsa «BUSCAR Y PROBAR» para comprobar cuáles reproducen aquí.</div>
+  </div>
   <div id="farmTVChannels"></div>
   <button id="farmTVOpenOfficial" type="button">ABRIR CANAL OFICIAL</button>
 </div>
-<div id="farmTVScreenOverlay" aria-hidden="true"><video id="farmTVWorldVideo" playsinline webkit-playsinline preload="none" disablepictureinpicture></video><iframe id="farmTVWorldFrame" title="Pantalla del televisor de la granja" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<div id="farmTVScreenOverlay" aria-hidden="true"><video id="farmTVWorldVideo" playsinline webkit-playsinline preload="none" disablepictureinpicture crossorigin="anonymous"></video><iframe id="farmTVWorldFrame" title="Reproductor alternativo de TV" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<div id="farmTVScanHost" aria-hidden="true"></div>
 <div id="farmRadioPanel" role="dialog" aria-label="Radio de la granja">
   <div id="farmRadioHeader"><span>📻 RADIO DE LA GRANJA</span><button id="farmRadioClose" type="button">✕</button></div>
   <div id="farmRadioStatus">Elige una emisora y enciende la radio. El sonido se escucha cerca del aparato.</div>
@@ -754,7 +769,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.1"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.2"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -832,10 +847,12 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
         let farmTVPanelBound=false,farmTVCurrentChannel=null,farmTVPowerOn=false,farmTVVolume=.55,farmTVScreenMaterial=null,farmTVLastAudioCheck=0;
         let farmTVHlsPlayer=null,farmTVHlsScriptPromise=null,farmTVPlaybackToken=0,farmTVIframeFallback=false;
+let farmTVPlaceholderTexture=null,farmTVVideoTexture=null;
+let farmTVScanToken=0,farmTVScanHls=null,farmTVScanVideo=null,farmTVScanCancelCurrent=null,farmTVScanActive=false;
         let cityTravelRetryAt=0;
         let farmRadioProp=null,farmRadioPanelBound=false,farmRadioAudio=new Audio(),farmRadioPowerOn=false,farmRadioStationIndex=0,farmRadioVolume=.55,farmRadioLastCheck=0;
         farmRadioAudio.preload='none';farmRadioAudio.setAttribute('playsinline','');let farmRadioGeneration=0,farmRadioStreamTry=0;
-        let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0;
+        let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0,farmAmbienceLevel=0,farmCicadaAudio=null;
         let farmBenjaHunger=100,farmBenjaHungerLast=0,farmBenjaHungerLinePlayed=false,benjaWalkTarget=null,benjaWalkTargetAt=0;
         let farmThrownFood=[],farmCarryVisualHash='',farmCarryVisualGroup=null,farmLastSubtitleAt=0;
         let farmMissionHintWasVisible=false;
@@ -4545,7 +4562,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const canvas=document.createElement('canvas');canvas.width=512;canvas.height=288;const ctx=canvas.getContext('2d');
             ctx.fillStyle='#10263a';ctx.fillRect(0,0,512,288);ctx.fillStyle='#e6c37d';ctx.font='bold 48px Arial';ctx.textAlign='center';ctx.fillText('TV HONDURAS',256,118);
             ctx.fillStyle='#ffffff';ctx.font='bold 27px Arial';ctx.fillText('LOCAL + INTERNACIONAL',256,170);
-            const tex=new THREE.CanvasTexture(canvas);
+            const tex=new THREE.CanvasTexture(canvas);farmTVPlaceholderTexture=tex;
             farmTVScreenMaterial=new THREE.MeshStandardMaterial({map:tex,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0,roughness:.68,metalness:0});
             const screen=new THREE.Mesh(new THREE.PlaneGeometry(7.75,4.85),farmTVScreenMaterial);
             screen.position.set(0,6.15,1.73);tv.add(screen);
@@ -4795,51 +4812,47 @@ function updateFarmThrownFood(){
  }
 }
 
-function setFarmCicadas(active){
- if(!farmAmbienceContext)return;
- const ctx=farmAmbienceContext;
- if(active&&!farmCicadaMaster){
-  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=3900;filter.Q.value=.85;
-  farmCicadaMaster=ctx.createGain();farmCicadaMaster.gain.value=0;
-  const gainA=ctx.createGain();gainA.gain.value=.42;
-  const gainB=ctx.createGain();gainB.gain.value=.20;
-  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=3720;
-  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=4180;
-  farmCicadaLfo=ctx.createOscillator();farmCicadaLfo.type='sine';farmCicadaLfo.frequency.value=13.5;
-  const lfoDepth=ctx.createGain();lfoDepth.gain.value=.34;
-  farmCicadaLfo.connect(lfoDepth);lfoDepth.connect(gainA.gain);
-  farmCicadaOscillatorA.connect(gainA);farmCicadaOscillatorB.connect(gainB);
-  gainA.connect(filter);gainB.connect(filter);filter.connect(farmCicadaMaster);farmCicadaMaster.connect(ctx.destination);
-  farmCicadaOscillatorA.start();farmCicadaOscillatorB.start();farmCicadaLfo.start();
+function ensureFarmCicadaAudio(){
+ if(!farmCicadaAudio){
+  farmCicadaAudio=new Audio('https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Sonidos/chicharras.mp3?v=1.6.2');
+  farmCicadaAudio.loop=true;farmCicadaAudio.preload='auto';farmCicadaAudio.setAttribute('playsinline','');
  }
- if(farmCicadaMaster){
-  const target=active ? 0.009 : 0;
-  farmCicadaMaster.gain.setTargetAtTime(target,ctx.currentTime,.35);
+ return farmCicadaAudio;
+}
+function setFarmCicadas(active,strength=1){
+ const audio=active?ensureFarmCicadaAudio():farmCicadaAudio;if(!audio)return;
+ const level=Math.max(0,Math.min(1,Number(strength)||0));
+ audio.volume=active?Math.min(.42,.42*level):0;
+ if(active){
+  if(audioUnlocked&&audio.paused){const p=audio.play();if(p&&p.catch)p.catch(()=>{});}
+ }else{
+  try{audio.pause();audio.currentTime=0;}catch(_){}
  }
 }
 function stopFarmAmbience(){
- farmAmbienceActiveZone='';
+ farmAmbienceActiveZone='';farmAmbienceLevel=0;
  if(farmAmbienceBirdTimer){clearTimeout(farmAmbienceBirdTimer);farmAmbienceBirdTimer=0;}
  setFarmCicadas(false);
  if(farmAmbienceGain&&farmAmbienceContext){try{farmAmbienceGain.gain.setTargetAtTime(0,farmAmbienceContext.currentTime,.25);}catch(_){}}
 }
 function playFarmBirdChirp(){
- if(!farmAmbienceContext||!farmAmbienceActiveZone)return;
+ if(!farmAmbienceContext||!farmAmbienceActiveZone||farmAmbienceLevel<=.02)return;
  try{
   const ctx=farmAmbienceContext,osc=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime;
   osc.type='sine';osc.frequency.setValueAtTime(2450+Math.random()*800,now);
   osc.frequency.exponentialRampToValueAtTime(3300+Math.random()*600,now+.12);
   osc.frequency.exponentialRampToValueAtTime(2050+Math.random()*500,now+.31);
-  gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(.018,now+.05);
-  gain.gain.exponentialRampToValueAtTime(.0001,now+.34);osc.connect(gain);gain.connect(ctx.destination);
-  osc.start(now);osc.stop(now+.36);
+  const peak=.052*farmAmbienceLevel;
+  gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(peak,now+.05);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+.38);osc.connect(gain);gain.connect(ctx.destination);
+  osc.start(now);osc.stop(now+.4);
  }catch(_){}
- if(farmAmbienceActiveZone)farmAmbienceBirdTimer=setTimeout(playFarmBirdChirp,2600+Math.random()*3900);
+ if(farmAmbienceActiveZone)farmAmbienceBirdTimer=setTimeout(playFarmBirdChirp,2200+Math.random()*3000);
 }
-function startFarmAmbience(zone){
+function startFarmAmbience(zone,attenuation=1){
  if(!zone)return;
  const changed=farmAmbienceActiveZone!==zone.id;
- farmAmbienceActiveZone=zone.id;
+ farmAmbienceActiveZone=zone.id;farmAmbienceLevel=Math.max(0,Math.min(1,Number(attenuation)||0));
  try{
   const Ctx=window.AudioContext||window.webkitAudioContext;
   if(Ctx&&!farmAmbienceContext){
@@ -4847,32 +4860,156 @@ function startFarmAmbience(zone){
    const length=farmAmbienceContext.sampleRate*2,buffer=farmAmbienceContext.createBuffer(1,length,farmAmbienceContext.sampleRate),data=buffer.getChannelData(0);
    let last=0;for(let i=0;i<length;i++){const white=Math.random()*2-1;last=(last+.025*white)/1.025;data[i]=last*3.2;}
    farmAmbienceNoiseSource=farmAmbienceContext.createBufferSource();farmAmbienceNoiseSource.buffer=buffer;farmAmbienceNoiseSource.loop=true;
-   const filter=farmAmbienceContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=620;filter.Q.value=.65;
-   farmAmbienceGain=farmAmbienceContext.createGain();farmAmbienceGain.gain.value=.055;
+   const filter=farmAmbienceContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=720;filter.Q.value=.65;
+   farmAmbienceGain=farmAmbienceContext.createGain();farmAmbienceGain.gain.value=0;
    farmAmbienceNoiseSource.connect(filter);filter.connect(farmAmbienceGain);farmAmbienceGain.connect(farmAmbienceContext.destination);farmAmbienceNoiseSource.start();
   }
   if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
-  if(farmAmbienceGain&&farmAmbienceContext)farmAmbienceGain.gain.setTargetAtTime(.055,farmAmbienceContext.currentTime,.4);
-  setFarmCicadas(!!zone.insects);
+  if(farmAmbienceGain&&farmAmbienceContext)farmAmbienceGain.gain.setTargetAtTime(.13*farmAmbienceLevel,farmAmbienceContext.currentTime,.35);
+  setFarmCicadas(!!zone.insects,farmAmbienceLevel);
   if(changed){if(farmAmbienceBirdTimer)clearTimeout(farmAmbienceBirdTimer);playFarmBirdChirp();}
  }catch(_){}
 }
 function updateFarmAmbience(){
  if(!storyModeActive||farmCityMode||!character||isDriving||isCinematic){stopFarmAmbience();return;}
- const now=Date.now();if(now-farmAmbienceLastCheck<650)return;farmAmbienceLastCheck=now;
- const zone=FARM_AMBIENT_ZONES.find(z=>Math.hypot(character.position.x-z.x,character.position.z-z.z)<z.radius);
- if(zone)startFarmAmbience(zone);else if(farmAmbienceActiveZone)stopFarmAmbience();
+ const now=Date.now();if(now-farmAmbienceLastCheck<420)return;farmAmbienceLastCheck=now;
+ let active=null,distance=0;
+ for(const zone of FARM_AMBIENT_ZONES){const d=Math.hypot(character.position.x-zone.x,character.position.z-zone.z);if(d<zone.radius&&(!active||d/zone.radius<distance/active.radius)){active=zone;distance=d;}}
+ if(active){const edge=Math.max(0,1-distance/active.radius),level=Math.pow(edge,.72);startFarmAmbience(active,level);}
+ else if(farmAmbienceActiveZone)stopFarmAmbience();
 }
 
 function farmClearNPCs(includeRaiders=true){for(let i=smallPenes.length-1;i>=0;i--){const p=smallPenes[i];if(!p||!p.userData||includeRaiders||!p.userData.farmRaider){if(p&&p.parent)p.parent.remove(p);smallPenes.splice(i,1);}}if(includeRaiders)farmRaidActive=false;if(typeof updatePeneCountUI==='function')updatePeneCountUI();}
 
 const FARM_TV_CHANNELS=[
- {id:'hch',name:'HCH Honduras',region:'HONDURAS',url:'https://hch.tv/',hls:'https://live.streamhch.com/live/streams/hch1.m3u8',embed:'https://www.youtube-nocookie.com/embed/live_stream?channel=UCIs6fmAXOI1K2jgkoBdWveg'},
- {id:'tsi',name:'TSi Honduras',region:'HONDURAS',url:'https://www.televicentro.com/',hls:'https://trinity-lh.akamaihd.net/i/TelevicentroLive2_d@508538/master.m3u8',embed:'https://www.youtube-nocookie.com/embed/live_stream?channel=UC4wqQp9kiRRIT7yOKtg11hg'},
- {id:'canal5',name:'Canal 5 Honduras',region:'HONDURAS',url:'https://www.televicentro.com/envivo/ff0be52b-eb57-48d9-bbb4-ff84e86b6d06',embed:'https://mdstrm.com/live-stream/6287fdc9303e3008289ab711',iframeDirect:true},
- {id:'aljazeera',name:'Al Jazeera English',region:'INTERNACIONAL',url:'https://www.aljazeera.com/video/live/',hls:'https://live-hls-web-aje-gcp.thehlive.com/AJE/04.m3u8',backupHls:'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8',embed:'https://www.youtube-nocookie.com/embed/live_stream?channel=UCNye-wNBqNL5ZzHSJj3l8Bg'},
- {id:'france24',name:'France 24 English',region:'INTERNACIONAL',url:'https://www.france24.com/en/live',hls:'https://live.france24.com/hls/live/2037218/F24_EN_HI_HLS/master_2300.m3u8',embed:'https://www.youtube-nocookie.com/embed/Ap-UM1O9RBU'}
+ {id:'hch',name:'HCH Honduras',region:'HONDURAS',category:'NOTICIAS',url:'https://hch.tv/',hls:'https://live.streamhch.com/live/streams/hch1.m3u8'},
+ {id:'tsi',name:'TSi Honduras',region:'HONDURAS',category:'NOTICIAS',url:'https://www.televicentro.com/',hls:'https://mdstrm.com/live-stream-playlist/6287fdc9303e3008289ab711.m3u8'},
+ {id:'canal5',name:'Canal 5 El Líder',region:'HONDURAS',category:'GENERAL',url:'https://www.televicentro.com/envivo/ff0be52b-eb57-48d9-bbb4-ff84e86b6d06',hls:'https://mdstrm.com/live-stream-playlist/6287fda8ea3b8b397d1ca2ed.m3u8'},
+ {id:'canal7talanga',name:'Canal 7 Talanga Visión',region:'HONDURAS',category:'GENERAL',url:'https://www.talangavision.com/',hls:'https://amixtv.com:8081/talangavision/index.m3u8',backupHls:'https://stream.oursnetworktv.com/latin/talangatv/playlist.m3u8'},
+ {id:'icn',name:'ICN Digital',region:'HONDURAS',category:'NOTICIAS',url:'https://icndigital.com/',hls:'https://streaming.icndigital.com/live_output/icn_live_stream_1.m3u8'},
+ {id:'lenca',name:'Lenca TV Canal 40',region:'HONDURAS',category:'NOTICIAS',url:'https://www.lencatelevision.com/',hls:'https://lencatelevision.com/hls/stream.m3u8'},
+ {id:'azatv',name:'AZA TV HD',region:'HONDURAS',category:'ENTRETENIMIENTO',url:'https://azatvhn.com/',hls:'https://tv.webmedialive.com/azatvhn/live/playlist.m3u8'},
+ {id:'azteca',name:'Azteca Honduras',region:'HONDURAS',category:'ENTRETENIMIENTO',url:'https://www.tvazteca.com/',hls:'https://mdstrm.com/live-stream-playlist/65a1d2fd7e7f14355550d570.m3u8'},
+ {id:'canal11',name:'Canal 11 Honduras',region:'HONDURAS',category:'GENERAL',url:'https://www.canal11.hn/',hls:'https://redirector.rudo.video/hls-video/c54ac2799874375c81c1672abb700870537c5223/canal11hn/canal11hn.smil/playlist.m3u8'},
+ {id:'chtv',name:'CHTV',region:'HONDURAS',category:'GENERAL',url:'https://viewhn.com/chtv/',hls:'https://viewhn.com/chtv/live/playlist.m3u8'},
+ {id:'girasol',name:'Girasol TV',region:'HONDURAS',category:'ENTRETENIMIENTO',url:'https://www.girasoltv.com/',hls:'https://s.emisoras.tv:8081/girasoltv/index.m3u8'},
+ {id:'globotv',name:'Globo TV Honduras',region:'HONDURAS',category:'GENERAL',url:'https://www.globotvhonduras.com/',hls:'https://stream.radiosmundiales.com/hls/globotvhonduras/globotvhonduras.m3u8',backupHls:'https://panel.dattalive.com/8122/8122/playlist.m3u8'},
+ {id:'jbn',name:'JBN TV',region:'HONDURAS',category:'RELIGIOSO',url:'https://jbnmedia.org/',hls:'https://tv.webmedialive.com/jbn_live/enlace/playlist.m3u8',backupHls:'https://viewhn.com/jbn_live/enlace/playlist.m3u8'},
+ {id:'metro',name:'Metro TV',region:'HONDURAS',category:'GENERAL',url:'https://s.emisoras.tv/',hls:'https://s.emisoras.tv:8081/metrotv/index.m3u8'},
+ {id:'choluteca',name:'Choluteca TV',region:'HONDURAS',category:'GENERAL',url:'https://s.emisoras.tv/',hls:'https://s.emisoras.tv:8081/cholutecatv/index.m3u8'},
+ {id:'diosteve',name:'Dios Te Ve',region:'HONDURAS',category:'RELIGIOSO',url:'https://s.emisoras.tv/',hls:'https://s.emisoras.tv:8081/diostevetv/index.m3u8'},
+ {id:'guayape',name:'Guayape TV',region:'HONDURAS',category:'GENERAL',url:'https://tv.bitstreaming.net/',hls:'https://tv.bitstreaming.net:8443/live/guayapetv.m3u8'},
+ {id:'teleceiba',name:'Teleceiba',region:'HONDURAS',category:'GENERAL',url:'https://teleceiba.com/',hls:'https://teleceiba.com/stream/tlcb720.m3u8'},
+ {id:'telemas',name:'Telemás',region:'HONDURAS',category:'ENTRETENIMIENTO',url:'https://s.emisoras.tv/',hls:'https://s.emisoras.tv:8081/telemas/index.m3u8'},
+ {id:'tvestrella',name:'TV Estrella',region:'HONDURAS',category:'GENERAL',url:'https://s.emisoras.tv/',hls:'https://s.emisoras.tv:8081/tve/index.m3u8'},
+ {id:'sula',name:'Sula TV',region:'HONDURAS',category:'GENERAL',url:'https://tv.webmedialive.com/',hls:'https://tv.webmedialive.com/sulatv/live/playlist.m3u8'},
+ {id:'une',name:'UNE TV',region:'HONDURAS',category:'NOTICIAS',url:'https://www.unetv.hn/',hls:'https://amixtv.com:8081/unetvhn/tracks-v1a1/mono.m3u8'},
+ {id:'tvcentro',name:'TV Centro HD',region:'HONDURAS',category:'GENERAL',url:'https://cloud2.streaminglivehd.com/',hls:'https://cloud2.streaminglivehd.com:1936/8032/8032/playlist.m3u8'},
+ {id:'tvcopan',name:'TV Copán',region:'HONDURAS',category:'GENERAL',url:'https://s.emisoras.tv/',hls:'https://s.emisoras.tv:8081/tvcopan/index.m3u8'},
+ {id:'aljazeera',name:'Al Jazeera English',region:'INTERNACIONAL',category:'NOTICIAS',url:'https://www.aljazeera.com/video/live/',hls:'https://live-hls-web-aje-gcp.thehlive.com/AJE/04.m3u8',backupHls:'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8'},
+ {id:'france24',name:'France 24 English',region:'INTERNACIONAL',category:'NOTICIAS',url:'https://www.france24.com/en/live',hls:'https://live.france24.com/hls/live/2037218/F24_EN_HI_HLS/master_2300.m3u8'}
 ];
+function getFilteredFarmTVChannels(){
+ const term=(document.getElementById('farmTVSearch')?.value||'').trim().toLocaleLowerCase('es');
+ const category=document.getElementById('farmTVCategory')?.value||'TODOS';
+ return FARM_TV_CHANNELS.filter(channel=>{
+  const matchesCategory=category==='TODOS'||channel.category===category;
+  const haystack=[channel.name,channel.region,channel.category].join(' ').toLocaleLowerCase('es');
+  return matchesCategory&&(!term||haystack.includes(term));
+ });
+}
+function renderFarmTVChannels(){
+ const list=document.getElementById('farmTVChannels');if(!list)return;
+ const channels=getFilteredFarmTVChannels();
+ if(!channels.length){list.innerHTML='<div style="grid-column:1/-1;padding:10px;color:#f1d9a8;font-size:11px">No hay canales con ese nombre o categoría.</div>';return;}
+ list.innerHTML=channels.map(c=>{
+  const state=c.scanState||'SIN PROBAR';
+  const statusColor=state==='FUNCIONA'?'#9af0b5':state==='NO RESPONDE'?'#ffb5a6':'#f1d9a8';
+  return '<button type="button" data-tv-channel="'+c.id+'">📺 '+c.name+'<br><small>'+c.category+' · '+c.region+' · <span style="color:'+statusColor+'">'+state+'</span></small></button>';
+ }).join('');
+}
+function stopFarmTVChannelScan(){
+ farmTVScanToken++;farmTVScanActive=false;
+ if(farmTVScanCancelCurrent){try{farmTVScanCancelCurrent();}catch(_){}farmTVScanCancelCurrent=null;}
+ if(farmTVScanHls){try{farmTVScanHls.destroy();}catch(_){}farmTVScanHls=null;}
+ if(farmTVScanVideo){try{farmTVScanVideo.pause();farmTVScanVideo.removeAttribute('src');farmTVScanVideo.load();farmTVScanVideo.remove();}catch(_){}farmTVScanVideo=null;}
+ const stop=document.getElementById('farmTVScanStop');if(stop)stop.disabled=true;
+ const status=document.getElementById('farmTVScanStatus');if(status)status.textContent='Búsqueda detenida. Puedes volver a probar los canales cuando quieras.';
+}
+function probeFarmTVChannel(channel,token){
+ const sources=[channel.hls,channel.backupHls].filter(Boolean);
+ if(!sources.length)return Promise.resolve(false);
+ const trySource=(sourceIndex)=>new Promise(resolve=>{
+  if(token!==farmTVScanToken){resolve(false);return;}
+  const host=document.getElementById('farmTVScanHost')||document.body;
+  const video=document.createElement('video');
+  video.muted=true;video.volume=0;video.playsInline=true;video.preload='auto';video.crossOrigin='anonymous';
+  video.style.width='2px';video.style.height='2px';
+  host.appendChild(video);farmTVScanVideo=video;
+  let done=false,timeout=0,player=null;
+  const cleanup=()=>{
+   if(timeout)clearTimeout(timeout);
+   video.removeEventListener('loadeddata',check);video.removeEventListener('playing',check);video.removeEventListener('canplay',check);video.removeEventListener('error',failed);
+   if(player){try{player.destroy();}catch(_){}}
+   if(farmTVScanHls===player)farmTVScanHls=null;
+   try{video.pause();video.removeAttribute('src');video.load();video.remove();}catch(_){}
+   if(farmTVScanVideo===video)farmTVScanVideo=null;
+   if(farmTVScanCancelCurrent===cancel)farmTVScanCancelCurrent=null;
+  };
+  const finish=(ok)=>{if(done)return;done=true;cleanup();resolve(!!ok);};
+  const cancel=()=>finish(false);farmTVScanCancelCurrent=cancel;
+  const check=()=>{if(video.videoWidth>0&&video.videoHeight>0&&video.readyState>=2)finish(true);};
+  const failed=()=>finish(false);
+  video.addEventListener('loadeddata',check);video.addEventListener('playing',check);video.addEventListener('canplay',check);video.addEventListener('error',failed);
+  timeout=setTimeout(()=>finish(false),8500);
+  const play=()=>{if(token!==farmTVScanToken){finish(false);return;}const p=video.play();if(p&&p.catch)p.catch(()=>{});};
+  if(video.canPlayType('application/vnd.apple.mpegurl')){
+   video.src=sources[sourceIndex];video.load();play();
+  }else{
+   ensureFarmHlsLibrary().then(Hls=>{
+    if(done||token!==farmTVScanToken){finish(false);return;}
+    if(!Hls||!Hls.isSupported()){finish(false);return;}
+    player=new Hls({enableWorker:true,lowLatencyMode:false,maxBufferLength:8,maxBufferSize:3*1000*1000});
+    farmTVScanHls=player;
+    player.on(Hls.Events.MANIFEST_PARSED,play);
+    player.on(Hls.Events.FRAG_BUFFERED,check);
+    player.on(Hls.Events.ERROR,(_event,data)=>{if(data&&data.fatal)finish(false);});
+    player.attachMedia(video);player.loadSource(sources[sourceIndex]);
+   }).catch(()=>finish(false));
+  }
+ });
+ return (async()=>{
+  for(let i=0;i<sources.length;i++){
+   const ok=await trySource(i);
+   if(ok)return true;
+   if(token!==farmTVScanToken)return false;
+  }
+  return false;
+ })();
+}
+async function startFarmTVChannelScan(){
+ if(farmTVScanActive)stopFarmTVChannelScan();
+ const channels=getFilteredFarmTVChannels();
+ if(!channels.length){const status=document.getElementById('farmTVScanStatus');if(status)status.textContent='No hay canales para comprobar con ese filtro.';return;}
+ const token=++farmTVScanToken;farmTVScanActive=true;
+ const start=document.getElementById('farmTVScanStart'),stop=document.getElementById('farmTVScanStop');
+ if(start)start.disabled=true;if(stop)stop.disabled=false;
+ let working=0,finished=0;
+ const status=document.getElementById('farmTVScanStatus');
+ for(const channel of channels){
+  if(token!==farmTVScanToken||!farmTVScanActive)break;
+  channel.scanState='PROBANDO';renderFarmTVChannels();
+  if(status)status.textContent='Probando '+(finished+1)+' de '+channels.length+': '+channel.name+'…';
+  const ok=await probeFarmTVChannel(channel,token);
+  if(token!==farmTVScanToken||!farmTVScanActive)break;
+  channel.scanState=ok?'FUNCIONA':'NO RESPONDE';
+  if(ok)working++;finished++;renderFarmTVChannels();
+ }
+ if(token===farmTVScanToken){
+  farmTVScanActive=false;if(start)start.disabled=false;if(stop)stop.disabled=true;
+  if(status)status.textContent='Prueba terminada: '+working+' de '+finished+' señales reprodujeron en este dispositivo. Las demás pueden estar fuera del aire o bloquear este navegador.';
+ }
+}
 const FARM_RADIO_STATIONS=[
  {id:'hrn',name:'Radio HRN',freq:'670 AM / 92.9 FM',city:'Tegucigalpa',stream:'https://ice42.securenetsystems.net/HRN'},
  {id:'globo',name:'Radio Globo',freq:'88.5 FM',city:'Tegucigalpa',stream:'https://api.condoristream.com/stream/radioglobo'},
@@ -4928,24 +5065,53 @@ function ensureFarmHlsLibrary(){
  }).catch(error=>{farmTVHlsScriptPromise=null;throw error;});
  return farmTVHlsScriptPromise;
 }
+function restoreFarmTVScreenTexture(){
+ if(farmTVVideoTexture){try{farmTVVideoTexture.dispose();}catch(_){}farmTVVideoTexture=null;}
+ if(farmTVScreenMaterial){
+  farmTVScreenMaterial.map=farmTVPlaceholderTexture;
+  farmTVScreenMaterial.emissiveMap=farmTVPlaceholderTexture;
+  farmTVScreenMaterial.color.setHex(0xffffff);
+  farmTVScreenMaterial.emissive.setHex(0x17212b);
+  farmTVScreenMaterial.emissiveIntensity=0;
+  farmTVScreenMaterial.needsUpdate=true;
+ }
+}
+function attachFarmTVVideoTexture(video){
+ if(!video||!farmTVScreenMaterial)return;
+ if(farmTVVideoTexture&&farmTVVideoTexture.image!==video){try{farmTVVideoTexture.dispose();}catch(_){}farmTVVideoTexture=null;}
+ if(!farmTVVideoTexture){
+  farmTVVideoTexture=new THREE.VideoTexture(video);
+  farmTVVideoTexture.minFilter=THREE.LinearFilter;
+  farmTVVideoTexture.magFilter=THREE.LinearFilter;
+  farmTVVideoTexture.generateMipmaps=false;
+  farmTVVideoTexture.encoding=THREE.sRGBEncoding;
+ }
+ farmTVScreenMaterial.map=farmTVVideoTexture;
+ farmTVScreenMaterial.emissiveMap=farmTVVideoTexture;
+ farmTVScreenMaterial.color.setHex(0xffffff);
+ farmTVScreenMaterial.emissive.setHex(0xffffff);
+ farmTVScreenMaterial.emissiveIntensity=.26;
+ farmTVScreenMaterial.needsUpdate=true;
+}
 function clearFarmTVPlayback(){
  farmTVPlaybackToken++;
  if(farmTVHlsPlayer){try{farmTVHlsPlayer.destroy();}catch(_){}farmTVHlsPlayer=null;}
  const video=document.getElementById('farmTVWorldVideo'),frame=document.getElementById('farmTVWorldFrame');
- if(video){try{video.pause();video.removeAttribute('src');video.load();}catch(_){}video.style.display='none';video.muted=true;}
+ if(video){try{video.pause();video.removeAttribute('src');video.load();}catch(_){}video.style.display='block';video.muted=true;}
  if(frame){frame.src='about:blank';frame.style.display='none';}
  farmTVIframeFallback=false;
+ restoreFarmTVScreenTexture();
 }
 function startFarmTVIframeFallback(channel,token){
  if(token!==farmTVPlaybackToken||!farmTVPowerOn)return;
  if(farmTVHlsPlayer){try{farmTVHlsPlayer.destroy();}catch(_){}farmTVHlsPlayer=null;}
  const video=document.getElementById('farmTVWorldVideo'),frame=document.getElementById('farmTVWorldFrame');
- if(video){try{video.pause();video.removeAttribute('src');video.load();}catch(_){}video.style.display='none';}
- if(!frame)return;
- frame.style.display='block';farmTVIframeFallback=true;
- frame.src=channel.iframeDirect?channel.embed:farmTVEmbedUrl(channel);
- const hint=document.getElementById('farmTVHint');
- if(hint)hint.textContent=channel.name+' · El canal usa su reproductor oficial. Si no aparece dentro de la TV, pulsa ABRIR CANAL OFICIAL.';
+ if(video){try{video.pause();video.removeAttribute('src');video.load();}catch(_){}video.style.display='block';}
+ if(frame){frame.src='about:blank';frame.style.display='none';}
+ farmTVIframeFallback=false;restoreFarmTVScreenTexture();
+ const hint=document.getElementById('farmTVHint'),status=document.getElementById('farmTVPlayerStatus');
+ if(hint)hint.textContent=channel.name+' no entregó una señal HLS reproducible en este navegador. Puedes abrir su sitio oficial.';
+ if(status)status.textContent='Sin señal directa para la pantalla 3D · '+channel.name;
 }
 async function loadFarmTVChannel(){
  const channel=farmTVCurrentChannel;if(!channel||!farmTVPowerOn)return;
@@ -4953,7 +5119,7 @@ async function loadFarmTVChannel(){
  const token=farmTVPlaybackToken,video=document.getElementById('farmTVWorldVideo'),frame=document.getElementById('farmTVWorldFrame');
  if(!video||!frame)return;
  if(!channel.hls){startFarmTVIframeFallback(channel,token);return;}
- frame.style.display='none';video.style.display='block';video.volume=farmTVVolume;video.muted=false;video.playsInline=true;
+ frame.style.display='none';video.style.display='block';video.volume=farmTVVolume;video.muted=false;video.playsInline=true;attachFarmTVVideoTexture(video);
  const sources=[channel.hls,channel.backupHls].filter(Boolean);let sourceIndex=0,usingHlsJs=false;
  const playVideo=()=>{
   if(token!==farmTVPlaybackToken||!farmTVPowerOn)return;
@@ -4968,7 +5134,7 @@ async function loadFarmTVChannel(){
   if(token!==farmTVPlaybackToken||!farmTVPowerOn)return;
   if(farmTVHlsPlayer){try{farmTVHlsPlayer.destroy();}catch(_){}farmTVHlsPlayer=null;}
   const player=new Hls({enableWorker:true,lowLatencyMode:true,maxBufferLength:28,liveSyncDurationCount:3});
-  usingHlsJs=true;farmTVHlsPlayer=player;
+  usingHlsJs=true;farmTVHlsPlayer=player;attachFarmTVVideoTexture(video);
   player.on(Hls.Events.ERROR,(_event,data)=>{
    if(token!==farmTVPlaybackToken||farmTVHlsPlayer!==player||!data||!data.fatal)return;
    if(sourceIndex+1<sources.length){sourceIndex++;startHlsSource(Hls,sources[sourceIndex]);}
@@ -4984,7 +5150,7 @@ async function loadFarmTVChannel(){
  };
  try{
   if(video.canPlayType('application/vnd.apple.mpegurl')){
-   video.src=sources[0];video.load();video.addEventListener('loadedmetadata',playVideo,{once:true});return;
+   attachFarmTVVideoTexture(video);video.src=sources[0];video.load();video.addEventListener('loadedmetadata',playVideo,{once:true});return;
   }
   const Hls=await ensureFarmHlsLibrary();
   if(token!==farmTVPlaybackToken||!farmTVPowerOn)return;
@@ -5022,24 +5188,7 @@ function updateFarmTVScreenVisual(){
 }
 function updateFarmTVScreenOverlay(){
  const overlay=document.getElementById('farmTVScreenOverlay');
- if(!overlay||!farmTVPowerOn||farmCityMode||!farmTVProp||!camera||!farmTVProp.visible){if(overlay)overlay.style.display='none';return;}
- try{
-  camera.updateMatrixWorld();farmTVProp.updateMatrixWorld(true);
-  const w=1000,h=625,cx=0,cy=6.15,cz=1.75;
-  const points=[
-   new THREE.Vector3(cx-3.875,cy+2.425,cz),
-   new THREE.Vector3(cx+3.875,cy+2.425,cz),
-   new THREE.Vector3(cx-3.875,cy-2.425,cz),
-   new THREE.Vector3(cx+3.875,cy-2.425,cz)
-  ].map(p=>p.applyMatrix4(farmTVProp.matrixWorld).project(camera));
-  if(points.some(p=>p.z>1.08||p.z< -1.2)){overlay.style.display='none';return;}
-  const screen=points.map(p=>({x:(p.x*.5+.5)*window.innerWidth,y:(-.5*p.y+.5)*window.innerHeight}));
-  const tl=screen[0],tr=screen[1],bl=screen[2];
-  const a=(tr.x-tl.x)/w,b=(tr.y-tl.y)/w,c=(bl.x-tl.x)/h,d=(bl.y-tl.y)/h;
-  overlay.style.width=w+'px';overlay.style.height=h+'px';
-  overlay.style.transform='matrix('+[a,b,c,d,tl.x,tl.y].join(',')+')';
-  overlay.style.display='block';
- }catch(_){overlay.style.display='none';}
+ if(overlay){overlay.style.display='block';overlay.style.transform='none';}
 }
 function updateFarmTVProximity(){
  const video=document.getElementById('farmTVWorldVideo');
@@ -5051,7 +5200,7 @@ function updateFarmTVProximity(){
  const now=Date.now();if(now-farmTVLastAudioCheck<300)return;farmTVLastAudioCheck=now;
  const distance=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
  const attenuation=Math.max(0,Math.min(1,1-distance/48));
- if(video&&video.style.display!=='none'){
+ if(video){
   video.volume=farmTVVolume*attenuation;video.muted=attenuation<=.01||farmTVVolume<=.001;
  }else if(farmTVIframeFallback){
   if(attenuation<=.01)sendFarmTVCommand('mute');
@@ -5063,11 +5212,7 @@ function openFarmTV(){
  const inventory=document.getElementById('farmInventoryPanel');if(inventory)inventory.style.display='none';
  const radio=document.getElementById('farmRadioPanel');if(radio)radio.style.display='none';
  panel.style.display='flex';
- const list=document.getElementById('farmTVChannels');
- if(list&&!list.dataset.ready){
-  list.innerHTML=FARM_TV_CHANNELS.map(c=>'<button type="button" data-tv-channel="'+c.id+'">📺 '+c.name+'<br><small>'+c.region+'</small></button>').join('');
-  list.dataset.ready='1';
- }
+ renderFarmTVChannels();
  if(!farmTVCurrentChannel)farmTVCurrentChannel=FARM_TV_CHANNELS[0];
  updateFarmTVPanelStatus();
  const link=document.getElementById('farmTVOpenOfficial');
@@ -5079,13 +5224,17 @@ function closeFarmTV(){
 }
 function setupFarmTVControls(){
  if(farmTVPanelBound)return;
- const close=document.getElementById('farmTVClose'),list=document.getElementById('farmTVChannels'),open=document.getElementById('farmTVOpenOfficial'),power=document.getElementById('farmTVPowerBtn'),vol=document.getElementById('farmTVVolume'),down=document.getElementById('farmTVVolDown'),up=document.getElementById('farmTVVolUp');
+ const close=document.getElementById('farmTVClose'),list=document.getElementById('farmTVChannels'),open=document.getElementById('farmTVOpenOfficial'),power=document.getElementById('farmTVPowerBtn'),vol=document.getElementById('farmTVVolume'),down=document.getElementById('farmTVVolDown'),up=document.getElementById('farmTVVolUp'),category=document.getElementById('farmTVCategory'),search=document.getElementById('farmTVSearch'),scanStart=document.getElementById('farmTVScanStart'),scanStop=document.getElementById('farmTVScanStop');
  if(close)close.addEventListener('click',closeFarmTV);
  if(power)power.addEventListener('click',()=>setFarmTVPower(!farmTVPowerOn));
  if(vol)vol.addEventListener('input',()=>setFarmTVVolume(vol.value));
  if(down)down.addEventListener('click',()=>setFarmTVVolume(Math.round(farmTVVolume*100)-5));
  if(up)up.addEventListener('click',()=>setFarmTVVolume(Math.round(farmTVVolume*100)+5));
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-tv-channel]');if(b)selectFarmTVChannel(b.dataset.tvChannel);});
+ if(category)category.addEventListener('change',renderFarmTVChannels);
+ if(search)search.addEventListener('input',renderFarmTVChannels);
+ if(scanStart)scanStart.addEventListener('click',startFarmTVChannelScan);
+ if(scanStop)scanStop.addEventListener('click',stopFarmTVChannelScan);
  if(open)open.addEventListener('click',()=>{const url=open.dataset.url;if(url)window.open(url,'_blank','noopener');});
  if(!farmTVCurrentChannel)farmTVCurrentChannel=FARM_TV_CHANNELS[0];
  updateFarmTVPanelStatus();updateFarmTVScreenVisual();farmTVPanelBound=true;
@@ -5113,7 +5262,7 @@ function attemptFarmRadioStream(token){
  if(farmRadioStreamTry>=streams.length){
   farmRadioPowerOn=false;farmRadioAudio.pause();showToast('No respondió '+station.name+'. Prueba otra emisora.');updateFarmRadioPanel();return;
  }
- const url=streams[farmRadioStreamTry++];
+ const attemptNo=farmRadioStreamTry++,url=streams[attemptNo];
  try{
   farmRadioAudio.pause();farmRadioAudio.onerror=null;farmRadioAudio.src=url;farmRadioAudio.volume=farmRadioVolume;
   const result=farmRadioAudio.play();
@@ -5152,7 +5301,7 @@ function updateFarmRadioProximity(){
  if(!farmRadioPowerOn||farmCityMode||!character){if(farmRadioPowerOn)farmRadioAudio.volume=0;return;}
  const now=Date.now();if(now-farmRadioLastCheck<300)return;farmRadioLastCheck=now;
  const distance=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
- const attenuation=Math.max(0,Math.min(1,1-distance/42));
+ const attenuation=Math.max(0,Math.min(1,1-distance/55));
  farmRadioAudio.volume=farmRadioVolume*attenuation;
 }
 function setupFarmRadioControls(){
@@ -5210,7 +5359,7 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.1',
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.2',
    'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js'
   ];
   let lastError=null;
@@ -5537,9 +5686,9 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   if(shopDist<19&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
   if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
   if(tvDist<18&&tvDist<=radioDist&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
-  else if(radioDist<12&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
+  else if(radioDist<16&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
   if(tvDist<18&&tvDist<=radioDist)prompt='pulsa ATACAR para cambiar el canal o encender/apagar la televisión.';
-  else if(radioDist<12)prompt='pulsa ATACAR para elegir una emisora y encender/apagar la radio.';
+  else if(radioDist<16)prompt='pulsa ATACAR para elegir una emisora y encender/apagar la radio.';
   else if(shopDist<19)prompt='pulsa ATACAR para entrar al puesto y comprar suministros.';
   else if(storeDist<21)prompt='pulsa ATACAR para abrir el almacén y organizar tus productos.';
   const m=FARM_MISSION_DATA[farmMissionId];
@@ -5559,7 +5708,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
  const distanceFromFarm=Math.hypot(character.position.x-FARM_CENTER.x,character.position.z-FARM_CENTER.z);
  const beyondFarmLimit=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235);
  const cityRetryButton=document.getElementById('farmGoCity');
- if(cityRetryButton)cityRetryButton.style.display=beyondFarmLimit&&!farmRaidActive?'inline-flex':'none';
+ if(cityRetryButton)cityRetryButton.style.display=!farmRaidActive?'inline-flex':'none';
  if(!farmRaidActive&&beyondFarmLimit&&Date.now()>=cityTravelRetryAt){
   travelToCity();
   return;
@@ -6790,6 +6939,10 @@ function startProtestMission() {
                 // el primer toque puede ocurrir mientras aún carga el juego. Cada toque
                 // posterior debe poder arrancar/reanudar la música si quedó pausada.
                 audioUnlocked = true;
+                if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
+                const currentAmbientZone=FARM_AMBIENT_ZONES.find(z=>z.id===farmAmbienceActiveZone);
+                if(currentAmbientZone&&currentAmbientZone.insects)setFarmCicadas(true,farmAmbienceLevel);
+                if(currentAmbientZone)playFarmBirdChirp();
                 if (!audioPoolsPrepared) {
                     audioPoolsPrepared = true;
                     [attackSoundUrl,jumpSoundUrl,damageSoundUrl,auraPuraSoundUrl,supremeAttackSoundUrl,taradoSoundUrl,pedoSoundUrl,risaSoundUrl,explosionSoundUrl,rolonSoundUrl,pumSoundUrl].forEach(u=>{ if(u) ensureAudioPool(u,8); });
