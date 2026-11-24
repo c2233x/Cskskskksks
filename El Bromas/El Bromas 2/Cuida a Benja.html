@@ -4882,7 +4882,7 @@ async function travelToCity(){
   await new Promise(resolve=>setTimeout(resolve,550));
  }catch(error){
   showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga'));isCinematic=false;
- }finally{hideMapTravelOverlay();mapTravelInProgress=false;}
+ }finally{hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;}
 }
 async function travelToFarm(){
  if(!farmCityMode||mapTravelInProgress)return;
@@ -5076,39 +5076,49 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
             return true;
         }
         function updateStoryMode(){
-            if(!storyModeActive||!character||!scene||storyCinematicPlaying)return;
-            const now=performance.now();if(farmCityMode){updateCityMapMode(now);return;}
-            let prompt='';
-            if(farmRaidActive){
-                const n=smallPenes.filter(p=>p&&p.userData&&p.userData.farmRaider).length;
-                prompt='DEFIENDE A BENJA · intrusos: '+n+' · $5 por cada 2';
-            }else{
-                const shopDist=Math.hypot(character.position.x-FARM_SHOP_POS.x,character.position.z-FARM_SHOP_POS.z);
-                const storeDist=Math.hypot(character.position.x-FARM_STORAGE_POS.x,character.position.z-FARM_STORAGE_POS.z);
-                if(shopDist<19&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
-                if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
-                const m=FARM_MISSION_DATA[farmMissionId];
-                if(m){
-                    const dist=Math.hypot(character.position.x-m.target.x,character.position.z-m.target.z);
-                    if(dist<(farmMissionId==='feed'?22:20)){
-                        if(farmMissionId==='warehouse')prompt='pulsa ATACAR para abrir el almacen y guardar la carga';
-                        else if(farmMissionId==='delivery')prompt='pulsa ATACAR para entregar 2 verduras y 1 huevo';
-                        else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar el corral';
-                        else if(farmMissionId==='feed')prompt='lanzale comida a benja cuando tenga hambre';
-                        else prompt='pulsa ATACAR para completar: '+m.title.toLowerCase();
-                        if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse'&&farmMissionId!=='feed')farmHandleMissionAction();
-                        if(farmMissionId==='warehouse'&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
-                    }
-                }
-            }
-            const distanceFromFarm=Math.hypot(character.position.x-FARM_CENTER.x,character.position.z-FARM_CENTER.z);
-            const cityBtn=document.getElementById('farmGoCity');
-            if(cityBtn)cityBtn.style.display=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235)?'inline-flex':'none';
-            if(!farmRaidActive&&distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235))prompt='llegaste al limite de la granja. pulsa IR A CIUDAD para viajar.';
-            if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}else if(interactionPrompt)interactionPrompt.style.display='none';
-            updateFarmMoneyLabel();updateFarmGuide();if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
-        }
-                function startProtestMission() {
+ if(!storyModeActive||!character||!scene||storyCinematicPlaying)return;
+ const now=performance.now();
+ if(farmCityMode){stopFarmAmbience();updateCityMapMode(now);return;}
+ updateFarmAmbience();
+ let prompt='';
+ if(farmRaidActive){
+  const n=smallPenes.filter(p=>p&&p.userData&&p.userData.farmRaider).length;
+  prompt='DEFIENDE A BENJA · intrusos: '+n+' · $5 por cada 2';
+ }else{
+  const shopDist=Math.hypot(character.position.x-FARM_SHOP_POS.x,character.position.z-FARM_SHOP_POS.z);
+  const storeDist=Math.hypot(character.position.x-FARM_STORAGE_POS.x,character.position.z-FARM_STORAGE_POS.z);
+  const tvDist=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
+  if(shopDist<19&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
+  if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
+  if(tvDist<18&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
+  if(tvDist<18)prompt='pulsa ATACAR para encender la televisión y elegir un canal.';
+  else if(shopDist<19)prompt='pulsa ATACAR para entrar al puesto y comprar suministros.';
+  else if(storeDist<21)prompt='pulsa ATACAR para abrir el almacén y organizar tus productos.';
+  const m=FARM_MISSION_DATA[farmMissionId];
+  if(m){
+   const dist=Math.hypot(character.position.x-m.target.x,character.position.z-m.target.z);
+   if(dist<(farmMissionId==='feed'?22:20)){
+    if(farmMissionId==='warehouse')prompt='pulsa ATACAR para abrir el almacen y guardar la carga';
+    else if(farmMissionId==='delivery')prompt='pulsa ATACAR para entregar 2 verduras y 1 huevo';
+    else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar el corral';
+    else if(farmMissionId==='feed')prompt='lanzale comida a benja cuando tenga hambre';
+    else prompt='pulsa ATACAR para completar: '+m.title.toLowerCase();
+    if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse'&&farmMissionId!=='feed'&&shopDist>=19&&storeDist>=21&&tvDist>=18)farmHandleMissionAction();
+    if(farmMissionId==='warehouse'&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
+   }
+  }
+ }
+ const distanceFromFarm=Math.hypot(character.position.x-FARM_CENTER.x,character.position.z-FARM_CENTER.z);
+ if(!farmRaidActive&&distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235)){
+  travelToCity();
+  return;
+ }
+ if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}
+ else if(interactionPrompt)interactionPrompt.style.display='none';
+ updateFarmMoneyLabel();updateFarmGuide();
+ if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
+}
+function startProtestMission() {
             missionActive = true; missionType = 'protest'; postersIntact = totalPosters; protestSoundTimer = 0; posters.forEach(p => scene.remove(p)); posters = [];
             const mUI = document.getElementById('missionUI'); mUI.style.display = 'block'; document.getElementById('missionTitle').textContent = 'EVENTO: PROTEGE LOS CARTELES'; updateMissionUI();
             for(let i=0; i<totalPosters; i++){
@@ -5511,7 +5521,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 if (semenStainLevel > 70) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (semenStainLevel > 60) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (semenStainLevel < 30) { playerHealth = Math.min(playerMaxHealth, playerHealth + 1); updatePlayerHealth(); }
             }
             
-            drones.forEach(drone => {
+            if(farmCityMode)drones.forEach(drone => {
                 if (drone.state === 'idle') {
                     const taskIdx = rebuildTasks.findIndex(t => t.type === drone.type);
                     if (taskIdx !== -1) { drone.target = rebuildTasks.splice(taskIdx, 1)[0]; drone.state = 'moving'; }
@@ -6265,12 +6275,12 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
         }
 
         document.addEventListener('touchmove', (e) => {
-            const target = e.target && e.target.closest ? e.target.closest('#settingsPanel, #graphicsPanel, #settingsMainScroll') : null;
+            const target = e.target && e.target.closest ? e.target.closest('#settingsPanel, #graphicsPanel, #settingsMainScroll, #farmInventoryPanel, #farmInventoryButtons, #farmTVPanel, #farmTVChannels, #cityJobPanel, #cityJobList') : null;
             if (target) return;
             // Fuera de los menús mantenemos el comportamiento táctil del juego.
             e.preventDefault();
         }, { passive: false });
-        ['settingsPanel','graphicsPanel','settingsMainScroll'].forEach(id=>{
+        ['settingsPanel','graphicsPanel','settingsMainScroll','farmInventoryPanel','farmInventoryButtons','farmTVPanel','farmTVChannels','cityJobPanel','cityJobList'].forEach(id=>{
             const el=document.getElementById(id);
             if(!el) return;
             el.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
