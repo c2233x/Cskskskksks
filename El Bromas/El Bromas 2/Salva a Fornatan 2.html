@@ -73,11 +73,13 @@
             display: none; text-shadow: 0 0 10px #ff0044;
         }
         
-        #missionUI {
-            position: fixed; top: 85px; left: 50%; transform: translateX(-50%);
-            text-align: center; display: none; z-index: 50; 
-            background: rgba(0,0,0,0.75); border: 2px solid #ff4444; border-radius: 10px;
-            padding: 10px 20px; box-shadow: 0 0 20px rgba(255,0,0,0.6); pointer-events: none;
+        #missionUI{
+            position:fixed;top:8px;left:50%;transform:translateX(-50%);
+            width:min(310px,42vw);max-width:calc(100vw - 24px);
+            text-align:center;display:none;z-index:22;
+            background:rgba(8,14,22,.78);border:1px solid rgba(255,92,92,.88);border-radius:9px;
+            padding:6px 10px;box-shadow:0 5px 18px rgba(0,0,0,.28);pointer-events:none;
+            backdrop-filter:blur(5px);
         }
         #missionTitle { font-size: 16px; font-weight: bold; color: #ff5555; text-shadow: 0 0 5px #000; margin-bottom: 5px; }
         #missionProgress { font-size: 14px; color: #fff; font-weight: bold; text-shadow: 0 0 3px #000;}
@@ -377,17 +379,40 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmBenjaHealthTrack{width:96px;height:8px;border-radius:9px;overflow:hidden;background:#362528;border:1px solid rgba(255,255,255,.4)}
 #farmBenjaHealthFill{height:100%;width:100%;background:linear-gradient(90deg,#54c953,#bcf46b);transition:width .2s}
 #farmBenjaHealthText{font-size:9px;color:#f9dcb4}
-#farmInventoryPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1500;display:none;width:min(360px,92vw);max-height:76vh;overflow:auto;padding:14px;border:2px solid #d5ac64;border-radius:17px;background:linear-gradient(150deg,rgba(24,31,28,.98),rgba(7,15,18,.98));box-shadow:0 16px 55px rgba(0,0,0,.72);color:#fff;touch-action:pan-y}
+#farmInventoryPanel{position:fixed;left:50%;top:8%;transform:translateX(-50%);z-index:1500;display:none;width:min(390px,92vw);max-height:82vh;max-height:82dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px;border:2px solid #d5ac64;border-radius:17px;background:linear-gradient(150deg,rgba(24,31,28,.98),rgba(7,15,18,.98));box-shadow:0 16px 55px rgba(0,0,0,.72);color:#fff;touch-action:pan-y;pointer-events:auto}
 #farmInventoryHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 #farmInventoryHeader b{font-size:14px;color:#ffdd9b}
 #farmInventoryHeader button{width:32px;height:32px;border:0;border-radius:9px;background:#8b3434;color:#fff;font-size:18px;font-weight:900}
 #farmInventoryMoney{font-size:12px;color:#ffe2a7;font-weight:900;margin-bottom:8px}
 #farmInventorySummary{font-size:11px;line-height:1.55;color:#e1e7dc;padding:8px;border-radius:9px;background:rgba(255,255,255,.06);white-space:pre-line}
-#farmInventoryButtons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+#farmInventoryButtons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;max-height:36vh;max-height:36dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:2px 5px 8px 0}
 #farmInventoryButtons button{min-height:39px;padding:7px;border:1px solid #b68a4e;border-radius:9px;background:linear-gradient(145deg,#435a43,#26352a);color:#fff;font-size:11px;font-weight:900;touch-action:manipulation}
 #farmInventoryButtons button.primary{grid-column:1/-1;background:linear-gradient(145deg,#bb8741,#78502c);border-color:#ffd48e}
 #farmInventoryHint{font-size:9px;color:#a7b7a7;line-height:1.4;margin-top:10px;text-align:center}
-@media(max-width:600px){#farmBenjaHud{top:205px;transform:translateX(-50%) scale(.92)}#farmInventoryPanel{top:48%;padding:12px}}
+#missionTitle{font-size:12px;margin-bottom:2px}#missionProgress{font-size:10px;line-height:1.2}
+#farmInventoryPanel button{font-size:12px}
+#farmQuickActions{position:fixed;top:10px;left:170px;right:215px;display:flex;flex-wrap:wrap;gap:5px;z-index:90;pointer-events:auto}
+#farmQuickActions button{border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:7px 10px;background:rgba(10,23,35,.88);color:#fff;font-size:10px;font-weight:950;box-shadow:0 3px 12px rgba(0,0,0,.28);touch-action:manipulation}
+#farmQuickActions button.shop{background:#865425}#farmQuickActions button.store{background:#36553c}#farmQuickActions button.jobs{background:#36517d}#farmQuickActions button.travel{background:#965024}
+#farmQuickActions button:active{transform:scale(.96)}
+#farmSubtitles{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:1250;display:none;width:min(680px,88vw);padding:9px 14px;border-radius:12px;border:1px solid rgba(255,223,151,.7);background:rgba(4,10,17,.88);color:#fff;text-align:center;font-size:13px;line-height:1.45;font-weight:850;text-shadow:0 2px 2px #000;pointer-events:none;white-space:pre-line}
+#cityJobPanel{position:fixed;left:50%;top:8%;transform:translateX(-50%);z-index:1510;display:none;width:min(440px,92vw);max-height:82vh;max-height:82dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px;border:2px solid #79b8f2;border-radius:17px;background:rgba(7,16,30,.97);color:#fff;touch-action:pan-y}
+#cityJobPanel h2{margin:0 0 8px;color:#a9d9ff;font-size:17px}
+#cityJobList{display:grid;grid-template-columns:1fr 1fr;gap:7px}
+#cityJobList button{min-height:55px;border:1px solid #739cc5;border-radius:10px;background:#203b59;color:#fff;font-size:11px;font-weight:900;padding:8px;touch-action:manipulation}
+#cityJobList button span{display:block;color:#ffdc91;margin-top:4px}
+#cityJobClose{width:100%;margin-top:9px;border:0;border-radius:9px;padding:10px;background:#713d3d;color:#fff;font-weight:900}
+#farmQuickActions button#farmGoCity,#farmQuickActions button#cityBackFarm{display:none}
+@media(max-width:600px){
+ #farmBenjaHud{top:205px;transform:translateX(-50%) scale(.92)}
+ #missionUI{top:7px;width:min(245px,40vw);padding:5px 7px}
+ #farmInventoryPanel{top:5%;max-height:84vh;max-height:84dvh;padding:10px}
+ #farmInventoryButtons{max-height:40vh;max-height:40dvh}
+ #farmQuickActions{left:92px;right:150px;top:8px;gap:3px}
+ #farmQuickActions button{font-size:9px;padding:6px 7px}
+ #farmSubtitles{bottom:10px;font-size:11px;width:84vw}
+ #cityJobPanel{top:5%;max-height:84vh;max-height:84dvh;padding:10px}
+}
 </style>
 </head>
 <body>
@@ -430,6 +455,20 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="farmInventoryHeader"><b id="farmInventoryTitle">ALMACEN DE LA GRANJA</b><button type="button" data-farm-action="close">✕</button></div>
 <div id="farmInventoryMoney"></div><div id="farmInventorySummary"></div><div id="farmInventoryButtons"></div>
 <div id="farmInventoryHint">los productos guardados se quedan en tu partida</div></div>
+<div id="farmQuickActions">
+<button id="farmQuickShop" class="shop" type="button">TIENDA</button>
+<button id="farmQuickWarehouse" class="store" type="button">ALMACEN</button>
+<button id="farmQuickJobs" class="jobs" type="button" style="display:none">TRABAJOS</button>
+<button id="farmGoCity" class="travel" type="button">IR A CIUDAD</button>
+<button id="cityBackFarm" class="travel" type="button">VOLVER A GRANJA</button>
+</div>
+<div id="farmSubtitles" aria-live="polite"></div>
+<div id="cityJobPanel" role="dialog" aria-label="Trabajos de la ciudad">
+<h2>TRABAJOS DE LA CIUDAD</h2>
+<p>elige un encargo. ve al punto marcado y completalo para cobrar.</p>
+<div id="cityJobList"></div>
+<button id="cityJobClose" type="button">CERRAR</button>
+</div>
 <div id="cinematicLetterTop"><span>SALVA A FORNATAN 2</span></div><div id="cinematicLetterBottom"><span>LA GRANJA DE BENJA</span></div>
 <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
 <div id="meteorRainBar"><div id="meteorRainFill"></div></div>
