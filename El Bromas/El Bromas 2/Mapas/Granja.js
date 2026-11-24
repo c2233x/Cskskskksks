@@ -8,10 +8,12 @@ window.CUIDA_BENJA_FARM_MAP = {
   tv: { x: -414, z: -365 },
   radio: { x: -400, z: -356 },
   ambientZones: [
-    { id: "huerto", x: -220, z: -250, radius: 82, insects: true },
-    { id: "arboleda", x: -266, z: -284, radius: 72, insects: true },
-    { id: "camino", x: -340, z: -315, radius: 58, insects: true },
-    { id: "pozo", x: -390, z: -440, radius: 64, insects: false }
+    { id: "patio-central", x: -354, z: -322, radius: 96, insects: true },
+    { id: "huerto", x: -220, z: -250, radius: 88, insects: true },
+    { id: "arboleda", x: -266, z: -284, radius: 84, insects: true },
+    { id: "camino-tractor", x: -448, z: -286, radius: 86, insects: true },
+    { id: "sendero-norte", x: -320, z: -242, radius: 76, insects: true },
+    { id: "pozo", x: -390, z: -440, radius: 66, insects: false }
   ],
   pig: { x: -286, z: -354 },
   work: { x: -388, z: -302 },
