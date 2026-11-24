@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover" name="viewport"/>
-<title>Cuida a Benja · El Bromas 2</title>
+<title>Cuida a Benja</title>
 <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         html, body {
@@ -371,6 +371,8 @@
 #farmClockHud{position:fixed;top:14px;right:132px;z-index:58;display:none;min-width:98px;padding:6px 10px;border:1px solid rgba(255,226,160,.5);border-radius:11px;background:rgba(4,12,20,.78);color:#ffe3a5;font-size:10px;font-weight:950;line-height:1.2;text-align:center;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.24)}
 #farmClockHud small{display:block;margin-top:2px;color:#d6e5f4;font-size:8px;font-weight:800;letter-spacing:.08em}
 #farmTVPlutoScan{grid-column:1/-1;min-height:38px;border:1px solid #6aa6d6;border-radius:8px;padding:8px;background:linear-gradient(135deg,#315b84,#20364e);color:#fff;font-size:10px;font-weight:950}
+#farmTVNoSignalToggle{grid-column:1/-1;min-height:36px;border:1px solid #bd9a58;border-radius:8px;padding:7px;background:#49351e;color:#fff;font-size:10px;font-weight:900}
+#farmRadioScanControls{display:grid;grid-template-columns:1fr 1fr;gap:6px}#farmRadioScanControls button{border:1px solid #8aa8ba;border-radius:8px;padding:8px;background:#253b4c;color:#fff;font-size:10px;font-weight:900}#farmRadioScanStatus{grid-column:1/-1;color:#e2d8bc;font-size:10px;line-height:1.4}
 @media(max-width:600px){#farmClockHud{right:128px;top:56px;min-width:88px;padding:5px 7px;font-size:9px}}
 #cinematicLetterTop,#cinematicLetterBottom{position:fixed;left:0;right:0;height:0;z-index:1320;background:#000;pointer-events:none;transition:height .45s ease;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #cinematicLetterTop{top:0}#cinematicLetterBottom{bottom:0}
@@ -480,10 +482,6 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 </style>
 </head>
 <body>
-<div id="accessGate" role="main" aria-label="Acceso al juego">
-  <div id="accessGateTitle">Codis</div>
-  <input id="accessGateCode" type="password" placeholder="aqui escribo el codigo" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Código">
-</div>
 <div id="startScreen">
 <div id="loadingText">Iniciando</div>
 <div id="startupProgressTrack"><div id="startupProgressBar"></div></div>
@@ -547,7 +545,8 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
     <input id="farmTVSearch" type="search" placeholder="Buscar canal…" autocomplete="off" aria-label="Buscar canales">
     <button id="farmTVScanStart" type="button">🔎 BUSCAR Y PROBAR</button>
     <button id="farmTVScanStop" type="button" disabled>■ DETENER BÚSQUEDA</button>
-    <button id="farmTVPlutoScan" type="button">📡 ESCANEAR CATÁLOGO PLUTO TV</button>
+    <button id="farmTVPlutoScan" type="button">📡 ABRIR CATÁLOGO OFICIAL PLUTO TV</button>
+    <button id="farmTVNoSignalToggle" type="button">MOSTRAR CANALES SIN SEÑAL</button>
     <div id="farmTVScanStatus" role="status" aria-live="polite">Canales listos. Pulsa «BUSCAR Y PROBAR» para comprobar cuáles reproducen aquí.</div>
   </div>
   <div id="farmTVChannels"></div>
@@ -560,6 +559,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
   <div id="farmRadioStatus">Elige una emisora y enciende la radio. El sonido se escucha cerca del aparato.</div>
   <div id="farmRadioPowerControls"><button id="farmRadioPowerBtn" type="button">⏻ ENCENDER RADIO</button><span id="farmRadioPowerLabel" class="farmMediaValue">APAGADA</span></div>
   <div id="farmRadioVolumeControls"><button id="farmRadioVolDown" class="farmMediaButton" type="button" aria-label="Bajar volumen de radio">−</button><input id="farmRadioVolume" class="farmMediaVolume" type="range" min="0" max="100" value="55"><button id="farmRadioVolUp" class="farmMediaButton" type="button" aria-label="Subir volumen de radio">+</button><span id="farmRadioVolumeValue" class="farmMediaValue">55%</span></div>
+  <div id="farmRadioScanControls"><button id="farmRadioScanStart" type="button">🔎 BUSCAR EMISORAS NUEVAS</button><button id="farmRadioScanStop" type="button" disabled>DETENER BÚSQUEDA</button><div id="farmRadioScanStatus">Emisoras sincronizadas con la radio del vehículo.</div></div>
   <div id="farmRadioStations"></div>
 </div>
 <div id="mapTravelOverlay"><div id="mapTravelTitle">RUMBO A LA CIUDAD</div><div id="mapTravelSubtitle">Preparando el viaje…</div></div>
@@ -780,7 +780,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.6"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.7"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -857,8 +857,10 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
 
         let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null,farmTVProp=null;
 let farmWaterStorageGroup=null,farmPigstyGroup=null,farmPondWaterMeshes=[],farmPondRippleMeshes=[];
+let farmBenjaFenceGroup=null;
 let farmWaterTankWater=null,farmWaterTankLabel=null,farmWaterTankLabelTexture=null;
-let farmTVPhysicalButtons=[],farmTVPhysicalControlsBound=false,farmClockLastUi=0;
+let farmTVPhysicalButtons=[],farmTVPhysicalHitTargets=[],farmTVPhysicalControlsBound=false,farmClockLastUi=0;
+let farmTVShowNoSignal=false;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
         let farmTVPanelBound=false,farmTVCurrentChannel=null,farmTVPowerOn=false,farmTVVolume=.55,farmTVScreenMaterial=null,farmTVLastAudioCheck=0;
@@ -867,6 +869,7 @@ let farmTVPlaceholderTexture=null,farmTVVideoTexture=null;
 let farmTVScanToken=0,farmTVScanHls=null,farmTVScanVideo=null,farmTVScanCancelCurrent=null,farmTVScanActive=false;
         let cityTravelRetryAt=0;
         let farmRadioProp=null,farmRadioPanelBound=false,farmRadioAudio=new Audio(),farmRadioPowerOn=false,farmRadioStationIndex=0,farmRadioVolume=.55,farmRadioLastCheck=0;
+let farmRadioScanToken=0,farmRadioScanActive=false,farmRadioScanAudio=null;
         farmRadioAudio.preload='none';farmRadioAudio.setAttribute('playsinline','');let farmRadioGeneration=0,farmRadioStreamTry=0;
         let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0,farmAmbienceLevel=0,farmCicadaAudio=null;
         let farmBenjaHunger=100,farmBenjaHungerLast=0,farmBenjaHungerLinePlayed=false,benjaWalkTarget=null,benjaWalkTargetAt=0;
@@ -1695,7 +1698,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         async function fetchVersionDirect() {
             const candidates = [
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/El%20Bromas/El%20Bromas%202/Version.txt`
+                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/El%20Bromas/Cuida%20a%20Benja/Version.txt`
             ];
             for (const url of candidates) {
                 try {
@@ -4290,6 +4293,13 @@ function removeCarRadioStation(index, reason='Sin señal'){
             document.getElementById('storyDialogTitle').textContent=title||'';
             document.getElementById('storyDialogText').textContent=text||'';
             document.getElementById('storyDialogIcon').textContent=icon||'📜';p.style.display='flex';
+            speakFarmLine(title||'NARRADOR',text||'');
+        }
+        function startFarmIntroCinematic(){
+            if(!camera||!character)return;
+            storyCinematicPlaying=true;storyCinematicStep=0;storyCinematicFrame=0;storyCinematicFrom=camera.position.clone();
+            isCinematic=true;document.body.classList.add('farmCinematic');
+            showStoryDialog('UN NUEVO COMIENZO','Llegaste a la granja. Hay mucho por reparar, una casa que levantar y un cerdito llamado Benja que depende de ti. Primero vamos a conocerlo.','🌾');
         }
         function hideStoryDialog(){const p=document.getElementById('storyDialog');if(p)p.style.display='none';}
         function advanceFarmCinematic(){
@@ -4350,7 +4360,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),angle=Math.atan2(dz,dx),g=farmGroundAt((x1+x2)/2,(z1+z2)/2);
             for(const f of [.08,.5,.92]){const p=new THREE.Mesh(new THREE.BoxGeometry(.65,2.35,.65),mat);p.position.set(x1+dx*f,g+1.17,z1+dz*f);p.castShadow=true;parent.add(p);}
             for(const y of [.72,1.62]){const r=new THREE.Mesh(new THREE.BoxGeometry(len,.28,.34),mat);r.position.set((x1+x2)/2,g+y,(z1+z2)/2);r.rotation.y=-angle;r.castShadow=true;parent.add(r);}
-            if(parent===farmGroup)addFarmCollider((x1+x2)/2,(z1+z2)/2,len,.85,-angle,'farm-fence');
+            if(parent===farmGroup||parent===farmBenjaFenceGroup)addFarmCollider((x1+x2)/2,(z1+z2)/2,len,.85,-angle,'farm-fence');
         }
         function createFarmSign(label,x,y,z){
             const g=new THREE.Group(),fm=new THREE.MeshStandardMaterial({color:0x523a25,roughness:.9});
@@ -4652,17 +4662,19 @@ function removeCarRadioStation(index, reason='Sin señal'){
             screen.position.set(0,6.15,1.73);tv.add(screen);
             // Physical channel controls below the television screen.
             const controlPlate=new THREE.Mesh(new THREE.BoxGeometry(4.9,.78,.18),new THREE.MeshStandardMaterial({color:0x302319,roughness:.86}));
-            controlPlate.position.set(0,1.62,1.42);tv.add(controlPlate);
+            controlPlate.position.set(0,1.62,1.96);tv.add(controlPlate);
             function makeChannelButton(x,label,action,color){
                 const base=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.2,14),new THREE.MeshStandardMaterial({color,metalness:.18,roughness:.55}));
-                base.rotation.x=Math.PI/2;base.position.set(x,1.62,1.59);base.userData.tvChannelAction=action;base.userData.isTVChannelButton=true;tv.add(base);
+                base.rotation.x=Math.PI/2;base.position.set(x,1.62,2.12);base.userData.tvChannelAction=action;base.userData.isTVChannelButton=true;tv.add(base);
                 const cap=new THREE.Mesh(new THREE.CylinderGeometry(.32,.34,.09,14),new THREE.MeshStandardMaterial({color:0xd7c49c,roughness:.5}));
-                cap.rotation.x=Math.PI/2;cap.position.set(x,1.62,1.72);cap.userData.tvChannelAction=action;cap.userData.isTVChannelButton=true;tv.add(cap);
+                cap.rotation.x=Math.PI/2;cap.position.set(x,1.62,2.29);cap.userData.tvChannelAction=action;cap.userData.isTVChannelButton=true;tv.add(cap);
                 const labelCanvas=document.createElement('canvas');labelCanvas.width=256;labelCanvas.height=96;const lc=labelCanvas.getContext('2d');
                 lc.fillStyle='#f3dfb7';lc.fillRect(0,0,256,96);lc.fillStyle='#34251a';lc.font='bold 45px Arial';lc.textAlign='center';lc.textBaseline='middle';lc.fillText(label,128,49);
                 const labelMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.42),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,side:THREE.DoubleSide}));
-                labelMesh.position.set(x,2.12,1.58);tv.add(labelMesh);
+                labelMesh.position.set(x,2.12,2.2);tv.add(labelMesh);
                 farmTVPhysicalButtons.push(base,cap);
+                const hitTarget=new THREE.Mesh(new THREE.BoxGeometry(2.6,1.9,1.15),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
+                hitTarget.position.set(x,1.62,2.05);hitTarget.userData.tvChannelAction=action;tv.add(hitTarget);farmTVPhysicalHitTargets.push(hitTarget);
             }
             makeChannelButton(-1.22,'◀','prev',0x446078);
             makeChannelButton(1.22,'▶','next',0x467e5a);
@@ -4697,7 +4709,9 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function createFarmDefensiveCorral(){
             clearFarmColliders('farm-defense');
             if(farmDefenseGroup&&farmDefenseGroup.parent)farmDefenseGroup.parent.remove(farmDefenseGroup);
-            farmDefenseGroup=null;if(farmDefenseLevel<=0||!farmGroup)return;
+            farmDefenseGroup=null;
+            if(farmDefenseLevel>0&&farmBenjaFenceGroup){farmGroup.remove(farmBenjaFenceGroup);farmBenjaFenceGroup=null;clearFarmColliders('farm-fence');}
+            if(farmDefenseLevel<=0||!farmGroup)return;
             farmDefenseGroup=new THREE.Group();farmGroup.add(farmDefenseGroup);
             const px=FARM_PIG_POS.x,pz=FARM_PIG_POS.z,level=Math.max(1,Math.min(3,farmDefenseLevel));
             const height=3.6+level*1.35,thickness=2.5+level*.7;
@@ -4890,7 +4904,13 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 splash.rotation.x=-Math.PI/2;splash.position.set(px+(i-3)*4.3,py+.24+i*.002,pz+Math.sin(i*1.7)*6);farmGroup.add(splash);
             }
             const xL=px-23,xR=px+23,zT=pz-20,zB=pz+20;
-            makeFarmFence(farmGroup,xL,zT,xR,zT,wood);makeFarmFence(farmGroup,xR,zT,xR,zB,wood);makeFarmFence(farmGroup,xR,zB,xL,zB,wood);makeFarmFence(farmGroup,xL,zB,xL,zT+7,wood);
+            farmBenjaFenceGroup=new THREE.Group();farmGroup.add(farmBenjaFenceGroup);
+            makeFarmFence(farmBenjaFenceGroup,xL,zT,xR,zT,wood);
+            makeFarmFence(farmBenjaFenceGroup,xR,zT,xR,zB,wood);
+            // Entrada frontal libre de 12 m: sin travesaños bloqueando al jugador.
+            makeFarmFence(farmBenjaFenceGroup,xR,zB,px+6,zB,wood);
+            makeFarmFence(farmBenjaFenceGroup,px-6,zB,xL,zB,wood);
+            makeFarmFence(farmBenjaFenceGroup,xL,zB,xL,zT+7,wood);
             const trough=new THREE.Mesh(new THREE.BoxGeometry(7,1.3,2.2),metal);trough.position.set(px+13,py+.68,pz+10);farmGroup.add(trough);addFarmCollider(px+13,pz+10,7.4,2.6,0,'farm-trough');
             const wx=FARM_WORK_POS.x,wz=FARM_WORK_POS.z,wy=farmGroundAt(wx,wz);makeFarmBox(farmGroup,wx,wy,wz,8,2.2,5,wood);addFarmCollider(wx,wz,8.4,5.4,0,'farm-workbench');
             const crateMat=new THREE.MeshStandardMaterial({color:0xb27a37,roughness:.88});
@@ -5232,8 +5252,8 @@ function getFilteredFarmTVChannels(){
 }
 function renderFarmTVChannels(){
  const list=document.getElementById('farmTVChannels');if(!list)return;
- const channels=getFilteredFarmTVChannels();
- if(!channels.length){list.innerHTML='<div style="grid-column:1/-1;padding:10px;color:#f1d9a8;font-size:11px">No hay canales con ese nombre o categoría.</div>';return;}
+ let channels=getFilteredFarmTVChannels();if(!farmTVShowNoSignal)channels=channels.filter(c=>c.scanState!=='NO RESPONDE');
+ if(!channels.length){list.innerHTML='<div style="grid-column:1/-1;padding:10px;color:#f1d9a8;font-size:11px">No hay señales probadas para este filtro. Pulsa «MOSTRAR CANALES SIN SEÑAL» para ver el resto.</div>';return;}
  list.innerHTML=channels.map(c=>{
   const state=c.scanState||(c.provider==='PLUTO TV'?'SITIO OFICIAL':'SIN PROBAR');
   const statusColor=state==='FUNCIONA'?'#9af0b5':state==='NO RESPONDE'?'#ffb5a6':'#f1d9a8';
@@ -5302,12 +5322,11 @@ function probeFarmTVChannel(channel,token){
 function scanFarmPlutoCatalog(){
  const channelEntries=FARM_TV_CHANNELS.filter(c=>c.provider==='PLUTO TV');
  const category=document.getElementById('farmTVCategory'),search=document.getElementById('farmTVSearch');
- if(category)category.value='TODOS';
- if(search)search.value='Pluto TV';
- channelEntries.forEach(c=>c.scanState='SITIO OFICIAL');
- renderFarmTVChannels();
+ if(category)category.value='TODOS';if(search)search.value='Pluto TV';
+ channelEntries.forEach(c=>c.scanState='SOLO WEB OFICIAL');renderFarmTVChannels();
  const status=document.getElementById('farmTVScanStatus');
- if(status)status.textContent='Catálogo oficial Pluto TV: '+channelEntries.length+' páginas de Anime y Kids encontradas. Selecciona una y pulsa ABRIR CANAL OFICIAL. Pluto reproduce desde su propio sitio; no es una señal HLS directa de la pantalla 3D.';
+ if(status)status.textContent='Pluto TV no ofrece a esta pantalla una señal directa confirmada. Se abre su catálogo oficial para elegir una emisión en el navegador; disponibilidad según región.';
+ const link=document.getElementById('farmTVOpenOfficial');if(link){link.textContent='ABRIR PLUTO TV OFICIAL';link.dataset.url='https://pluto.tv/us/watch/live-tv/';window.open(link.dataset.url,'_blank','noopener');}
 }
 async function startFarmTVChannelScan(){
  if(farmTVScanActive)stopFarmTVChannelScan();
@@ -5332,15 +5351,7 @@ async function startFarmTVChannelScan(){
   if(status)status.textContent='Prueba terminada: '+working+' de '+finished+' señales reprodujeron en este dispositivo. Las demás pueden estar fuera del aire o bloquear este navegador.';
  }
 }
-const FARM_RADIO_STATIONS=[
- {id:'hrn',name:'Radio HRN',freq:'670 AM / 92.9 FM',city:'Tegucigalpa',stream:'https://ice42.securenetsystems.net/HRN'},
- {id:'globo',name:'Radio Globo',freq:'88.5 FM',city:'Tegucigalpa',stream:'https://api.condoristream.com/stream/radioglobo'},
- {id:'activa',name:'Radio Activa',freq:'99.7 FM',city:'Honduras',stream:'https://stream.zeno.fm/fh8qfg75puquv',backup:'https://stream.zeno.fm/6n7fp9t2pceuv'},
- {id:'exa',name:'EXA FM Honduras',freq:'100.5 FM',city:'Honduras',stream:'https://stream.zeno.fm/0n4tnx3wd5zuv'},
- {id:'musiquera',name:'Musiquera',freq:'93.3 FM',city:'San Pedro Sula',stream:'https://stream.zeno.fm/83h238tqsceuv'},
- {id:'latop',name:'La Top',freq:'102.9 FM',city:'San Pedro Sula',stream:'https://us9.maindigitalstream.com/ssl/latop102'},
- {id:'estereoclase',name:'Estéreo Clase',freq:'92.9 FM',city:'Cortés',stream:'https://stream.zeno.fm/k6grbcx0zceuv'}
-];
+const FARM_RADIO_STATIONS=CURATED_HONDURAS_STATIONS.map(st=>({id:st.id,name:st.name,freq:st.freq,city:st.city,stream:st.streamUrl,backup:(st.backupUrls||[])[0]||''}));
 function farmTVEmbedUrl(channel){
  const origin=window.location&&window.location.origin&&window.location.origin!=='null'?window.location.origin:'https://github.com';
  const separator=channel.embed.includes('?')?'&':'?';
@@ -5561,27 +5572,22 @@ function closeFarmTV(){
 }
 function setupFarmTVPhysicalControls(){
  if(farmTVPhysicalControlsBound||!renderer||!renderer.domElement)return;
- renderer.domElement.addEventListener('click',event=>{
-  if(!storyModeActive||farmCityMode||!character||!farmTVPhysicalButtons.length)return;
-  if(Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z)>34)return;
-  const rect=renderer.domElement.getBoundingClientRect();
+ renderer.domElement.addEventListener('pointerup',event=>{
+  if(!storyModeActive||farmCityMode||!character||!farmTVPhysicalHitTargets.length)return;
+  if(Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z)>42)return;
+  const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;
+  camera.updateMatrixWorld();if(farmTVProp)farmTVProp.updateMatrixWorld(true);
   const pointer=new THREE.Vector2(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
   const ray=new THREE.Raycaster();ray.setFromCamera(pointer,camera);
-  const hit=ray.intersectObjects(farmTVPhysicalButtons,false)[0];
-  if(!hit)return;
-  event.preventDefault();event.stopPropagation();
-  const action=hit.object.userData.tvChannelAction;
-  if(action==='prev'||action==='next'){
-   cycleFarmTVChannel(action==='next'?1:-1);
-   if(!farmTVPowerOn)setFarmTVPower(true);
-   showToast(action==='next'?'siguiente canal':'canal anterior');
-  }
- });
+  const hit=ray.intersectObjects(farmTVPhysicalHitTargets,false)[0];if(!hit)return;
+  event.preventDefault();const action=hit.object.userData.tvChannelAction;
+  if(action==='prev'||action==='next'){cycleFarmTVChannel(action==='next'?1:-1);if(!farmTVPowerOn)setFarmTVPower(true);showToast(action==='next'?'siguiente canal':'canal anterior');}
+ },{capture:true});
  farmTVPhysicalControlsBound=true;
 }
 function setupFarmTVControls(){
  if(farmTVPanelBound)return;
- const close=document.getElementById('farmTVClose'),list=document.getElementById('farmTVChannels'),open=document.getElementById('farmTVOpenOfficial'),power=document.getElementById('farmTVPowerBtn'),vol=document.getElementById('farmTVVolume'),down=document.getElementById('farmTVVolDown'),up=document.getElementById('farmTVVolUp'),category=document.getElementById('farmTVCategory'),search=document.getElementById('farmTVSearch'),scanStart=document.getElementById('farmTVScanStart'),scanStop=document.getElementById('farmTVScanStop'),plutoScan=document.getElementById('farmTVPlutoScan');
+ const close=document.getElementById('farmTVClose'),list=document.getElementById('farmTVChannels'),open=document.getElementById('farmTVOpenOfficial'),power=document.getElementById('farmTVPowerBtn'),vol=document.getElementById('farmTVVolume'),down=document.getElementById('farmTVVolDown'),up=document.getElementById('farmTVVolUp'),category=document.getElementById('farmTVCategory'),search=document.getElementById('farmTVSearch'),scanStart=document.getElementById('farmTVScanStart'),scanStop=document.getElementById('farmTVScanStop'),plutoScan=document.getElementById('farmTVPlutoScan'),noSignalToggle=document.getElementById('farmTVNoSignalToggle');
  if(close)close.addEventListener('click',closeFarmTV);
  if(power)power.addEventListener('click',()=>setFarmTVPower(!farmTVPowerOn));
  if(vol)vol.addEventListener('input',()=>setFarmTVVolume(vol.value));
@@ -5593,6 +5599,7 @@ function setupFarmTVControls(){
  if(scanStart)scanStart.addEventListener('click',startFarmTVChannelScan);
  if(scanStop)scanStop.addEventListener('click',stopFarmTVChannelScan);
  if(plutoScan)plutoScan.addEventListener('click',scanFarmPlutoCatalog);
+ if(noSignalToggle)noSignalToggle.addEventListener('click',()=>{farmTVShowNoSignal=!farmTVShowNoSignal;noSignalToggle.textContent=farmTVShowNoSignal?'OCULTAR CANALES SIN SEÑAL':'MOSTRAR CANALES SIN SEÑAL';renderFarmTVChannels();});
  if(open)open.addEventListener('click',()=>{const url=open.dataset.url;if(url)window.open(url,'_blank','noopener');});
  if(!farmTVCurrentChannel)farmTVCurrentChannel=FARM_TV_CHANNELS[0];
  updateFarmTVPanelStatus();updateFarmTVScreenVisual();farmTVPanelBound=true;
@@ -5642,17 +5649,39 @@ function selectFarmRadioStation(index){
  const wasOn=farmRadioPowerOn;farmRadioStationIndex=index;
  if(wasOn)setFarmRadioPower(true);else updateFarmRadioPanel();
 }
+function renderFarmRadioStations(){
+ const list=document.getElementById('farmRadioStations');if(!list)return;
+ list.innerHTML=FARM_RADIO_STATIONS.map((st,i)=>{const state=st.scanState||'SIN PROBAR';const color=state==='FUNCIONA'?'#a8efb4':state==='NO RESPONDE'?'#ffb0a0':'#ead6ad';return '<button type="button" data-farm-radio="'+i+'">📻 '+st.name+'<br><small>'+st.freq+' · '+st.city+' · <span style="color:'+color+'">'+state+'</span></small></button>';}).join('');
+}
+async function startFarmRadioScan(){
+ if(farmRadioScanActive)stopFarmRadioScan();const token=++farmRadioScanToken;farmRadioScanActive=true;let good=0,done=0;
+ const start=document.getElementById('farmRadioScanStart'),stop=document.getElementById('farmRadioScanStop'),status=document.getElementById('farmRadioScanStatus');
+ if(start)start.disabled=true;if(stop)stop.disabled=false;
+ for(const station of FARM_RADIO_STATIONS){
+  if(token!==farmRadioScanToken||!farmRadioScanActive)break;
+  const candidates=[station.stream,station.backup].filter(Boolean);let ok=false;station.scanState='PROBANDO';renderFarmRadioStations();
+  if(status)status.textContent='Probando '+(done+1)+' de '+FARM_RADIO_STATIONS.length+': '+station.name+'…';
+  for(const source of candidates){
+   if(token!==farmRadioScanToken||!farmRadioScanActive)break;
+   ok=await new Promise(resolve=>{
+    const audio=new Audio();farmRadioScanAudio=audio;audio.preload='auto';audio.muted=true;audio.volume=0;
+    let settled=false,timer=0;const finish=v=>{if(settled)return;settled=true;clearTimeout(timer);audio.oncanplay=null;audio.onplaying=null;audio.onerror=null;try{audio.pause();audio.removeAttribute('src');audio.load();}catch(_){}if(farmRadioScanAudio===audio)farmRadioScanAudio=null;resolve(v);};
+    timer=setTimeout(()=>finish(false),6500);audio.oncanplay=()=>finish(true);audio.onplaying=()=>finish(true);audio.onerror=()=>finish(false);audio.src=source;audio.load();
+    try{const p=audio.play();if(p&&p.catch)p.catch(()=>finish(false));}catch(_){finish(false);}
+    if(token!==farmRadioScanToken)finish(false);
+   });if(ok)break;
+  }
+  if(token!==farmRadioScanToken||!farmRadioScanActive)break;
+  station.scanState=ok?'FUNCIONA':'NO RESPONDE';if(ok)good++;done++;renderFarmRadioStations();
+ }
+ if(token===farmRadioScanToken){farmRadioScanActive=false;if(start)start.disabled=false;if(stop)stop.disabled=true;if(status)status.textContent='Prueba terminada: '+good+' de '+done+' emisoras entregaron audio en este dispositivo.';}
+}
+function stopFarmRadioScan(){farmRadioScanToken++;farmRadioScanActive=false;if(farmRadioScanAudio){try{farmRadioScanAudio.pause();farmRadioScanAudio.removeAttribute('src');farmRadioScanAudio.load();}catch(_){}farmRadioScanAudio=null;}const a=document.getElementById('farmRadioScanStart'),b=document.getElementById('farmRadioScanStop'),status=document.getElementById('farmRadioScanStatus');if(a)a.disabled=false;if(b)b.disabled=true;if(status)status.textContent='Búsqueda detenida.';}
 function openFarmRadio(){
  const panel=document.getElementById('farmRadioPanel');if(!panel)return;
  const tv=document.getElementById('farmTVPanel');if(tv)tv.style.display='none';
  const inv=document.getElementById('farmInventoryPanel');if(inv)inv.style.display='none';
- panel.style.display='flex';
- const list=document.getElementById('farmRadioStations');
- if(list&&!list.dataset.ready){
-  list.innerHTML=FARM_RADIO_STATIONS.map((st,i)=>'<button type="button" data-farm-radio="'+i+'">📻 '+st.name+'<br><small>'+st.freq+' · '+st.city+'</small></button>').join('');
-  list.dataset.ready='1';
- }
- updateFarmRadioPanel();
+ panel.style.display='flex';renderFarmRadioStations();updateFarmRadioPanel();
 }
 function closeFarmRadio(){const panel=document.getElementById('farmRadioPanel');if(panel)panel.style.display='none';}
 function updateFarmRadioProximity(){
@@ -5664,13 +5693,14 @@ function updateFarmRadioProximity(){
 }
 function setupFarmRadioControls(){
  if(farmRadioPanelBound)return;
- const close=document.getElementById('farmRadioClose'),power=document.getElementById('farmRadioPowerBtn'),volume=document.getElementById('farmRadioVolume'),down=document.getElementById('farmRadioVolDown'),up=document.getElementById('farmRadioVolUp'),list=document.getElementById('farmRadioStations');
+ const close=document.getElementById('farmRadioClose'),power=document.getElementById('farmRadioPowerBtn'),volume=document.getElementById('farmRadioVolume'),down=document.getElementById('farmRadioVolDown'),up=document.getElementById('farmRadioVolUp'),list=document.getElementById('farmRadioStations'),scanStart=document.getElementById('farmRadioScanStart'),scanStop=document.getElementById('farmRadioScanStop');
  if(close)close.addEventListener('click',closeFarmRadio);
  if(power)power.addEventListener('click',()=>setFarmRadioPower(!farmRadioPowerOn));
  if(volume)volume.addEventListener('input',()=>setFarmRadioVolume(volume.value));
  if(down)down.addEventListener('click',()=>setFarmRadioVolume(Math.round(farmRadioVolume*100)-5));
  if(up)up.addEventListener('click',()=>setFarmRadioVolume(Math.round(farmRadioVolume*100)+5));
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-farm-radio]');if(b)selectFarmRadioStation(Number(b.dataset.farmRadio));});
+ if(scanStart)scanStart.addEventListener('click',startFarmRadioScan);if(scanStop)scanStop.addEventListener('click',stopFarmRadioScan);
  updateFarmRadioPanel();farmRadioPanelBound=true;
 }
 
@@ -5717,7 +5747,7 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.6',
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.7',
    'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js'
   ];
   let lastError=null;
@@ -7268,25 +7298,6 @@ function startProtestMission() {
             if (camera && renderer) setTimeout(() => { try { window.dispatchEvent(new Event('resize')); } catch (_) {} }, 50);
         });
 
-        function showAccessGate() {
-            const gate=document.getElementById('accessGate');
-            const input=document.getElementById('accessGateCode');
-            if(!gate||!input)return;
-            gate.style.display='flex';
-            input.focus();
-            input.addEventListener('keydown',function(e){
-                e.stopPropagation();
-                if(e.key!=='Enter')return;
-                e.preventDefault();
-                if(input.value.trim().toLowerCase()==='pepa'){
-                    gate.style.display='none';
-                    enterFullscreen();
-                    setTimeout(()=>loadGitHubAssets(),120);
-                }else{
-                    input.value='';
-                }
-            });
-        }
         document.addEventListener('DOMContentLoaded',function(){
             const storyContinue=document.getElementById('storyDialogContinue');
             if(storyContinue)storyContinue.addEventListener('click',()=>{if(storyCinematicPlaying)advanceFarmCinematic();else hideStoryDialog();});
@@ -7301,7 +7312,8 @@ function startProtestMission() {
         window.addEventListener('DOMContentLoaded', () => {
             enterFullscreen();
             setTimeout(() => enterFullscreen(), 350);
-            setTimeout(() => showAccessGate(), 120);
+            const accessGate=document.getElementById('accessGate');if(accessGate)accessGate.remove();
+            setTimeout(() => loadGitHubAssets(), 120);
             let audioPoolsPrepared = false;
             const unlockAudio = () => {
                 enterFullscreen();
