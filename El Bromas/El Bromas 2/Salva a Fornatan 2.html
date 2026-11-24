@@ -362,6 +362,16 @@
 .storyUpdateDate{font-size:10px;color:#91b2d1;margin-top:3px}
 .storyUpdateText{font-size:12px;color:#d9e5f5;line-height:1.5;margin-top:7px}
 </style>
+<style>
+#storyGuide{position:fixed;top:165px;left:50%;transform:translateX(-50%);z-index:53;display:none;align-items:center;gap:8px;padding:6px 12px;border:1px solid rgba(255,210,100,.72);border-radius:22px;background:rgba(4,12,24,.82);box-shadow:0 0 16px rgba(255,190,60,.2);pointer-events:none;color:#fff;font-size:11px;font-weight:900}
+#storyGuideArrow{font-size:27px;line-height:1;color:#ffd05c;transform-origin:50% 50%;filter:drop-shadow(0 0 7px rgba(255,190,60,.8))}
+#storyGuideText{max-width:65vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#cinematicLetterTop,#cinematicLetterBottom{position:fixed;left:0;right:0;height:0;z-index:1320;background:#000;pointer-events:none;transition:height .45s ease;display:flex;align-items:center;justify-content:center;overflow:hidden}
+#cinematicLetterTop{top:0}#cinematicLetterBottom{bottom:0}
+#cinematicLetterTop span{font-size:10px;letter-spacing:.3em;color:#d7dce5;font-weight:800}
+#cinematicLetterBottom span{font-size:11px;letter-spacing:.22em;color:#f2d18d;font-weight:900}
+body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicLetterBottom{height:8vh}
+</style>
 </head>
 <body>
 <div id="accessGate" role="main" aria-label="Acceso al juego">
@@ -397,6 +407,8 @@
 </div>
 <div id="statusText">Listo</div>
 <div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
+<div id="storyGuide"><div id="storyGuideArrow">⬆</div><div id="storyGuideText">OBJETIVO</div></div>
+<div id="cinematicLetterTop"><span>SALVA A FORNATAN 2</span></div><div id="cinematicLetterBottom"><span>LA GRANJA DE BENJA</span></div>
 <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
 <div id="meteorRainBar"><div id="meteorRainFill"></div></div>
 <div id="meteorRainLabel" aria-hidden="true"></div>
@@ -636,6 +648,16 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const STORY_SAVE_KEY = 'ElBromas2_StoryProgress_v1';
         const STORY_FRAGMENT_SPOTS = [{x:48,z:0},{x:-48,z:36},{x:0,z:-72}];
         const STORY_ANTENNA_SPOTS = [{x:145,z:80},{x:-145,z:-80}];
+        const FARM_CENTER={x:-330,z:-330};
+        const FARM_PIG_POS={x:-286,z:-354};
+        const FARM_WORK_POS={x:-388,z:-302};
+        const FARM_SHOP_POS={x:-258,z:-302};
+        const BENJA_SAVE_WEIGHT_GOAL=52;
+        let farmGroup=null,benjaPig=null,benjaPigBody=null;
+        let benjaSoundUrls=[],benjaSoundPlayers=[],benjaSoundIndex=0,benjaSoundNextAt=0;
+        let farmGuideMarker=null,farmGuideTarget=null,farmGuideLabel='';
+        let storyMoney=0,storyPigWeight=32,storyFeedInventory=0,storyWorkCount=0,storyFeedingCount=0;
+        let storyCinematicPlaying=false,storyCinematicStep=0,storyCinematicFrame=0,storyCinematicFrom=null;
         
         const audioPlayer = new Audio(); const audioRolon = new Audio(); audioRolon.loop = false; audioRolon.preload = 'auto'; audioRolon.setAttribute('playsinline',''); let audioFuera = new Audio();
         // Música del Supremo: arranca UNA vez al comenzar el combate y solo se repite al terminar la pista.
@@ -2058,6 +2080,12 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
                 const ext = fileName.split('.').pop().toLowerCase();
                 if (!fileBlob) continue;
                 if (/jale|masturb|contenido[-_ ]adulto|sexo[-_ ]explicito/i.test(fileName)) continue;
+                if (/^(benja|puerco)[_ -]?[12]\.mp3$/i.test(fileName)) {
+                    const soundUrl=URL.createObjectURL(fileBlob);
+                    benjaSoundUrls.push(soundUrl);
+                    const pigAudio=new Audio(soundUrl);pigAudio.preload='auto';pigAudio.volume=.68;
+                    benjaSoundPlayers.push(pigAudio);continue;
+                }
                 // Acepta las variantes habituales de la carpeta de música, incluso
                 // si un APK/WebView cambia mayúsculas o usa "music" en vez de "musica".
                 const normalizedPath = path.replace(/\\/g, '/');
@@ -2280,6 +2308,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
             posterTextureObj = createPosterTexture(); createBillboards(); applyBillboardTextures(); stabilizeTexturedMaterials(); rebuildCarCollisionGrid();
             character = createCharacterWithSkeleton(); scene.add(character); character.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
             if (faceTextureUrl) applyFaceTexture();
+            createFarmWorld();
             
             setupControls(); setupCarUI(); updatePlayerHealth(); updateAuraUI(); setupGraphicsUI(); setupHudEditor(); applyGraphicsSettings();
             setInterval(() => { if (cartelTextures.length > 1) { currentCartelIndex = (currentCartelIndex + 1) % cartelTextures.length; updateBillboardsWithCurrentTexture(); } }, 5000);
@@ -3273,6 +3302,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             sharedBuildingMaterials = colors.map(col => { const wt = winTex.clone(); wt.needsUpdate = true; wt.repeat.set(2, 4); return new THREE.MeshStandardMaterial({ color: col, roughness: 0.8, emissiveMap: wt, emissive: 0x222222, emissiveIntensity: 0.8 }); });
             for (let i = 0; i < 35; i++) {
                 const x = (Math.random() - 0.5) * 800; const z = (Math.random() - 0.5) * 800;
+                if (Math.hypot(x-FARM_CENTER.x,z-FARM_CENTER.z)<78) continue;
                 if (Math.abs(x) < 30 && Math.abs(z) < 30) continue;
                 if (Math.abs(x) % 95 < 22 || Math.abs(z) % 95 < 22) continue;
                 const w = 9 + Math.random() * 14; const d = 9 + Math.random() * 14; buildSingleBuilding(x, z, w, d);
@@ -3292,6 +3322,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function createBillboards() {
             for (let i = 0; i < 14; i++) {
                 const x = (Math.random() - 0.5) * 600; const z = (Math.random() - 0.5) * 600;
+                if (Math.hypot(x-FARM_CENTER.x,z-FARM_CENTER.z)<78) continue;
                 if (Math.abs(x) < 30 && Math.abs(z) < 30) continue; if (checkCollision(x, z)) continue;
                 const tvGroup = new THREE.Group();
                 const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 17), new THREE.MeshStandardMaterial({color: 0x222222, roughness: 0.75, metalness: 0.05}));
@@ -3343,6 +3374,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const trunkMat = new THREE.MeshLambertMaterial({ color: 0x382618 }); const leafMat = new THREE.MeshLambertMaterial({ color: 0x144a18 });
             for (let i = 0; i < 40; i++) {
                 const x = (Math.random()-0.5)*700; const z = (Math.random()-0.5)*700;
+                if (Math.hypot(x-FARM_CENTER.x,z-FARM_CENTER.z)<78) continue;
                 if (Math.abs(x)<25 && Math.abs(z)<25) continue; if (checkCollision(x, z)) continue;
                 const tree = new THREE.Group(); const trunk = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.7, 5.5, 4), trunkMat); trunk.position.y = 2.75; tree.add(trunk); const leaves = new THREE.Mesh(new THREE.SphereGeometry(3.2 + Math.random()*1.2, 5, 5), leafMat); leaves.position.y = 7.2; tree.add(leaves);
                 tree.position.set(x, 0, z); scene.add(tree); destructibleProps.push(tree);
@@ -3958,259 +3990,251 @@ function removeCarRadioStation(index, reason='Sin señal'){
 
         function updateMissionUI() {
             if(storyModeActive){
-                const titles=['MISIÓN 1: FRAGMENTOS DE LA SEÑAL','MISIÓN 2: ANTENAS DEL VALLE','MISIÓN 3: DEFIENDE EL REFUGIO','MISIÓN 4: GUARDIÁN DE LA TORMENTA','MISIÓN 5: RESCATA A FORNATAN','HISTORIA COMPLETADA'];
-                document.getElementById('missionTitle').textContent=titles[Math.max(0,Math.min(5,storyStage))];
+                const titles=['VE A VER A BENJA','HAZ UN TRABAJO EN LA GRANJA','COMPRA COMIDA PARA BENJA','DALE DE COMER A BENJA','BENJA ESTA CRECIENDO'];
+                document.getElementById('missionTitle').textContent=titles[Math.max(0,Math.min(4,storyStage))];
                 document.getElementById('missionProgress').textContent=getStoryMissionProgress();
-                return;
+                updateFarmMoneyLabel();return;
             }
-            document.getElementById('missionProgress').textContent = `Carteles Intactos: ${postersIntact}/${totalPosters}`;
+            document.getElementById('missionProgress').textContent='Carteles intactos: '+postersIntact+'/'+totalPosters;
         }
-
-        function showStoryDialog(title,text,icon) {
-            const panel=document.getElementById('storyDialog');
-            if(!panel)return;
-            document.getElementById('storyDialogTitle').textContent=title||'HISTORIA';
+        function showStoryDialog(title,text,icon){
+            const p=document.getElementById('storyDialog');if(!p)return;
+            document.getElementById('storyDialogTitle').textContent=title||'';
             document.getElementById('storyDialogText').textContent=text||'';
-            document.getElementById('storyDialogIcon').textContent=icon||'📜';
-            panel.style.display='flex';
+            document.getElementById('storyDialogIcon').textContent=icon||'📜';p.style.display='flex';
         }
-
-        function hideStoryDialog() {
-            const panel=document.getElementById('storyDialog');
-            if(panel)panel.style.display='none';
+        function hideStoryDialog(){const p=document.getElementById('storyDialog');if(p)p.style.display='none';}
+        function advanceFarmCinematic(){
+            if(!storyCinematicPlaying){hideStoryDialog();return;}
+            storyCinematicStep++;storyCinematicFrame=0;storyCinematicFrom=camera.position.clone();
+            if(storyCinematicStep===1)showStoryDialog('BENJA','mira nada mas... benja otra vez revolcandose en el lodo. luego se queja cuando lo quiero limpiar.','🐷');
+            else if(storyCinematicStep===2)showStoryDialog('A VER, BENJA','bueno, que disfrute. pero hay que comprarle comida. voy a preparar unos pedidos y con eso saco para su primer saco.','🌾');
+            else{
+                storyCinematicPlaying=false;isCinematic=false;document.body.classList.remove('farmCinematic');
+                hideStoryDialog();updateMissionUI();setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'ve con benja');
+                saveStoryProgress();showToast('ve a ver a benja');
+            }
         }
-
-        function openStoryInfo() {
-            const panel=document.getElementById('storyInfoPanel');
-            const info=document.getElementById('storyInfoCurrentMission');
-            if(info)info.textContent='Progreso: '+getStoryMissionName()+' · '+getStoryMissionProgress();
-            const settings=document.getElementById('settingsPanel');
-            if(settings)settings.style.display='none';
-            if(panel)panel.style.display='flex';
+        function updateFarmCinematic(){
+            if(!storyCinematicPlaying||!camera||!character)return;
+            storyCinematicFrame++;
+            let cam,look;
+            if(storyCinematicStep===0){cam=new THREE.Vector3(FARM_CENTER.x-95,78,FARM_CENTER.z+83);look=new THREE.Vector3(FARM_CENTER.x+4,0,FARM_CENTER.z-8);}
+            else if(storyCinematicStep===1){cam=new THREE.Vector3(FARM_PIG_POS.x+19,13,FARM_PIG_POS.z+24);look=new THREE.Vector3(FARM_PIG_POS.x,2,FARM_PIG_POS.z);}
+            else{cam=new THREE.Vector3(character.position.x+17,8,character.position.z+21);look=new THREE.Vector3(FARM_PIG_POS.x,2,FARM_PIG_POS.z);}
+            const t=Math.min(1,storyCinematicFrame/165),ease=t*t*(3-2*t);
+            camera.position.lerpVectors(storyCinematicFrom||camera.position,cam,ease*.12+.01);camera.lookAt(look);
+            if(storyCinematicFrame>220)storyCinematicFrame=220;
         }
-
-        function closeStoryInfo() {
-            const panel=document.getElementById('storyInfoPanel');
-            if(panel)panel.style.display='none';
-            const settings=document.getElementById('settingsPanel');
-            if(settings)settings.style.display='block';
+        function playBenjaGrunt(force=false){
+            if(!benjaSoundPlayers.length)return;const now=performance.now();if(!force&&now<benjaSoundNextAt)return;
+            const a=benjaSoundPlayers[benjaSoundIndex%benjaSoundPlayers.length];benjaSoundIndex++;benjaSoundNextAt=now+3600+Math.random()*2600;
+            try{a.pause();a.currentTime=0;a.volume=.66;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
         }
-
-        function getStoryMissionName() {
-            const names=['Fragmentos de la señal','Antenas del valle','Defiende el refugio','Guardián de la Tormenta','Rescata a Fornatan','Capítulo completado'];
-            return names[Math.max(0,Math.min(5,storyStage))];
+        function updateBenjaAnimation(){
+            if(!benjaPig)return;const t=performance.now()*.001;
+            benjaPig.position.y=benjaPig.userData.groundY+Math.abs(Math.sin(t*2.1))*.16;
+            benjaPig.rotation.z=Math.sin(t*1.18)*.26;benjaPig.rotation.x=Math.sin(t*1.55)*.16;benjaPig.rotation.y=Math.sin(t*.62)*.12;
+            if(benjaPigBody)benjaPigBody.rotation.z=Math.sin(t*2.2)*.13;
+            if(storyModeActive&&!storyCinematicPlaying&&character&&character.position.distanceTo(benjaPig.position)<58&&t*1000>benjaSoundNextAt)playBenjaGrunt();
         }
-
-        function getStoryMissionProgress() {
-            if(storyStage===0)return 'Fragmentos '+storyFragments.length+'/3';
-            if(storyStage===1)return 'Antenas '+storyAntennas.length+'/2';
-            if(storyStage===2)return 'Guardianes restantes '+smallPenes.length+'/'+storyEnemiesTotal;
-            if(storyStage===3)return boss?'Vida del guardián '+Math.max(0,Math.ceil(boss.userData.health))+'/'+boss.userData.maxHealth:'Combate final';
-            if(storyStage===4)return 'La estación del este';
-            return 'Fornatan está a salvo';
+        function updateFarmMoneyLabel(){
+            const el=document.getElementById('peneCountInfo');if(el)el.textContent='💰 $'+storyMoney+'   🐷 '+storyPigWeight+' kg   🌾 '+storyFeedInventory;
         }
-
-        function saveStoryProgress() {
+        function farmGroundAt(x,z){return getTerrainY(x,z,null);}
+        function makeFarmBox(parent,x,y,z,w,h,d,mat){
+            const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y+h/2,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
+        }
+        function makeFarmFence(parent,x1,z1,x2,z2,mat){
+            const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),angle=Math.atan2(dz,dx),g=farmGroundAt((x1+x2)/2,(z1+z2)/2);
+            for(const f of [.08,.5,.92]){const p=new THREE.Mesh(new THREE.BoxGeometry(.65,2.35,.65),mat);p.position.set(x1+dx*f,g+1.17,z1+dz*f);p.castShadow=true;parent.add(p);}
+            for(const y of [.72,1.62]){const r=new THREE.Mesh(new THREE.BoxGeometry(len,.28,.34),mat);r.position.set((x1+x2)/2,g+y,(z1+z2)/2);r.rotation.y=-angle;r.castShadow=true;parent.add(r);}
+        }
+        function createFarmSign(label,x,y,z){
+            const g=new THREE.Group(),fm=new THREE.MeshStandardMaterial({color:0x523a25,roughness:.9});
+            const post=new THREE.Mesh(new THREE.BoxGeometry(.45,4,.45),fm);post.position.y=-1;g.add(post);
+            const board=new THREE.Mesh(new THREE.BoxGeometry(10,2.7,.5),fm);board.position.y=1.1;g.add(board);
+            const cv=document.createElement('canvas');cv.width=512;cv.height=128;const c=cv.getContext('2d');
+            c.fillStyle='#f5e2bd';c.fillRect(0,0,512,128);c.fillStyle='#4b3020';c.font='bold 54px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(label,256,65);
+            const face=new THREE.Mesh(new THREE.PlaneGeometry(9.4,2.2),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),side:THREE.DoubleSide}));
+            face.position.set(0,1.1,.29);g.add(face);g.position.set(x,y,z);return g;
+        }
+        function createBenjaPig(){
+            const pig=new THREE.Group();
+            const pink=new THREE.MeshStandardMaterial({color:0xe99b9c,roughness:.78}),pale=new THREE.MeshStandardMaterial({color:0xf3b5b1,roughness:.75});
+            const hoof=new THREE.MeshStandardMaterial({color:0x654b4b,roughness:.85}),black=new THREE.MeshBasicMaterial({color:0x23191a});
+            const body=new THREE.Mesh(new THREE.SphereGeometry(2.35,18,14),pink);body.scale.set(1.38,.92,.94);body.position.set(0,2.3,0);body.castShadow=true;pig.add(body);benjaPigBody=body;
+            const head=new THREE.Mesh(new THREE.SphereGeometry(1.28,16,12),pink);head.position.set(0,2.85,2.55);head.castShadow=true;pig.add(head);
+            const muzzle=new THREE.Mesh(new THREE.SphereGeometry(.72,12,10),pale);muzzle.scale.set(1,.76,.62);muzzle.position.set(0,2.45,3.58);pig.add(muzzle);
+            for(const side of [-1,1]){
+                const nostril=new THREE.Mesh(new THREE.SphereGeometry(.14,8,6),black);nostril.position.set(side*.25,2.47,4);nostril.scale.set(.75,1,.45);pig.add(nostril);
+                const eye=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),black);eye.position.set(side*.86,3.14,3.16);pig.add(eye);
+                const ear=new THREE.Mesh(new THREE.ConeGeometry(.48,1.18,7),pink);ear.position.set(side*.88,4.03,2.38);ear.rotation.z=side*.42;ear.rotation.x=-.22;pig.add(ear);
+            }
+            const legGeo=new THREE.CylinderGeometry(.28,.34,1.08,8);
+            for(const x of [-1.35,1.35])for(const z of [-1.25,1.25]){
+                const leg=new THREE.Mesh(legGeo,pink);leg.position.set(x,.92,z);leg.castShadow=true;pig.add(leg);
+                const foot=new THREE.Mesh(new THREE.BoxGeometry(.52,.28,.56),hoof);foot.position.set(x,.39,z+.08);pig.add(foot);
+            }
+            const tail=new THREE.Mesh(new THREE.TorusGeometry(.32,.11,6,14,Math.PI*1.7),pink);tail.position.set(0,3.05,-2.27);tail.rotation.x=Math.PI/2;tail.rotation.z=.6;pig.add(tail);
+            const ground=farmGroundAt(FARM_PIG_POS.x,FARM_PIG_POS.z);pig.position.set(FARM_PIG_POS.x,ground,FARM_PIG_POS.z);pig.rotation.y=Math.PI;
+            pig.userData={groundY:ground,weight:32};pig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+            scene.add(pig);benjaPig=pig;updateBenjaWeightVisual();
+        }
+        function updateBenjaWeightVisual(){
+            if(!benjaPig)return;const scale=1+Math.max(0,storyPigWeight-32)*.009;benjaPig.scale.set(scale,scale,scale);benjaPig.userData.weight=storyPigWeight;
+        }
+        function createFarmWorld(){
+            if(farmGroup&&farmGroup.parent)farmGroup.parent.remove(farmGroup);
+            farmGroup=new THREE.Group();scene.add(farmGroup);
+            const grass=new THREE.MeshStandardMaterial({color:0x567b36,roughness:1}),wood=new THREE.MeshStandardMaterial({color:0x69472a,roughness:.92});
+            const darkWood=new THREE.MeshStandardMaterial({color:0x3e2b1c,roughness:.9}),red=new THREE.MeshStandardMaterial({color:0x8f3e31,roughness:.9});
+            const cream=new THREE.MeshStandardMaterial({color:0xf0dfb5,roughness:.9}),mud=new THREE.MeshStandardMaterial({color:0x4c3024,roughness:1});
+            const metal=new THREE.MeshStandardMaterial({color:0x87949b,metalness:.55,roughness:.4});
+            const cy=farmGroundAt(FARM_CENTER.x,FARM_CENTER.z),floor=new THREE.Mesh(new THREE.CircleGeometry(86,40),grass);
+            floor.rotation.x=-Math.PI/2;floor.scale.set(1,.82,1);floor.position.set(FARM_CENTER.x,cy+.045,FARM_CENTER.z);floor.receiveShadow=true;farmGroup.add(floor);
+            const barn=new THREE.Group(),bx=FARM_CENTER.x-54,bz=FARM_CENTER.z-42,by=farmGroundAt(bx,bz);
+            makeFarmBox(barn,0,0,0,24,14,19,red);
+            const roof1=new THREE.Mesh(new THREE.BoxGeometry(14,1.2,21),darkWood);roof1.position.set(-5,15,0);roof1.rotation.z=-.48;roof1.castShadow=true;
+            const roof2=new THREE.Mesh(new THREE.BoxGeometry(14,1.2,21),darkWood);roof2.position.set(5,15,0);roof2.rotation.z=.48;roof2.castShadow=true;
+            barn.add(roof1,roof2);const door=new THREE.Mesh(new THREE.BoxGeometry(5.6,9,.3),darkWood);door.position.set(0,4.5,9.7);barn.add(door);
+            barn.position.set(bx,by,bz);farmGroup.add(barn);
+            const px=FARM_PIG_POS.x,pz=FARM_PIG_POS.z,py=farmGroundAt(px,pz),pool=new THREE.Mesh(new THREE.CircleGeometry(13,32),mud);
+            pool.rotation.x=-Math.PI/2;pool.scale.set(1.5,1,.82);pool.position.set(px,py+.075,pz);farmGroup.add(pool);
+            for(let i=0;i<4;i++){const splash=new THREE.Mesh(new THREE.CircleGeometry(2.5+i*.5,18),new THREE.MeshStandardMaterial({color:i%2?0x674331:0x553629,roughness:1}));
+                splash.rotation.x=-Math.PI/2;splash.scale.set(1.6,.8,.65);splash.position.set(px+(i-1.5)*6,py+.09+i*.003,pz+Math.sin(i*2)*5);farmGroup.add(splash);}
+            const xL=px-23,xR=px+23,zT=pz-20,zB=pz+20;
+            makeFarmFence(farmGroup,xL,zT,xR,zT,wood);makeFarmFence(farmGroup,xR,zT,xR,zB,wood);makeFarmFence(farmGroup,xR,zB,xL,zB,wood);makeFarmFence(farmGroup,xL,zB,xL,zT+7,wood);
+            const trough=new THREE.Mesh(new THREE.BoxGeometry(7,1.3,2.2),metal);trough.position.set(px+13,py+.68,pz+10);farmGroup.add(trough);
+            const wx=FARM_WORK_POS.x,wz=FARM_WORK_POS.z,wy=farmGroundAt(wx,wz);makeFarmBox(farmGroup,wx,wy,wz,8,2.2,5,wood);
+            const crateMat=new THREE.MeshStandardMaterial({color:0xb27a37,roughness:.88});
+            for(let i=0;i<3;i++){const crate=makeFarmBox(farmGroup,wx-5+i*4,wy,wz-5,3,2.8,3,crateMat);crate.rotation.y=(i-1)*.2;
+                const veg=new THREE.Mesh(new THREE.SphereGeometry(.72,8,7),new THREE.MeshStandardMaterial({color:[0x6aa341,0xd56d42,0xd7b34b][i],roughness:.9}));
+                veg.position.set(crate.position.x,wy+3.05,crate.position.z);farmGroup.add(veg);}
+            farmGroup.add(createFarmSign('PEDIDOS',wx,wy+5,wz-7));
+            const sx=FARM_SHOP_POS.x,sz=FARM_SHOP_POS.z,sy=farmGroundAt(sx,sz),stall=new THREE.Group();
+            makeFarmBox(stall,0,0,0,13,5,8,wood);
+            const canopy=new THREE.Mesh(new THREE.BoxGeometry(15,1,10),new THREE.MeshStandardMaterial({color:0xb44f37,roughness:.88}));canopy.position.set(0,6,0);stall.add(canopy);
+            const awning=new THREE.Mesh(new THREE.BoxGeometry(15,.4,2.4),cream);awning.position.set(0,4.8,4);stall.add(awning);
+            stall.position.set(sx,sy,sz);farmGroup.add(stall);farmGroup.add(createFarmSign('ALIMENTO',sx,sy+8,sz-5));
+            const sackMat=new THREE.MeshStandardMaterial({color:0xc7a66c,roughness:1});
+            for(let i=0;i<3;i++){const sack=new THREE.Mesh(new THREE.SphereGeometry(1.25,10,8),sackMat);sack.scale.set(.85,1.1,.75);sack.position.set(sx-3+i*3,sy+1.5,sz+1);sack.castShadow=true;farmGroup.add(sack);}
+            const hayMat=new THREE.MeshStandardMaterial({color:0xc9a34d,roughness:1});
+            for(const p of [{x:-407,z:-330},{x:-400,z:-335},{x:-405,z:-339}]){const hay=new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,4,10),hayMat);hay.rotation.z=Math.PI/2;hay.position.set(p.x,farmGroundAt(p.x,p.z)+2,p.z);hay.castShadow=true;farmGroup.add(hay);}
+            const tx=FARM_CENTER.x+64,tz=FARM_CENTER.z+46,ty=farmGroundAt(tx,tz);
+            const trunk=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.6,12,8),darkWood);trunk.position.set(tx,ty+6,tz);trunk.castShadow=true;farmGroup.add(trunk);
+            const leaves=new THREE.Mesh(new THREE.SphereGeometry(8,10,8),new THREE.MeshStandardMaterial({color:0x2f6635,roughness:1}));leaves.position.set(tx,ty+15,tz);leaves.castShadow=true;farmGroup.add(leaves);
+            createBenjaPig();
+        }
+        function removeFarmGuideMarker(){if(farmGuideMarker&&farmGuideMarker.parent)farmGuideMarker.parent.remove(farmGuideMarker);farmGuideMarker=null;}
+        function setFarmGuideTarget(x,z,label){
+            removeFarmGuideMarker();farmGuideTarget=new THREE.Vector3(x,farmGroundAt(x,z),z);farmGuideLabel=label||'objetivo';
+            if(storyStage>=4){const ui=document.getElementById('storyGuide');if(ui)ui.style.display='none';farmGuideTarget=null;return;}
+            const marker=new THREE.Group(),gold=new THREE.MeshStandardMaterial({color:0xffc451,emissive:0xff9b22,emissiveIntensity:1.1,metalness:.25,roughness:.3});
+            const ring=new THREE.Mesh(new THREE.TorusGeometry(3.6,.2,8,28),new THREE.MeshBasicMaterial({color:0xffd36c}));ring.rotation.x=Math.PI/2;ring.position.y=.45;marker.add(ring);
+            const beam=new THREE.Mesh(new THREE.CylinderGeometry(.25,.85,13,10,1,true),new THREE.MeshBasicMaterial({color:0xffd36c,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false}));beam.position.y=7;marker.add(beam);
+            const cone=new THREE.Mesh(new THREE.ConeGeometry(1.6,3.5,8),gold);cone.position.y=14;marker.add(cone);
+            const light=new THREE.PointLight(0xffb943,2.2,26);light.position.y=7;marker.add(light);
+            marker.position.copy(farmGuideTarget);scene.add(marker);farmGuideMarker=marker;
+            const ui=document.getElementById('storyGuide');if(ui)ui.style.display='flex';
+        }
+        function updateFarmGuide(){
+            const ui=document.getElementById('storyGuide');
+            if(!ui||!storyModeActive||!farmGuideTarget||storyStage>=4){if(ui)ui.style.display='none';return;}
+            ui.style.display='flex';const dx=farmGuideTarget.x-character.position.x,dz=farmGuideTarget.z-character.position.z;
+            const relative=Math.atan2(dx,dz)-cameraTheta,arrow=document.getElementById('storyGuideArrow');
+            if(arrow)arrow.style.transform='rotate('+(-relative*180/Math.PI)+'deg)';
+            const text=document.getElementById('storyGuideText');if(text)text.textContent=farmGuideLabel+' · '+Math.round(Math.hypot(dx,dz))+' m';
+            if(farmGuideMarker){farmGuideMarker.position.y=farmGroundAt(farmGuideTarget.x,farmGuideTarget.z)+Math.sin(performance.now()*.002)*.35;farmGuideMarker.rotation.y+=.012;}
+        }
+        function getStoryMissionName(){return ['ve a ver a benja','haz pedidos en el granero','compra comida','dale de comer a benja','benja ya crecio'][Math.max(0,Math.min(4,storyStage))];}
+        function getStoryMissionProgress(){
+            if(storyStage===0)return 'benja esta en el corral';
+            if(storyStage===1)return 'pedido '+storyWorkCount+' · cobro $18';
+            if(storyStage===2)return 'dinero $'+storyMoney+' · saco $12';
+            if(storyStage===3)return 'peso '+storyPigWeight+' / '+BENJA_SAVE_WEIGHT_GOAL+' kg';
+            return 'peso final '+storyPigWeight+' kg';
+        }
+        function saveStoryProgress(){
             if(!storyModeActive||!character)return;
-            try {
-                localStorage.setItem(STORY_SAVE_KEY,JSON.stringify({
-                    stage:storyStage,fragments:storyFragments,antennas:storyAntennas,
-                    x:character.position.x,y:character.position.y,z:character.position.z,savedAt:Date.now()
-                }));
-            } catch(e) {}
+            try{localStorage.setItem(STORY_SAVE_KEY,JSON.stringify({stage:storyStage,money:storyMoney,pigWeight:storyPigWeight,feed:storyFeedInventory,workCount:storyWorkCount,feedings:storyFeedingCount,x:character.position.x,y:character.position.y,z:character.position.z,savedAt:Date.now()}));}catch(e){}
         }
-
-        function loadStoryProgress() {
-            try {
-                const data=JSON.parse(localStorage.getItem(STORY_SAVE_KEY)||'null');
-                if(!data)return false;
-                storyStage=Math.max(0,Math.min(5,Number(data.stage)||0));
-                storyFragments=Array.isArray(data.fragments)?data.fragments.filter(Number.isInteger):[];
-                storyAntennas=Array.isArray(data.antennas)?data.antennas.filter(Number.isInteger):[];
-                if(character&&Number.isFinite(data.x)&&Number.isFinite(data.z)){
-                    const px=THREE.MathUtils.clamp(data.x,-520,520);
-                    const pz=THREE.MathUtils.clamp(data.z,-520,520);
-                    character.position.set(px,getTerrainY(px,pz,null),pz);
-                }
+        function loadStoryProgress(){
+            try{const d=JSON.parse(localStorage.getItem(STORY_SAVE_KEY)||'null');if(!d)return false;
+                storyStage=Math.max(0,Math.min(4,Number(d.stage)||0));storyMoney=Math.max(0,Number(d.money)||0);
+                storyPigWeight=Math.max(32,Number(d.pigWeight)||32);storyFeedInventory=Math.max(0,Number(d.feed)||0);
+                storyWorkCount=Math.max(0,Number(d.workCount)||0);storyFeedingCount=Math.max(0,Number(d.feedings)||0);
+                if(character&&Number.isFinite(d.x)&&Number.isFinite(d.z))character.position.set(Number(d.x),farmGroundAt(Number(d.x),Number(d.z)),Number(d.z));
                 return true;
-            } catch(e) { return false; }
+            }catch(e){return false;}
         }
-
-        function clearStoryWorldObjects() {
-            storyWorldObjects.forEach(o=>{if(o&&o.parent)o.parent.remove(o);});
-            storyWorldObjects=[];
-            if(storyNpc&&storyNpc.parent)storyNpc.parent.remove(storyNpc);
-            storyNpc=null;
+        function startFarmIntroCinematic(){
+            storyCinematicPlaying=true;storyCinematicStep=0;storyCinematicFrame=0;storyCinematicFrom=camera.position.clone();
+            isCinematic=true;cameraTheta=0;cameraPhi=Math.PI/3;cameraDistance=25;document.body.classList.add('farmCinematic');
+            showStoryDialog('LA GRANJA','bueno, por fin llegue. hacia rato que no venia por aca.','🌾');playBenjaGrunt(true);
         }
-
-        function createStoryMarker(x,z,kind,index,color) {
-            const group=new THREE.Group();
-            const crystalMat=new THREE.MeshStandardMaterial({color:color,emissive:color,emissiveIntensity:.8,metalness:.35,roughness:.22});
-            const crystal=new THREE.Mesh(new THREE.OctahedronGeometry(2.2,1),crystalMat);
-            crystal.position.y=3.7; crystal.castShadow=true; group.add(crystal);
-            const ring=new THREE.Mesh(new THREE.TorusGeometry(3.3,.13,8,28),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.88}));
-            ring.rotation.x=Math.PI/2; ring.position.y=1.1; group.add(ring);
-            const beam=new THREE.Mesh(new THREE.CylinderGeometry(.14,.55,5.5,8,1,true),new THREE.MeshBasicMaterial({color:color,transparent:true,opacity:.16,side:THREE.DoubleSide,depthWrite:false}));
-            beam.position.y=3.1; group.add(beam);
-            const light=new THREE.PointLight(color,1.7,22); light.position.y=3.2; group.add(light);
-            const ground=getTerrainY(x,z,null);
-            group.position.set(x,ground,z);
-            group.userData={storyKind:kind,storyIndex:index,baseY:ground,turn:Math.random()*6};
-            scene.add(group); storyWorldObjects.push(group);
-            return group;
-        }
-
-        function createStoryObjectsForStage() {
-            clearStoryWorldObjects();
-            if(storyStage===0){
-                STORY_FRAGMENT_SPOTS.forEach((p,i)=>{if(!storyFragments.includes(i))createStoryMarker(p.x,p.z,'fragment',i,0x54e5ff);});
-            }else if(storyStage===1){
-                STORY_ANTENNA_SPOTS.forEach((p,i)=>{if(!storyAntennas.includes(i))createStoryMarker(p.x,p.z,'antenna',i,0xffc75e);});
-            }else if(storyStage===2){
-                spawnStoryDefenders();
-            }else if(storyStage===3){
-                spawnStoryGuardian();
-            }else if(storyStage===4){
-                spawnStoryFornatan();
-            }
-        }
-
-        function startStoryCampaign(reset) {
-            storyModeActive=true;
-            waveActive=false; waitingNextWave=false; waveNumber=0;
-            missionActive=true; missionType='story';
-            storyDefenseActive=false; storyEnemiesTotal=0;
-            if(reset){
-                try{localStorage.removeItem(STORY_SAVE_KEY);}catch(e){}
-                storyStage=0;storyFragments=[];storyAntennas=[];
-            }else{
-                const restored=loadStoryProgress();
-                if(!restored){storyStage=0;storyFragments=[];storyAntennas=[];}
-            }
-            createStoryObjectsForStage();
-            document.getElementById('missionUI').style.display='block';
-            updateMissionUI();
-            if(storyStage===0){
-                showStoryDialog('LA SEÑAL PERDIDA','Una tormenta apagó la red del Valle del Eco. Fornatan fue visto por última vez cerca de la estación del este. Busca los tres fragmentos luminosos para reconstruir su última señal.','🌩️');
-            }else if(storyStage<5){
-                showStoryDialog('AVENTURA RECUPERADA','Tu progreso de historia se ha recuperado. Sigue la misión marcada en pantalla para encontrar a Fornatan.','🧭');
-            }else{
-                showStoryDialog('MISIÓN COMPLETADA','Fornatan está a salvo. Puedes seguir explorando la ciudad y revisar las novedades en Ajustes.','🏆');
-            }
+        function startStoryCampaign(reset){
+            storyModeActive=true;waveActive=false;waitingNextWave=false;waveNumber=0;missionActive=true;missionType='story';
+            let restored=false;
+            if(reset){try{localStorage.removeItem(STORY_SAVE_KEY);}catch(e){}
+                storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;
+            }else{restored=loadStoryProgress();if(!restored){storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;}}
+            if(reset||!restored){character.position.set(FARM_CENTER.x-24,farmGroundAt(FARM_CENTER.x-24,FARM_CENTER.z+8),FARM_CENTER.z+8);character.rotation.set(0,0,0);}
+            updateBenjaWeightVisual();document.getElementById('missionUI').style.display='block';updateMissionUI();updateFarmMoneyLabel();
+            if(storyStage===0&&!restored){setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'ve con benja');startFarmIntroCinematic();}
+            else if(storyStage<4){
+                isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');
+                const t=storyStage===0?FARM_PIG_POS:storyStage===1?FARM_WORK_POS:storyStage===2?FARM_SHOP_POS:FARM_PIG_POS;
+                const lab=storyStage===0?'ve con benja':storyStage===1?'ve al granero':storyStage===2?'ve al puesto':'vuelve con benja';
+                setFarmGuideTarget(t.x,t.z,lab);showStoryDialog('YA ESTAMOS DE VUELTA','benja sigue en el corral. vamos a continuar donde lo dejamos.','🐷');
+            }else{isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');removeFarmGuideMarker();farmGuideTarget=null;showStoryDialog('BENJA ESTA CONTENTO','mira como ha crecido. todavia queda historia por delante.','🐷');}
             saveStoryProgress();
         }
-
-        function storyAdvanceTo(nextStage,title,text,icon) {
-            storyStage=nextStage;
-            storyDefenseActive=false;
-            createStoryObjectsForStage();
-            updateMissionUI();
-            saveStoryProgress();
-            if(title)showStoryDialog(title,text,icon);
+        function storyAdvanceTo(next,title,text,icon){
+            storyStage=next;updateMissionUI();updateFarmMoneyLabel();
+            const t=next===0?FARM_PIG_POS:next===1?FARM_WORK_POS:next===2?FARM_SHOP_POS:next===3?FARM_PIG_POS:null;
+            const lab=next===0?'ve con benja':next===1?'ve al granero':next===2?'ve al puesto':next===3?'vuelve con benja':'';
+            if(t)setFarmGuideTarget(t.x,t.z,lab);else{removeFarmGuideMarker();farmGuideTarget=null;const ui=document.getElementById('storyGuide');if(ui)ui.style.display='none';}
+            saveStoryProgress();if(title)showStoryDialog(title,text,icon);
         }
-
-        function spawnStoryDefenders() {
-            storyDefenseActive=true;
-            storyEnemiesTotal=7;
-            for(let i=0;i<storyEnemiesTotal;i++){
-                const angle=(Math.PI*2*i/storyEnemiesTotal)+(Math.random()-.5)*.35;
-                const dist=25+Math.random()*18;
-                const x=character.position.x+Math.cos(angle)*dist;
-                const z=character.position.z+Math.sin(angle)*dist;
-                const enemy=createSmallPene(x,z);
-                scene.add(enemy);smallPenes.push(enemy);
-            }
-            updatePeneCountUI();
-        }
-
-        function spawnStoryGuardian() {
-            if(boss&&boss.parent)scene.remove(boss);
-            boss=createBoss(4);
-            boss.scale.set(2.6,2.6,2.6);
-            boss.userData.maxHealth=1350;boss.userData.health=1350;
-            boss.userData.isGiant=true;boss.userData.baseDmg=20;
-            boss.userData.attackCooldown=75;boss.userData.hasDoneEpicAttack=false;
-            const bx=character.position.x+35,bz=character.position.z+30;
-            boss.position.set(bx,getTerrainY(bx,bz,null),bz);
-            scene.add(boss);bossDefeated=false;
-            const name=document.getElementById('bossName');
-            if(name){name.textContent='🛡️ GUARDIÁN DE LA TORMENTA';name.style.display='block';}
-            const bar=document.getElementById('bossHealthBar');
-            if(bar)bar.style.display='block';
-            updateBossHealth();
-        }
-
-        function spawnStoryFornatan() {
-            const x=character.position.x+58,z=character.position.z-42;
-            storyNpc=createCharacterWithSkeleton();
-            storyNpc.scale.set(.9,.9,.9);
-            storyNpc.position.set(x,getTerrainY(x,z,null),z);
-            storyNpc.rotation.y=Math.PI;
-            storyNpc.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-            scene.add(storyNpc);
-            createStoryMarker(x,z,'rescue',0,0x7dffb1);
-        }
-
-        function updateStoryMode() {
-            if(!storyModeActive||!character||!scene)return;
-            const now=performance.now();
-            let prompt='';
+        function updateStoryMode(){
+            if(!storyModeActive||!character||!scene||storyCinematicPlaying)return;
+            const now=performance.now();let prompt='';
             if(storyStage===0){
-                for(let i=storyWorldObjects.length-1;i>=0;i--){
-                    const obj=storyWorldObjects[i];
-                    if(!obj||!obj.parent)continue;
-                    if(character.position.distanceTo(obj.position)<7.5){
-                        storyFragments.push(obj.userData.storyIndex);
-                        scene.remove(obj);storyWorldObjects.splice(i,1);
-                        showStoryDialog('FRAGMENTO RECUPERADO','La señal guarda una pista sobre la última ubicación de Fornatan.','💠');
-                        saveStoryProgress();updateMissionUI();
-                    }
-                }
-                if(storyFragments.length>=3){
-                    storyFragments=[0,1,2];
-                    storyAdvanceTo(1,'LA SEÑAL SE RECONSTRUYE','Los tres fragmentos forman una ruta. Ahora debes reactivar las dos antenas para que el mensaje llegue a toda la ciudad.','📡');
+                if(character.position.distanceTo(benjaPig.position)<16){
+                    prompt='pulsa ATACAR para hablar con benja';
+                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;playBenjaGrunt(true);storyAdvanceTo(1,'A VER QUE HACEMOS','benja necesita comida. hay unas cajas junto al granero; si preparo el pedido me dan unas monedas.','📦');}
                 }
             }else if(storyStage===1){
-                for(let i=storyWorldObjects.length-1;i>=0;i--){
-                    const obj=storyWorldObjects[i];
-                    if(!obj||!obj.parent)continue;
-                    const distance=character.position.distanceTo(obj.position);
-                    if(distance<16){
-                        prompt='ATACA para reactivar la antena '+(obj.userData.storyIndex+1);
-                        if(isAttacking&&now>storyInteractAfter){
-                            storyInteractAfter=now+1400;
-                            storyAntennas.push(obj.userData.storyIndex);
-                            scene.remove(obj);storyWorldObjects.splice(i,1);
-                            saveStoryProgress();updateMissionUI();
-                        }
-                    }
-                }
-                if(storyAntennas.length>=2){
-                    storyAntennas=[0,1];
-                    storyAdvanceTo(2,'EL REFUGIO ESTÁ EN PELIGRO','Las antenas han vuelto a emitir. Un grupo de guardianes mecánicos se acerca al refugio. Defiéndelo para abrir la ruta hacia la estación.','⚠️');
+                const pos=new THREE.Vector3(FARM_WORK_POS.x,farmGroundAt(FARM_WORK_POS.x,FARM_WORK_POS.z),FARM_WORK_POS.z);
+                if(character.position.distanceTo(pos)<17){
+                    prompt='pulsa ATACAR para preparar el pedido';
+                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1500;storyMoney+=18;storyWorkCount++;updateFarmMoneyLabel();storyAdvanceTo(2,'PEDIDO ENTREGADO','ya quedo. por este pedido me pagaron 18 monedas. ahora voy al puesto por comida para benja.','💰');}
                 }
             }else if(storyStage===2){
-                prompt='DEFIENDE EL REFUGIO · Guardianes restantes: '+smallPenes.length;
+                const pos=new THREE.Vector3(FARM_SHOP_POS.x,farmGroundAt(FARM_SHOP_POS.x,FARM_SHOP_POS.z),FARM_SHOP_POS.z);
+                if(character.position.distanceTo(pos)<18){
+                    prompt='pulsa ATACAR para comprar un saco · $12';
+                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1500;
+                        if(storyMoney>=12){storyMoney-=12;storyFeedInventory++;storyAdvanceTo(3,'YA TENEMOS COMIDA','un saco menos. vamos a llevarselo a benja antes de que se coma la cerca.','🌾');}
+                        else{showToast('te faltan monedas. vuelve al granero a trabajar');setFarmGuideTarget(FARM_WORK_POS.x,FARM_WORK_POS.z,'consigue monedas');}
+                    }
+                }
             }else if(storyStage===3){
-                prompt='DERROTA AL GUARDIÁN DE LA TORMENTA';
-            }else if(storyStage===4&&storyNpc){
-                if(character.position.distanceTo(storyNpc.position)<15){
-                    prompt='ATACA para rescatar a Fornatan';
-                    if(isAttacking&&now>storyInteractAfter){
-                        storyInteractAfter=now+1800;
-                        storyAdvanceTo(5,'¡FORNATAN ESTÁ A SALVO!','Has reconstruido la señal, reactivado las antenas y abierto el camino hasta la estación. Fornatan ha sido rescatado. El capítulo 1 de Salva a Fornatan 2 está completo.','🏆');
+                if(character.position.distanceTo(benjaPig.position)<17){
+                    prompt='pulsa ATACAR para darle comida a benja';
+                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1800;
+                        if(storyFeedInventory>0){storyFeedInventory--;storyPigWeight=Math.min(BENJA_SAVE_WEIGHT_GOAL,storyPigWeight+5);storyFeedingCount++;updateBenjaWeightVisual();updateFarmMoneyLabel();playBenjaGrunt(true);
+                            if(storyPigWeight>=BENJA_SAVE_WEIGHT_GOAL)storyAdvanceTo(4,'MIRA COMO HA CRECIDO','ya se nota el cambio, benja. ahora si estas comiendo bien. esto apenas empieza.','🐷');
+                            else storyAdvanceTo(1,'BUEN PROVECHO','eso, come tranquilo. voy a preparar otro pedido para comprarte mas comida.','🌽');
+                        }else{showToast('no tienes comida. toca ganar unas monedas');storyAdvanceTo(1,null,null,null);}
                     }
                 }
             }
-            if(prompt){
-                interactionPrompt.style.display='block';
-                interactionPrompt.textContent=prompt;
-            }
-            if(now-storyLastSave>5000){
-                storyLastSave=now;saveStoryProgress();
-            }
+            if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}
+            updateFarmMoneyLabel();updateFarmGuide();
+            if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
         }
-
 
         function startProtestMission() {
             missionActive = true; missionType = 'protest'; postersIntact = totalPosters; protestSoundTimer = 0; posters.forEach(p => scene.remove(p)); posters = [];
@@ -5083,6 +5107,9 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 if (windowScreenShake > 0) { camera.position.x += (Math.random() - 0.5) * windowScreenShake * 0.06; camera.position.y += (Math.random() - 0.5) * windowScreenShake * 0.06; camera.position.z += (Math.random() - 0.5) * windowScreenShake * 0.06; windowScreenShake *= 0.84; if (windowScreenShake < 0.1) windowScreenShake = 0; }
             }
             updateStoryMode();
+            updateBenjaAnimation();
+            updateFarmGuide();
+            updateFarmCinematic();
             renderer.render(scene, camera);
         }
         
@@ -5398,7 +5425,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         document.addEventListener('DOMContentLoaded',function(){
             const storyContinue=document.getElementById('storyDialogContinue');
-            if(storyContinue)storyContinue.addEventListener('click',hideStoryDialog);
+            if(storyContinue)storyContinue.addEventListener('click',()=>{if(storyCinematicPlaying)advanceFarmCinematic();else hideStoryDialog();});
             const infoBtn=document.getElementById('openStoryInfo');
             if(infoBtn)infoBtn.addEventListener('click',openStoryInfo);
             const infoClose=document.getElementById('closeStoryInfo');
