@@ -1723,51 +1723,81 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             });
         }
 
+        function idbRequestWithTimeout(request, timeoutMs = 6500, label = 'consultar el caché') {
+            return new Promise((resolve, reject) => {
+                let settled = false;
+                const finish = (callback, value) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    callback(value);
+                };
+                const timer = setTimeout(() => finish(reject, new Error('Tiempo de espera agotado al ' + label + '.')), timeoutMs);
+                request.onsuccess = () => finish(resolve, request.result);
+                request.onerror = () => finish(reject, request.error || new Error('Falló la operación del caché.'));
+            });
+        }
+
         async function cacheGet(key) {
+            let db = null;
             try {
-                const db = await openGameCache();
-                return await new Promise((resolve, reject) => {
-                    const req = db.transaction(GAME_CACHE_STORE, 'readonly').objectStore(GAME_CACHE_STORE).get(key);
-                    req.onsuccess = () => resolve(req.result || null);
-                    req.onerror = () => reject(req.error);
-                });
-            } catch (_) { return null; }
+                db = await openGameCache();
+                const req = db.transaction(GAME_CACHE_STORE, 'readonly').objectStore(GAME_CACHE_STORE).get(key);
+                return (await idbRequestWithTimeout(req, 6500, 'leer ' + key)) || null;
+            } catch (error) {
+                console.warn('No se pudo leer el caché:', error);
+                return null;
+            } finally {
+                try { if (db) db.close(); } catch (_) {}
+            }
         }
 
         async function cachePut(record) {
+            let db = null;
             try {
-                const db = await openGameCache();
-                await new Promise((resolve, reject) => {
-                    const req = db.transaction(GAME_CACHE_STORE, 'readwrite').objectStore(GAME_CACHE_STORE).put(record);
-                    req.onsuccess = resolve;
-                    req.onerror = () => reject(req.error);
-                });
+                db = await openGameCache();
+                const req = db.transaction(GAME_CACHE_STORE, 'readwrite').objectStore(GAME_CACHE_STORE).put(record);
+                await idbRequestWithTimeout(req, 6500, 'guardar ' + (record?.path || record?.key || 'un archivo'));
                 return true;
             } catch (e) {
                 console.warn('No se pudo guardar caché:', e);
                 githubLogMsg(`ERROR AL ALMACENAR ${record?.path || record?.key || ''}: ${e?.name || ''} ${e?.message || e}`, 'error');
                 return false;
+            } finally {
+                try { if (db) db.close(); } catch (_) {}
             }
         }
 
         async function getStoredCountForVersion(version) {
+            let db = null;
             try {
-                const db = await openGameCache();
-                return await new Promise((resolve) => {
-                    const tx = db.transaction(GAME_CACHE_STORE, 'readonly');
-                    const store = tx.objectStore(GAME_CACHE_STORE);
-                    const req = store.openCursor();
-                    const prefix = `file:${version}:`;
+                db = await openGameCache();
+                return await new Promise(resolve => {
+                    let settled = false;
                     let count = 0;
+                    const finish = value => {
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(timer);
+                        try { if (db) db.close(); } catch (_) {}
+                        resolve(value);
+                    };
+                    const timer = setTimeout(() => finish(count), 6500);
+                    const req = db.transaction(GAME_CACHE_STORE, 'readonly').objectStore(GAME_CACHE_STORE).openCursor();
+                    const prefix = `file:${version}:`;
                     req.onsuccess = () => {
+                        if (settled) return;
                         const cursor = req.result;
-                        if (!cursor) { resolve(count); return; }
+                        if (!cursor) { finish(count); return; }
                         if (cursor.value && typeof cursor.value.key === 'string' && cursor.value.key.startsWith(prefix) && cursor.value.blob) count++;
                         cursor.continue();
                     };
-                    req.onerror = () => resolve(0);
+                    req.onerror = () => finish(0);
                 });
-            } catch (_) { return 0; }
+            } catch (_) {
+                try { if (db) db.close(); } catch (_) {}
+                return 0;
+            }
         }
 
         function saveDownloadManifest(version, total) {
@@ -1921,29 +1951,38 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         // se haya cortado a la mitad. Sirve para "Reintentar" (retomar donde
         // quedó) y para "Jugar sin descargar" (usar lo que ya se bajó).
         async function cacheGetAllFilesForVersion(version) {
-            return new Promise(async (resolve) => {
-                try {
-                    const db = await openGameCache();
-                    const tx = db.transaction(GAME_CACHE_STORE, 'readonly');
-                    const store = tx.objectStore(GAME_CACHE_STORE);
-                    const req = store.openCursor();
-                    const files = [];
+            let db = null;
+            const files = [];
+            try {
+                db = await openGameCache();
+                return await new Promise(resolve => {
+                    let settled = false;
+                    const finish = value => {
+                        if (settled) return;
+                        settled = true;
+                        clearTimeout(timer);
+                        try { if (db) db.close(); } catch (_) {}
+                        resolve(value);
+                    };
+                    const timer = setTimeout(() => finish(files), 6500);
+                    const req = db.transaction(GAME_CACHE_STORE, 'readonly').objectStore(GAME_CACHE_STORE).openCursor();
                     const prefix = `file:${version}:`;
                     req.onsuccess = () => {
+                        if (settled) return;
                         const cursor = req.result;
-                        if (!cursor) { resolve(files); return; }
+                        if (!cursor) { finish(files); return; }
                         const rec = cursor.value;
-                        if (rec && rec.key && rec.key.indexOf(prefix) === 0 && rec.blob) {
-                            const path = rec.path;
-                            const fileName = path.split('/').pop();
-                            const file = makeLoadedFile(rec.blob, path, rec.type, rec.lastModified);
-                            files.push(file);
+                        if (rec && rec.key && rec.key.startsWith(prefix) && rec.blob) {
+                            files.push(makeLoadedFile(rec.blob, rec.path, rec.type, rec.lastModified));
                         }
                         cursor.continue();
                     };
-                    req.onerror = () => resolve(files);
-                } catch (_) { resolve([]); }
-            });
+                    req.onerror = () => finish(files);
+                });
+            } catch (_) {
+                try { if (db) db.close(); } catch (_) {}
+                return files;
+            }
         }
 
         async function saveGameFilesToCache(files, onProgress) {
@@ -2335,7 +2374,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 await Promise.all([downloadWorker(), downloadWorker()]);
 
                 if (failedDownloadEntries.length) {
-                    await finishLoadedFiles(virtualFiles, 'GitHub (parcial)', false);
+                    await finishLoadedFiles(virtualFiles, 'GitHub (parcial)', true);
                     startScreen.classList.add('hasFailed');
                     if (startupProgressCount) startupProgressCount.textContent = `${completed}/${entries.length}`
                     saveDownloadManifest(currentGameVersion, entries.length);
