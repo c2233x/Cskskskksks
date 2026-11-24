@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.6.0",
+  "version": "1.6.1",
   "updates": [
     {
       "version": "1.0",
@@ -123,6 +123,19 @@
         "El volumen de TV se controla desde la interfaz y se atenúa por distancia al televisor; cerrar el menú no detiene la emisión.",
         "Se añadió una radio física junto a la TV con siete emisoras hondureñas, encendido manual, control de volumen y una segunda URL de respaldo para Radio Activa.",
         "El viaje a la ciudad construye objetos en el scene normal y luego los agrupa, evitando reemplazar scene.add() en WebView; si la carga falla aparece un botón para reintentar."
+      ]
+    },
+    {
+      "version": "1.6.1",
+      "title": "Reintento de ciudad y estabilidad de TV/radio",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "Si el viaje automático a Ciudad no puede terminar, aparece un botón IR A CIUDAD para volver a intentar la carga; el intento automático deja un intervalo de reintento.",
+        "La creación del mapa de Ciudad agrupa los objetos nuevos después de construirlos, sin reemplazar scene.add() durante el proceso, para mejorar compatibilidad con WebView.",
+        "El televisor reproduce HLS con HTML5 y hls.js 1.7.4; prueba una segunda fuente y luego usa el reproductor oficial incrustado como respaldo.",
+        "El video permanece proyectado en la pantalla física al cerrar la interfaz; apagar la TV detiene el flujo y deja la pantalla negra.",
+        "El volumen del televisor y la radio de la granja se regula desde sus paneles y baja al alejarse de cada aparato.",
+        "Las emisoras de radio tienen URL alternativa cuando la primera señal no responde."
       ]
     }
   ]
