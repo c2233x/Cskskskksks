@@ -2464,7 +2464,11 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
             posterTextureObj = createPosterTexture(); createBillboards(); applyBillboardTextures(); stabilizeTexturedMaterials(); rebuildCarCollisionGrid();
             character = createCharacterWithSkeleton(); scene.add(character); character.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
             if (faceTextureUrl) applyFaceTexture();
-            createFarmWorld();updateFarmCarryVisual(true);
+            if(typeof FARM_MAP_CONFIG.buildWorld==='function'){
+                FARM_MAP_CONFIG.buildWorld({createFarmWorld,updateFarmCarryVisual});
+            }else{
+                createFarmWorld();updateFarmCarryVisual(true);
+            }
             
             setupControls();setupFarmUiControls();setupCarUI(); updatePlayerHealth(); updateAuraUI(); setupGraphicsUI(); setupHudEditor(); applyGraphicsSettings();
             setInterval(() => { if (cartelTextures.length > 1) { currentCartelIndex = (currentCartelIndex + 1) % cartelTextures.length; updateBillboardsWithCurrentTexture(); } }, 5000);
@@ -4881,7 +4885,11 @@ async function ensureCityWorldLoaded(){
  const originalAdd=scene.add;
  scene.add=function(...objects){cityWorldGroup.add(...objects);return scene;};
  try{
-  createRoads();createDrivableCars();createBuildings();createStreetLamps();createCityProps();initDrones();createBillboards();createCityJobBoard();applyBillboardTextures();
+  if(typeof CITY_MAP_CONFIG.buildWorld!=='function')throw new Error('Ciudad.js no contiene el constructor del mapa.');
+  CITY_MAP_CONFIG.buildWorld({
+   createRoads,createDrivableCars,createBuildings,createStreetLamps,createCityProps,
+   initDrones,createBillboards,createCityJobBoard,applyBillboardTextures
+  });
  }catch(error){
   scene.add=originalAdd;cityWorldGroup=null;throw error;
  }finally{scene.add=originalAdd;}
