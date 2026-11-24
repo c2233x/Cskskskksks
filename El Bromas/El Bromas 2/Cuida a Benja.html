@@ -368,6 +368,10 @@
 #storyGuide{position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:53;display:none;align-items:center;gap:8px;padding:6px 12px;border:1px solid rgba(255,210,100,.72);border-radius:22px;background:rgba(4,12,24,.82);box-shadow:0 0 16px rgba(255,190,60,.2);pointer-events:none;color:#fff;font-size:11px;font-weight:900}
 #storyGuideArrow{font-size:27px;line-height:1;color:#ffd05c;transform-origin:50% 50%;filter:drop-shadow(0 0 7px rgba(255,190,60,.8))}
 #storyGuideText{max-width:65vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#farmClockHud{position:fixed;top:14px;right:132px;z-index:58;display:none;min-width:98px;padding:6px 10px;border:1px solid rgba(255,226,160,.5);border-radius:11px;background:rgba(4,12,20,.78);color:#ffe3a5;font-size:10px;font-weight:950;line-height:1.2;text-align:center;pointer-events:none;box-shadow:0 4px 14px rgba(0,0,0,.24)}
+#farmClockHud small{display:block;margin-top:2px;color:#d6e5f4;font-size:8px;font-weight:800;letter-spacing:.08em}
+#farmTVPlutoScan{grid-column:1/-1;min-height:38px;border:1px solid #6aa6d6;border-radius:8px;padding:8px;background:linear-gradient(135deg,#315b84,#20364e);color:#fff;font-size:10px;font-weight:950}
+@media(max-width:600px){#farmClockHud{right:128px;top:56px;min-width:88px;padding:5px 7px;font-size:9px}}
 #cinematicLetterTop,#cinematicLetterBottom{position:fixed;left:0;right:0;height:0;z-index:1320;background:#000;pointer-events:none;transition:height .45s ease;display:flex;align-items:center;justify-content:center;overflow:hidden}
 #cinematicLetterTop{top:0}#cinematicLetterBottom{bottom:0}
 #cinematicLetterTop span{font-size:10px;letter-spacing:.3em;color:#d7dce5;font-weight:800}
@@ -508,6 +512,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="statusText">Listo</div>
 <div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
 <div id="storyGuide"><div id="storyGuideArrow">⬆</div><div id="storyGuideText">OBJETIVO</div></div>
+<div id="farmClockHud">06:00 <small>AMANECIENDO</small></div>
 <div id="farmBenjaHud">
 <div id="farmBenjaHudTop"><span>🐷 BENJA</span><span>ESTADO</span></div>
 <div class="farmBenjaStat"><small>VIDA</small><div id="farmBenjaHealthTrack"><div id="farmBenjaHealthFill"></div></div><small id="farmBenjaHealthText">100%</small></div>
@@ -535,10 +540,11 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
   <div id="farmTVVolumeControls"><button id="farmTVVolDown" class="farmMediaButton" type="button" aria-label="Bajar volumen de TV">−</button><input id="farmTVVolume" class="farmMediaVolume" type="range" min="0" max="100" value="55"><button id="farmTVVolUp" class="farmMediaButton" type="button" aria-label="Subir volumen de TV">+</button><span id="farmTVVolumeValue" class="farmMediaValue">55%</span></div>
   <div id="farmTVHint">La imagen se dibuja sobre la pantalla 3D del televisor. Busca por nombre o categoría y prueba las señales en este dispositivo.</div>
   <div id="farmTVDiscovery">
-    <select id="farmTVCategory" aria-label="Categoría de canales"><option value="TODOS">Todas las categorías</option><option value="NOTICIAS">Noticias</option><option value="GENERAL">General</option><option value="ENTRETENIMIENTO">Entretenimiento</option><option value="EDUCATIVO">Educativo</option><option value="RELIGIOSO">Religioso</option><option value="MÚSICA">Música</option><option value="DEPORTES">Deportes</option><option value="INTERNACIONAL">Internacional</option></select>
+    <select id="farmTVCategory" aria-label="Categoría de canales"><option value="TODOS">Todas las categorías</option><option value="NOTICIAS">Noticias</option><option value="GENERAL">General</option><option value="ENTRETENIMIENTO">Entretenimiento</option><option value="EDUCATIVO">Educativo</option><option value="RELIGIOSO">Religioso</option><option value="MÚSICA">Música</option><option value="DEPORTES">Deportes</option><option value="INTERNACIONAL">Internacional</option><option value="ANIME">Anime</option><option value="CARICATURAS">Caricaturas</option></select>
     <input id="farmTVSearch" type="search" placeholder="Buscar canal…" autocomplete="off" aria-label="Buscar canales">
     <button id="farmTVScanStart" type="button">🔎 BUSCAR Y PROBAR</button>
     <button id="farmTVScanStop" type="button" disabled>■ DETENER BÚSQUEDA</button>
+    <button id="farmTVPlutoScan" type="button">📡 ESCANEAR CATÁLOGO PLUTO TV</button>
     <div id="farmTVScanStatus" role="status" aria-live="polite">Canales listos. Pulsa «BUSCAR Y PROBAR» para comprobar cuáles reproducen aquí.</div>
   </div>
   <div id="farmTVChannels"></div>
@@ -771,7 +777,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.3"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.4"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -822,6 +828,8 @@ const FARM_CROP_POS=FARM_MAP_CONFIG.crops;
 const FARM_COOP_POS=FARM_MAP_CONFIG.coop;
 const FARM_DELIVERY_POS=FARM_MAP_CONFIG.delivery;
 const FARM_WELL_POS=FARM_MAP_CONFIG.well;
+const FARM_WATER_STORAGE_POS=FARM_MAP_CONFIG.waterStorage||{x:FARM_CENTER.x-105,z:FARM_CENTER.z+140};
+const FARM_PONDS=Array.isArray(FARM_MAP_CONFIG.ponds)?FARM_MAP_CONFIG.ponds:[{id:'laguna-grande',x:FARM_CENTER.x+60,z:FARM_CENTER.z+88,radius:22,depth:.85},{id:'laguna-pequena',x:FARM_CENTER.x-132,z:FARM_CENTER.z+75,radius:13,depth:.5}];
 const FARM_TRACTOR_POS=FARM_MAP_CONFIG.tractor;
 const FARM_REPAIR_POS=FARM_MAP_CONFIG.repair;
 const FARM_TV_POS=FARM_MAP_CONFIG.tv||{x:FARM_CENTER.x-84,z:FARM_CENTER.z-35};
@@ -845,6 +853,8 @@ const FARM_MISSION_DATA=FARM_MAP_CONFIG.missions?
 let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
 
         let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null,farmTVProp=null;
+let farmWaterStorageGroup=null,farmPigstyGroup=null,farmPondWaterMeshes=[],farmPondRippleMeshes=[];
+let farmTVPhysicalButtons=[],farmTVPhysicalControlsBound=false,farmClockLastUi=0;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
         let farmTVPanelBound=false,farmTVCurrentChannel=null,farmTVPowerOn=false,farmTVVolume=.55,farmTVScreenMaterial=null,farmTVLastAudioCheck=0;
@@ -864,6 +874,7 @@ let farmTVScanToken=0,farmTVScanHls=null,farmTVScanVideo=null,farmTVScanCancelCu
         let farmWarehouseStock={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:6};
         let farmInventoryPanelMode='',farmInventoryPanelBound=false,farmLastHudUpdate=0;
         let farmDefenseLevel=0,farmBenjaHealth=100,farmRaidActive=false,farmRaidTriggered=false,farmRaidNightWasActive=false;
+let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenjaLastCleanlinessTick=0;
         let farmRaidKillCarry=0,farmRaidKillsTotal=0,farmRaidSpawnedCount=0,farmRaidLastSpawn=0,farmMissionActionLock=0;
         let benjaSoundUrls=[],benjaSoundPlayers=[],benjaSoundIndex=0,benjaSoundNextAt=0;
         let farmGuideMarker=null,farmGuideTarget=null,farmGuideLabel='';
@@ -962,7 +973,7 @@ let farmTVScanToken=0,farmTVScanHls=null,farmTVScanVideo=null,farmTVScanCancelCu
         let initialPinchDistance = 0, initialCameraDistance = 0; let joystickTouchId = null, cameraTouchId = null;
         
         let cameraTheta = 0; let cameraPhi = Math.PI / 3; let cameraDistance = 25; 
-        let timeOfDay = 0.3; let walkCycle = 0; let isMoving = false;
+        let timeOfDay = 0.3; let lastDayNightTick=0; let walkCycle = 0; let isMoving = false;
         let scene, camera, renderer, character, boss;
         // ===== Sistema de vehículos conducibles =====
         let drivableCars = [];
@@ -4851,14 +4862,14 @@ function ensureFarmCicadaAudio(){
  if(!farmAmbienceContext){const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;farmAmbienceContext=new Ctx();}
  const ctx=farmAmbienceContext;
  if(!farmCicadaMaster){
-  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=3650;filter.Q.value=.82;
+  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=4380;filter.Q.value=.76;
   farmCicadaMaster=ctx.createGain();farmCicadaMaster.gain.value=0;
-  farmCicadaGain=ctx.createGain();farmCicadaGain.gain.value=.16;
-  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=3200;
-  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=3710;
-  const secondGain=ctx.createGain();secondGain.gain.value=.26;
-  farmCicadaLfo=ctx.createOscillator();farmCicadaLfo.type='sine';farmCicadaLfo.frequency.value=18;
-  const lfoDepth=ctx.createGain();lfoDepth.gain.value=.095;farmCicadaLfo.connect(lfoDepth);lfoDepth.connect(farmCicadaGain.gain);
+  farmCicadaGain=ctx.createGain();farmCicadaGain.gain.value=.34;
+  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=4200;
+  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=4770;
+  const secondGain=ctx.createGain();secondGain.gain.value=.48;
+  farmCicadaLfo=ctx.createOscillator();farmCicadaLfo.type='sine';farmCicadaLfo.frequency.value=24;
+  const lfoDepth=ctx.createGain();lfoDepth.gain.value=.22;farmCicadaLfo.connect(lfoDepth);lfoDepth.connect(farmCicadaGain.gain);
   farmCicadaOscillatorA.connect(filter);farmCicadaOscillatorB.connect(secondGain);secondGain.connect(filter);
   filter.connect(farmCicadaGain);farmCicadaGain.connect(farmCicadaMaster);farmCicadaMaster.connect(ctx.destination);
   farmCicadaOscillatorA.start();farmCicadaOscillatorB.start();farmCicadaLfo.start();
@@ -4870,7 +4881,7 @@ function setFarmCicadas(active,strength=1){
  const master=ensureFarmCicadaAudio();if(!master)return;
  const ctx=farmAmbienceContext,level=Math.max(0,Math.min(1,Number(strength)||0));
  if(ctx.state==='suspended'&&audioUnlocked)ctx.resume().catch(()=>{});
- master.gain.setTargetAtTime((active&&audioUnlocked)?(.34*level):0,ctx.currentTime,.22);
+ master.gain.setTargetAtTime((active&&audioUnlocked)?(.68*level):0,ctx.currentTime,.18);
 }
 function stopFarmAmbience(){
  farmAmbienceActiveZone='';farmAmbienceLevel=0;
@@ -4885,7 +4896,7 @@ function playFarmBirdChirp(){
   osc.type='sine';osc.frequency.setValueAtTime(2450+Math.random()*800,now);
   osc.frequency.exponentialRampToValueAtTime(3300+Math.random()*600,now+.12);
   osc.frequency.exponentialRampToValueAtTime(2050+Math.random()*500,now+.31);
-  const peak=.082*farmAmbienceLevel;
+  const peak=.105*farmAmbienceLevel;
   gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(peak,now+.05);
   gain.gain.exponentialRampToValueAtTime(.0001,now+.38);osc.connect(gain);gain.connect(ctx.destination);
   osc.start(now);osc.stop(now+.4);
@@ -4908,7 +4919,7 @@ function startFarmAmbience(zone,attenuation=1){
    farmAmbienceNoiseSource.connect(filter);filter.connect(farmAmbienceGain);farmAmbienceGain.connect(farmAmbienceContext.destination);farmAmbienceNoiseSource.start();
   }
   if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
-  if(farmAmbienceGain&&farmAmbienceContext)farmAmbienceGain.gain.setTargetAtTime(.22*farmAmbienceLevel,farmAmbienceContext.currentTime,.35);
+  if(farmAmbienceGain&&farmAmbienceContext)farmAmbienceGain.gain.setTargetAtTime(.28*farmAmbienceLevel,farmAmbienceContext.currentTime,.35);
   setFarmCicadas(!!zone.insects,farmAmbienceLevel);
   if(changed){if(farmAmbienceBirdTimer)clearTimeout(farmAmbienceBirdTimer);playFarmBirdChirp();}
  }catch(_){}
@@ -4917,9 +4928,17 @@ function updateFarmAmbience(){
  if(!storyModeActive||farmCityMode||!character||isDriving||isCinematic){stopFarmAmbience();return;}
  const now=Date.now();if(now-farmAmbienceLastCheck<420)return;farmAmbienceLastCheck=now;
  let active=null,distance=0;
- for(const zone of FARM_AMBIENT_ZONES){const d=Math.hypot(character.position.x-zone.x,character.position.z-zone.z);if(d<zone.radius&&(!active||d/zone.radius<distance/active.radius)){active=zone;distance=d;}}
- if(active){const edge=Math.max(0,1-distance/active.radius),level=Math.pow(edge,.72);startFarmAmbience(active,level);}
- else if(farmAmbienceActiveZone)stopFarmAmbience();
+ for(const zone of FARM_AMBIENT_ZONES){
+  const d=Math.hypot(character.position.x-zone.x,character.position.z-zone.z);
+  if(d<zone.radius&&(!active||d/zone.radius<distance/active.radius)){active=zone;distance=d;}
+ }
+ if(active){
+  const edge=Math.max(0,1-distance/active.radius),level=Math.max(.28,Math.pow(edge,.56));
+  startFarmAmbience(active,level);
+ }else{
+  // El viento continúa en toda la granja aunque no haya insectos en esa zona.
+  startFarmAmbience({id:'campo-viento-general',insects:false},.72);
+ }
 }
 
 function farmClearNPCs(includeRaiders=true){for(let i=smallPenes.length-1;i>=0;i--){const p=smallPenes[i];if(!p||!p.userData||includeRaiders||!p.userData.farmRaider){if(p&&p.parent)p.parent.remove(p);smallPenes.splice(i,1);}}if(includeRaiders)farmRaidActive=false;if(typeof updatePeneCountUI==='function')updatePeneCountUI();}
@@ -5295,7 +5314,7 @@ function setupFarmTVControls(){
 function updateFarmRadioPanel(){
  const status=document.getElementById('farmRadioStatus'),power=document.getElementById('farmRadioPowerBtn'),label=document.getElementById('farmRadioPowerLabel'),volume=document.getElementById('farmRadioVolume'),value=document.getElementById('farmRadioVolumeValue');
  const station=FARM_RADIO_STATIONS[farmRadioStationIndex];
- if(status)status.textContent=station?station.name+' · '+station.freq+' · '+station.city+(farmRadioPowerOn?' · SONANDO CERCA DE LA RADIO':' · Selecciona una emisora y enciende'):'No hay emisoras';
+ if(status)status.textContent=station?station.name+' · '+station.freq+' · '+station.city+(farmRadioPowerOn?' · SE OYE EN TODA LA GRANJA, MÁS BAJO DE LEJOS':' · Selecciona una emisora y enciende'):'No hay emisoras';
  if(power){power.classList.toggle('on',farmRadioPowerOn);power.textContent=farmRadioPowerOn?'⏻ APAGAR RADIO':'⏻ ENCENDER RADIO';}
  if(label)label.textContent=farmRadioPowerOn?'ENCENDIDA':'APAGADA';
  if(volume)volume.value=Math.round(farmRadioVolume*100);
@@ -5354,7 +5373,7 @@ function updateFarmRadioProximity(){
  if(!farmRadioPowerOn||farmCityMode||!character){if(farmRadioPowerOn)farmRadioAudio.volume=0;return;}
  const now=Date.now();if(now-farmRadioLastCheck<300)return;farmRadioLastCheck=now;
  const distance=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
- const attenuation=Math.max(0,Math.min(1,1-distance/55));
+ const attenuation=Math.max(.045,Math.pow(Math.max(0,1-distance/190),1.35));
  farmRadioAudio.volume=farmRadioVolume*attenuation;
 }
 function setupFarmRadioControls(){
@@ -5412,7 +5431,7 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.3',
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.4',
    'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js'
   ];
   let lastError=null;
