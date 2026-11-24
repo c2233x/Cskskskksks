@@ -20,3 +20,17 @@ window.CUIDA_BENJA_CITY_MAP = {
   waves: { first: 1, max: 18, initialCount: 5, addPerWave: 2, rewardPerInvader: 1 },
   vehiclesRemainEnabled: true
 };
+
+window.CUIDA_BENJA_CITY_MAP.buildWorld = function(engine) {
+  if (!engine) throw new Error("No se recibió el motor de ciudad");
+  // Este método solo se invoca después de descargar Ciudad.js al cruzar el límite.
+  engine.createRoads();
+  engine.createDrivableCars();
+  engine.createBuildings();
+  engine.createStreetLamps();
+  engine.createCityProps();
+  engine.initDrones();
+  engine.createBillboards();
+  engine.createCityJobBoard();
+  engine.applyBillboardTextures();
+};
