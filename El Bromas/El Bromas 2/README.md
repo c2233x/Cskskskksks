@@ -1,6 +1,6 @@
 # Salva a Fornatan 2 — El Bromas 2
 
-**Version actual: 1.3**
+**Version actual: 1.3.1**
 
 Esta entrega conserva la base 3D de la serie **Salva a cornatan**, pero cuenta una historia diferente: el personaje principal llega a una granja y empieza a cuidar a Benja, un cerdo que disfruta revolcarse en el lodo.
 
@@ -41,6 +41,9 @@ Cuando llega la noche aparecen intrusos que intentan llegar al corral. Defiende 
 
 ## Sonidos
 Los sonidos originales enviados para Benja estan en `Sonidos/Benja/` y se alternan mientras el cerdo esta cerca.
+
+## Correccion 1.3.1
+Se corrigio el error al iniciar la granja causado por una llamada no compatible de Three.js r128 en objetos instanciados.
 
 ## Guardado y actualizaciones
 La partida conserva dinero, peso de Benja, materiales, productos del almacen, trabajo actual y nivel de defensa en el dispositivo.
