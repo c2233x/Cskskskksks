@@ -1,22 +1,30 @@
 {
   "game": "Salva a Fornatan 2",
   "edition": "El Bromas 2",
-  "version": "1.0",
+  "version": "1.1",
   "updates": [
     {
       "version": "1.0",
-      "title": "Lanzamiento · Campaña 3D",
+      "title": "Lanzamiento · Base 3D",
       "date": "23 de noviembre de 2026",
       "changes": [
-        "Base 3D Three.js/WebGL basada en Salva a cornatan: ciudad, cámara, personaje, vehículos, entorno, controles, HUD y ajustes gráficos.",
-        "Nuevo modo historia en lugar del ciclo infinito de oleadas.",
-        "Misión 1: recuperar tres fragmentos de la señal.",
-        "Misión 2: reactivar las dos antenas del valle.",
-        "Misión 3: defender el refugio de los guardianes mecánicos.",
-        "Misión 4: derrotar al Guardián de la Tormenta.",
-        "Misión 5: encontrar y rescatar a Fornatan.",
-        "Guardado de progreso e identidad de caché independientes del primer juego.",
-        "Pantalla de acceso Codis y panel de historia, misiones, cambios y correcciones en Ajustes."
+        "Base 3D Three.js/WebGL basada en Salva a cornatan: ciudad, camara, personaje, vehiculos, entorno, controles, HUD y ajustes graficos.",
+        "Guardado y cache independientes del primer juego."
+      ]
+    },
+    {
+      "version": "1.1",
+      "title": "La granja de Benja",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "Nueva apertura cinematografica en una granja con planos de llegada y acercamiento al corral.",
+        "Benja, un cerdo de corral que se mueve y se revuelca en el lodo.",
+        "Dialogos de historia escritos en tono casual.",
+        "Flecha de direccion y marcador 3D que indican el objetivo y la distancia.",
+        "Prepara pedidos para ganar monedas, compra sacos de alimento y dale de comer a Benja.",
+        "El peso de Benja aumenta con cada racion y puedes seguir alimentandolo despues del primer objetivo.",
+        "Se agregaron los dos sonidos de cerdo enviados para Benja.",
+        "Se corrigio la transicion entre misiones para mantener la rutina de granja y el guardado."
       ]
     }
   ]
