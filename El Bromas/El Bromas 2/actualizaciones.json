@@ -1,18 +1,22 @@
 {
   "game": "Salva a Fornatan 2",
+  "edition": "El Bromas 2",
   "version": "1.0",
   "updates": [
     {
       "version": "1.0",
-      "title": "Lanzamiento · El Bromas 2",
+      "title": "Lanzamiento · Campaña 3D",
       "date": "23 de noviembre de 2026",
       "changes": [
-        "Nueva aventura de historia: La señal perdida.",
-        "Seis misiones principales en el Valle del Eco.",
-        "Exploración, objetos, antenas, cofre y puerta con acertijos de progreso.",
-        "Controles táctiles para móvil y controles WASD/flechas para teclado.",
-        "Guardado local y opción para continuar la partida.",
-        "Ajustes con historia, misiones, cambios y correcciones."
+        "Base 3D Three.js/WebGL basada en Salva a cornatan: ciudad, cámara, personaje, vehículos, entorno, controles, HUD y ajustes gráficos.",
+        "Nuevo modo historia en lugar del ciclo infinito de oleadas.",
+        "Misión 1: recuperar tres fragmentos de la señal.",
+        "Misión 2: reactivar las dos antenas del valle.",
+        "Misión 3: defender el refugio de los guardianes mecánicos.",
+        "Misión 4: derrotar al Guardián de la Tormenta.",
+        "Misión 5: encontrar y rescatar a Fornatan.",
+        "Guardado de progreso e identidad de caché independientes del primer juego.",
+        "Pantalla de acceso Codis y panel de historia, misiones, cambios y correcciones en Ajustes."
       ]
     }
   ]
