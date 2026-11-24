@@ -722,7 +722,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.5.1"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.5.2"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -4861,18 +4861,60 @@ function startCityJob(id){
  const j=(CITY_MAP_CONFIG.jobs||[]).find(x=>x.id===id);if(!j)return;cityActiveJob=j;const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';
  setFarmGuideTarget(j.target.x,j.target.z,'ve a '+j.title.toLowerCase());updateMissionUI();showToast('nuevo trabajo: '+j.title.toLowerCase());
 }
+const CITY_MAP_FALLBACK={
+ id:'ciudad',title:'Ciudad principal',spawn:{x:0,z:0},jobBoard:{x:38,z:-22},returnGate:{x:-132,z:-330},exitRadius:345,
+ jobs:[
+  {id:'delivery',title:'REPARTIDOR',detail:'lleva un paquete al barrio norte',target:{x:125,z:-65},reward:24,icon:'📦'},
+  {id:'taxi',title:'SERVICIO DE TAXI',detail:'recoge al cliente en la avenida',target:{x:-105,z:72},reward:30,icon:'🚕'},
+  {id:'mechanic',title:'AYUDANTE DE TALLER',detail:'entrega herramientas al taller',target:{x:155,z:95},reward:28,icon:'🔧'},
+  {id:'park',title:'MANTENIMIENTO DEL PARQUE',detail:'lleva bolsas al parque',target:{x:-155,z:-115},reward:18,icon:'🌳'},
+  {id:'market',title:'ENCARGO DEL MERCADO',detail:'recoge suministros en el mercado',target:{x:90,z:165},reward:22,icon:'🛒'},
+  {id:'lights',title:'REPARAR ALUMBRADO',detail:'revisa las farolas de la avenida',target:{x:-35,z:-175},reward:26,icon:'💡'},
+  {id:'courier',title:'MENSAJERO',detail:'entrega documentos en la oficina',target:{x:-190,z:35},reward:32,icon:'✉️'},
+  {id:'clean',title:'LIMPIEZA DE CALLES',detail:'lleva el equipo a la plaza',target:{x:195,z:-150},reward:20,icon:'🧹'}
+ ],
+ waves:{first:1,max:18,initialCount:5,addPerWave:2,rewardPerInvader:1},
+ buildWorld(engine){
+  if(!engine)throw new Error('No se recibió el motor de ciudad');
+  engine.createRoads();engine.createDrivableCars();engine.createBuildings();engine.createStreetLamps();
+  engine.createCityProps();engine.initDrones();engine.createBillboards();engine.createCityJobBoard();engine.applyBillboardTextures();
+ }
+};
 async function loadCityMapModule(){
- if(CITY_MAP_CONFIG&&window.CUIDA_BENJA_CITY_MAP)return CITY_MAP_CONFIG;
+ if(window.CUIDA_BENJA_CITY_MAP&&typeof window.CUIDA_BENJA_CITY_MAP.buildWorld==='function'){
+  CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP;return CITY_MAP_CONFIG;
+ }
+ if(CITY_MAP_CONFIG&&typeof CITY_MAP_CONFIG.buildWorld==='function')return CITY_MAP_CONFIG;
  if(cityMapScriptPromise)return cityMapScriptPromise;
- cityMapScriptPromise=new Promise((resolve,reject)=>{
-  const script=document.createElement('script');
-  script.src='https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.5.1';
-  script.async=true;
-  script.onload=()=>{CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;if(CITY_MAP_CONFIG)resolve(CITY_MAP_CONFIG);else reject(new Error('No se encontraron los datos de la ciudad.'));};
-  script.onerror=()=>reject(new Error('No se pudo descargar Ciudad.js.'));
-  document.head.appendChild(script);
- });
- return cityMapScriptPromise;
+ cityMapScriptPromise=(async()=>{
+  const urls=[
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.5.2',
+   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js'
+  ];
+  let lastError=null;
+  for(const url of urls){
+   try{
+    await new Promise((resolve,reject)=>{
+     const script=document.createElement('script');
+     script.src=url;script.async=false;script.dataset.cityMapLoader='1';
+     script.onload=()=>{
+      if(window.CUIDA_BENJA_CITY_MAP&&typeof window.CUIDA_BENJA_CITY_MAP.buildWorld==='function'){
+       CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP;resolve();
+      }else{script.remove();reject(new Error('El archivo no publicó su constructor buildWorld().'));}
+     };
+     script.onerror=()=>{script.remove();reject(new Error('No se pudo descargar '+url));};
+     document.head.appendChild(script);
+    });
+    return CITY_MAP_CONFIG;
+   }catch(error){lastError=error;}
+  }
+  // Respaldo local: conserva el viaje aunque GitHub Raw o jsDelivr no respondan.
+  CITY_MAP_CONFIG=CITY_MAP_FALLBACK;
+  showToast('Ciudad: se usará el mapa de respaldo. '+(lastError&&lastError.message?lastError.message:''));
+  return CITY_MAP_CONFIG;
+ })();
+ try{return await cityMapScriptPromise;}
+ catch(error){cityMapScriptPromise=null;throw error;}
 }
 async function ensureCityWorldLoaded(){
  await loadCityMapModule();
@@ -4881,19 +4923,24 @@ async function ensureCityWorldLoaded(){
   if(cityWorldGroup.parent!==scene)scene.add(cityWorldGroup);
   return;
  }
+ cityJobBoard=null;
  cityWorldGroup=new THREE.Group();cityWorldGroup.name='CiudadPrincipal_CargaDiferida';
- const originalAdd=scene.add;
- scene.add=function(...objects){cityWorldGroup.add(...objects);return scene;};
+ const targetGroup=cityWorldGroup,originalAdd=scene.add;
+ scene.add=function(...objects){targetGroup.add(...objects);return scene;};
  try{
-  if(typeof CITY_MAP_CONFIG.buildWorld!=='function')throw new Error('Ciudad.js no contiene el constructor del mapa.');
+  if(!CITY_MAP_CONFIG||typeof CITY_MAP_CONFIG.buildWorld!=='function')throw new Error('Ciudad.js no contiene un constructor válido.');
   CITY_MAP_CONFIG.buildWorld({
    createRoads,createDrivableCars,createBuildings,createStreetLamps,createCityProps,
    initDrones,createBillboards,createCityJobBoard,applyBillboardTextures
   });
+  if(!targetGroup.children.length)throw new Error('El archivo de ciudad no creó ningún objeto.');
  }catch(error){
-  scene.add=originalAdd;cityWorldGroup=null;throw error;
+  scene.add=originalAdd;
+  try{unloadCityWorld();}catch(_){cityWorldGroup=null;cityWorldLoaded=false;cityJobBoard=null;}
+  throw new Error('No se pudo construir la ciudad: '+(error&&error.message?error.message:String(error)));
  }finally{scene.add=originalAdd;}
- scene.add(cityWorldGroup);cityWorldLoaded=true;rebuildCarCollisionGrid();
+ scene.add(targetGroup);cityWorldGroup=targetGroup;cityWorldLoaded=true;
+ rebuildCarCollisionGrid();
 }
 function unloadCityWorld(){
  if(!cityWorldGroup)return;
