@@ -4387,31 +4387,85 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
 
         function createFarmMissionProps(){
-            const wood=new THREE.MeshLambertMaterial({color:0x76502f}),roof=new THREE.MeshLambertMaterial({color:0x883d30});
+            const wood=new THREE.MeshStandardMaterial({color:0x76502f,roughness:.92});
+            const darkWood=new THREE.MeshStandardMaterial({color:0x49301e,roughness:.95});
+            const roof=new THREE.MeshStandardMaterial({color:0x8b4937,roughness:.9});
             const storageY=farmGroundAt(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z),storage=new THREE.Group();
-            makeFarmBox(storage,0,0,0,22,10,17,wood);
-            const r1=new THREE.Mesh(new THREE.BoxGeometry(13,1,19),roof);r1.position.set(-4,10.5,0);r1.rotation.z=-.42;storage.add(r1);
-            const r2=new THREE.Mesh(new THREE.BoxGeometry(13,1,19),roof);r2.position.set(4,10.5,0);r2.rotation.z=.42;storage.add(r2);
-            const door=new THREE.Mesh(new THREE.BoxGeometry(7,7,.35),new THREE.MeshLambertMaterial({color:0x3a281b}));door.position.set(0,3.5,8.6);storage.add(door);
+            // Almacen abierto, muy grande, como una caja de madera donde se ven las existencias.
+            makeFarmBox(storage,0,0,0,48,.9,36,new THREE.MeshStandardMaterial({color:0x68482b,roughness:.95}));
+            makeFarmBox(storage,-23,0,0,1.7,13,36,wood);
+            makeFarmBox(storage,23,0,0,1.7,13,36,wood);
+            makeFarmBox(storage,0,0,-17,46,13,1.7,wood);
+            makeFarmBox(storage,-14,0,17,20,13,1.7,wood);
+            makeFarmBox(storage,14,0,17,20,13,1.7,wood);
+            for(const x of [-21,0,21]){
+                const beam=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.1,37),darkWood);beam.position.set(x,13,0);storage.add(beam);
+            }
+            const roofA=new THREE.Mesh(new THREE.BoxGeometry(25,1.1,38),roof);roofA.position.set(-11.5,14.2,0);roofA.rotation.z=-.12;storage.add(roofA);
+            const roofB=new THREE.Mesh(new THREE.BoxGeometry(25,1.1,38),roof);roofB.position.set(11.5,14.2,0);roofB.rotation.z=.12;storage.add(roofB);
+            for(const x of [-20,-7,7,20]){
+                const post=new THREE.Mesh(new THREE.BoxGeometry(.8,13,.8),darkWood);post.position.set(x,6.5,16.8);storage.add(post);
+            }
             storage.position.set(FARM_STORAGE_POS.x,storageY,FARM_STORAGE_POS.z);farmGroup.add(storage);
-            farmGroup.add(createFarmSign('ALMACEN',FARM_STORAGE_POS.x,storageY+13,FARM_STORAGE_POS.z-4));
-            Object.keys(FARM_GOODS).forEach((type,index)=>{
-                const x=FARM_STORAGE_POS.x-8+(index%4)*5.2,z=FARM_STORAGE_POS.z-13+Math.floor(index/4)*5,y=farmGroundAt(x,z);
-                const bin=new THREE.Mesh(new THREE.BoxGeometry(4.1,2.3,3.8),new THREE.MeshLambertMaterial({color:0x775538}));bin.position.set(x,y+1.15,z);farmGroup.add(bin);
-                const items=new THREE.InstancedMesh(new THREE.BoxGeometry(.82,.72,.82),new THREE.MeshLambertMaterial({color:FARM_GOODS[type].color}),60),dummy=new THREE.Object3D();
-                for(let i=0;i<60;i++){const col=i%5,row=Math.floor(i/5)%4,layer=Math.floor(i/20);dummy.position.set(x-1.4+col*.7,y+2.1+layer*.68,z-1.2+row*.78);dummy.rotation.y=(i%3)*.18;dummy.updateMatrix();items.setMatrixAt(i,dummy.matrix);}
-                items.count=0;items.instanceMatrix.needsUpdate=true;items.frustumCulled=false;farmGroup.add(items);farmStorageVisuals[type]=items;farmStorageBins[type]=bin;
+            farmGroup.add(createFarmSign('ALMACEN GRANDE',FARM_STORAGE_POS.x,storageY+19,FARM_STORAGE_POS.z-4));
+            const itemGeometry={
+                maiz:new THREE.CylinderGeometry(.22,.34,1.35,7),
+                trigo:new THREE.ConeGeometry(.38,1.55,6),
+                zanahoria:new THREE.ConeGeometry(.42,1.5,7),
+                heno:new THREE.BoxGeometry(1.3,.92,1.15),
+                pienso:new THREE.CylinderGeometry(.48,.62,1.3,8),
+                huevos:new THREE.SphereGeometry(.43,10,8),
+                agua:new THREE.CylinderGeometry(.52,.52,1.45,10),
+                madera:new THREE.BoxGeometry(1.65,.34,.52)
+            };
+            const itemMaterials={
+                maiz:new THREE.MeshStandardMaterial({color:0xe7bd39,roughness:.9}),
+                trigo:new THREE.MeshStandardMaterial({color:0xd7bd77,roughness:1}),
+                zanahoria:new THREE.MeshStandardMaterial({color:0xef7a32,roughness:.86}),
+                heno:new THREE.MeshStandardMaterial({color:0xc6a04d,roughness:1}),
+                pienso:new THREE.MeshStandardMaterial({color:0x96704c,roughness:1}),
+                huevos:new THREE.MeshStandardMaterial({color:0xf4e9d0,roughness:.75}),
+                agua:new THREE.MeshStandardMaterial({color:0x378dc1,roughness:.6,metalness:.12}),
+                madera:new THREE.MeshStandardMaterial({color:0x7b4d2b,roughness:.98})
+            };
+            const types=Object.keys(FARM_GOODS),dummy=new THREE.Object3D();
+            types.forEach((type,index)=>{
+                const col=index%4,row=Math.floor(index/4);
+                const x=FARM_STORAGE_POS.x-17.1+col*11.4,z=FARM_STORAGE_POS.z-8+row*15.2,y=storageY;
+                // Pallet y separador propio para que cada producto se distinga.
+                const pallet=new THREE.Mesh(new THREE.BoxGeometry(8.6,.75,10.7),darkWood);
+                pallet.position.set(x,y+.45,z);pallet.castShadow=true;farmGroup.add(pallet);
+                const labelCanvas=document.createElement('canvas');labelCanvas.width=384;labelCanvas.height=96;
+                const labelCtx=labelCanvas.getContext('2d');labelCtx.fillStyle='#f4e5c5';labelCtx.fillRect(0,0,384,96);
+                labelCtx.fillStyle='#49311f';labelCtx.font='bold 34px Arial';labelCtx.textAlign='center';labelCtx.textBaseline='middle';
+                labelCtx.fillText((FARM_GOODS[type].icon||'')+' '+FARM_GOODS[type].label,192,48);
+                const labelTex=new THREE.CanvasTexture(labelCanvas);
+                const label=new THREE.Mesh(new THREE.PlaneGeometry(7.8,1.95),new THREE.MeshBasicMaterial({map:labelTex,side:THREE.DoubleSide}));
+                label.position.set(x,y+3.3,z+5.5);farmGroup.add(label);
+                const items=new THREE.InstancedMesh(itemGeometry[type]||new THREE.BoxGeometry(1,1,1),itemMaterials[type]||wood,60);
+                items.frustumCulled=false;
+                for(let i=0;i<60;i++){
+                    const c=i%4,r=Math.floor(i/4)%3,layer=Math.floor(i/12);
+                    dummy.position.set(x-1.55+c*1.05,y+1.35+layer*1.18,z-1.3+r*1.15);
+                    if(type==='zanahoria')dummy.rotation.z=Math.PI;
+                    else if(type==='maiz'||type==='trigo')dummy.rotation.z=(i%2?-.12:.12);
+                    else if(type==='madera')dummy.rotation.y=.18*(i%3);
+                    else dummy.rotation.y=(i%3)*.11;
+                    dummy.scale.set(1,1,1);dummy.updateMatrix();items.setMatrixAt(i,dummy.matrix);
+                }
+                items.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));
+                items.instanceMatrix.needsUpdate=true;farmGroup.add(items);farmStorageVisuals[type]=items;farmStorageBins[type]=pallet;
             });
             const fieldY=farmGroundAt(FARM_CROP_POS.x,FARM_CROP_POS.z),soil=new THREE.Mesh(new THREE.CircleGeometry(28,32),new THREE.MeshLambertMaterial({color:0x775438}));
             soil.rotation.x=-Math.PI/2;soil.position.set(FARM_CROP_POS.x,fieldY+.09,FARM_CROP_POS.z);farmGroup.add(soil);
-            const crops=new THREE.InstancedMesh(new THREE.ConeGeometry(.55,3.8,5),new THREE.MeshLambertMaterial({color:0x5b9b3d}),42),dummy=new THREE.Object3D();
-            for(let i=0;i<42;i++){const x=FARM_CROP_POS.x-15+(i%7)*5,z=FARM_CROP_POS.z-12+Math.floor(i/7)*4,y=farmGroundAt(x,z);dummy.position.set(x,y+1.9,z);dummy.rotation.z=(Math.random()-.5)*.18;dummy.scale.set(.75,1,.75);dummy.updateMatrix();crops.setMatrixAt(i,dummy.matrix);}
+            const crops=new THREE.InstancedMesh(new THREE.ConeGeometry(.55,3.8,5),new THREE.MeshLambertMaterial({color:0x5b9b3d}),42),dummyCrop=new THREE.Object3D();
+            for(let i=0;i<42;i++){const x=FARM_CROP_POS.x-15+(i%7)*5,z=FARM_CROP_POS.z-12+Math.floor(i/7)*4,y=farmGroundAt(x,z);dummyCrop.position.set(x,y+1.9,z);dummyCrop.rotation.z=(Math.random()-.5)*.18;dummyCrop.scale.set(.75,1,.75);dummyCrop.updateMatrix();crops.setMatrixAt(i,dummyCrop.matrix);}
             crops.instanceMatrix.needsUpdate=true;crops.castShadow=false;crops.frustumCulled=false;farmGroup.add(crops);
             farmGroup.add(createFarmSign('CULTIVO',FARM_CROP_POS.x,fieldY+8,FARM_CROP_POS.z-22));
             const coopY=farmGroundAt(FARM_COOP_POS.x,FARM_COOP_POS.z),coop=new THREE.Group();
             makeFarmBox(coop,0,0,0,12,6,9,new THREE.MeshLambertMaterial({color:0xd1b38a}));
             const coopRoof=new THREE.Mesh(new THREE.ConeGeometry(8,3.5,4),roof);coopRoof.position.y=7.5;coopRoof.rotation.y=Math.PI/4;coop.add(coopRoof);
-            const coopDoor=new THREE.Mesh(new THREE.BoxGeometry(3,4,.25),new THREE.MeshLambertMaterial({color:0x52341f}));coopDoor.position.set(0,2,4.6);coop.add(coopDoor);
+            const coopDoor=new THREE.Mesh(new THREE.BoxGeometry(3,4,.25),darkWood);coopDoor.position.set(0,2,4.6);coop.add(coopDoor);
             coop.position.set(FARM_COOP_POS.x,coopY,FARM_COOP_POS.z);farmGroup.add(coop);farmGroup.add(createFarmSign('GALLINERO',FARM_COOP_POS.x,coopY+10,FARM_COOP_POS.z-7));
             const eggs=new THREE.InstancedMesh(new THREE.SphereGeometry(.38,9,7),new THREE.MeshLambertMaterial({color:0xf4e9d0}),8);
             for(let i=0;i<8;i++){dummy.position.set(FARM_COOP_POS.x-4+(i%4)*2.5,coopY+1.3,FARM_COOP_POS.z+7+Math.floor(i/4)*1.2);dummy.scale.set(1,.78,1);dummy.updateMatrix();eggs.setMatrixAt(i,dummy.matrix);}
@@ -4430,9 +4484,27 @@ function removeCarRadioStation(index, reason='Sin señal'){
             tractor.position.set(FARM_TRACTOR_POS.x,tractorY,FARM_TRACTOR_POS.z);farmGroup.add(tractor);farmGroup.add(createFarmSign('TRACTOR',FARM_TRACTOR_POS.x,tractorY+10,FARM_TRACTOR_POS.z-7));
             const deliveryY=farmGroundAt(FARM_DELIVERY_POS.x,FARM_DELIVERY_POS.z),delivery=new THREE.Group();
             const deliveryPost=new THREE.Mesh(new THREE.BoxGeometry(.45,5,.45),wood);deliveryPost.position.y=2.5;delivery.add(deliveryPost);
-            const board=new THREE.Mesh(new THREE.BoxGeometry(9,2.7,.5),new THREE.MeshLambertMaterial({color:0xe0bd7a}));board.position.y=5.4;delivery.add(board);
+            const board=new THREE.Mesh(new THREE.BoxGeometry(9,2.7,.5),new THREE.MeshLambertMaterial({color:0xe0bd7a}));board.position.set(0,5.4,0);delivery.add(board);
             delivery.position.set(FARM_DELIVERY_POS.x,deliveryY,FARM_DELIVERY_POS.z);farmGroup.add(delivery);farmGroup.add(createFarmSign('ENTREGAS',FARM_DELIVERY_POS.x,deliveryY+10,FARM_DELIVERY_POS.z-3));
-            refreshFarmStorageVisuals();
+        }
+        function createFarmTelevision(){
+            if(!farmGroup)return;
+            const p=FARM_TV_POS,y=farmGroundAt(p.x,p.z),tv=new THREE.Group();
+            const cabinet=new THREE.Mesh(new THREE.BoxGeometry(10,3.2,3.2),new THREE.MeshStandardMaterial({color:0x523722,roughness:.9}));
+            cabinet.position.y=1.6;tv.add(cabinet);
+            const body=new THREE.Mesh(new THREE.BoxGeometry(8.5,6,1.1),new THREE.MeshStandardMaterial({color:0x171a1c,roughness:.55,metalness:.15}));
+            body.position.set(0,6.1,1.15);tv.add(body);
+            const canvas=document.createElement('canvas');canvas.width=512;canvas.height=288;const ctx=canvas.getContext('2d');
+            ctx.fillStyle='#10263a';ctx.fillRect(0,0,512,288);ctx.fillStyle='#e6c37d';ctx.font='bold 48px Arial';ctx.textAlign='center';ctx.fillText('TV HONDURAS',256,118);
+            ctx.fillStyle='#ffffff';ctx.font='bold 27px Arial';ctx.fillText('LOCAL + INTERNACIONAL',256,170);
+            const tex=new THREE.CanvasTexture(canvas);
+            const screen=new THREE.Mesh(new THREE.PlaneGeometry(7.75,4.85),new THREE.MeshBasicMaterial({map:tex,emissive:0x243748,emissiveIntensity:.25}));
+            screen.position.set(0,6.15,1.73);tv.add(screen);
+            for(const side of [-1,1]){
+                const leg=new THREE.Mesh(new THREE.BoxGeometry(.8,1,.8),new THREE.MeshStandardMaterial({color:0x252525}));leg.position.set(side*2.8,2.1,1.3);tv.add(leg);
+            }
+            tv.position.set(p.x,y,p.z);tv.rotation.y=-.25;tv.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(tv);farmTVProp=tv;
+            farmGroup.add(createFarmSign('TELEVISION',p.x,y+10,p.z-2));
         }
         function createFarmDefensiveCorral(){
             if(farmDefenseGroup&&farmDefenseGroup.parent)farmDefenseGroup.parent.remove(farmDefenseGroup);
