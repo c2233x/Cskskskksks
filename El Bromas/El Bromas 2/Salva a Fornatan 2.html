@@ -533,12 +533,12 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
     <div class="storyIcon">📖</div>
     <h2>HISTORIA Y ACTUALIZACIONES</h2>
     <div class="storyInfoSection">
-      <h3>📦 VERSIÓN 1.0 · CAPÍTULO 1</h3>
-      <p><b>La señal perdida.</b> Una tormenta apagó la red del Valle del Eco. Fornatan fue visto por última vez en la estación del este. Reúne las señales, defiende el centro y encuentra el camino para rescatarlo.</p>
+      <h3>📦 VERSIÓN 1.1 · LA GRANJA DE BENJA</h3>
+      <p>llegaste a una granja y encontraste a benja, un cerdo que no sale del charco de lodo. hay que hacer pedidos, juntar monedas y comprarle comida. cada saco que le das lo ayuda a crecer. esto apenas empieza.</p>
     </div>
     <div class="storyInfoSection">
       <h3>🗺️ MISIONES</h3>
-      <ol><li>Encuentra los tres fragmentos de la señal.</li><li>Reactiva las dos antenas del valle.</li><li>Defiende el refugio de los guardianes mecánicos.</li><li>Derrota al Guardián de la Tormenta.</li><li>Encuentra y rescata a Fornatan.</li></ol>
+      <ol><li>ve al corral y habla con benja.</li><li>prepara pedidos en el granero para ganar monedas.</li><li>compra un saco de alimento en el puesto.</li><li>llevale la comida a benja para que aumente de peso.</li><li>repite el trabajo y la alimentacion para seguir cuidandolo.</li></ol>
       <p id="storyInfoCurrentMission"></p>
     </div>
     <div class="storyInfoSection">
@@ -547,7 +547,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
     </div>
     <div class="storyInfoSection">
       <h3>📚 HISTORIAL</h3>
-      <div id="storyUpdateList"><div class="storyUpdateCard"><div class="storyUpdateVersion">v1.0 · Lanzamiento</div><div class="storyUpdateDate">23 de noviembre de 2026</div><div class="storyUpdateText">Nueva campaña 3D, cinco misiones principales, guardianes mecánicos, rescate de Fornatan y guardado de progreso.</div></div></div>
+      <div id="storyUpdateList"><div class="storyUpdateCard"><div class="storyUpdateVersion">v1.1 · La granja de Benja</div><div class="storyUpdateDate">23 de noviembre de 2026</div><div class="storyUpdateText">cinematica de llegada, benja en el corral, sonidos de cerdo, flecha de mision y sistema para ganar monedas, comprar comida y aumentar su peso.</div></div></div>
     </div>
     <button class="storyAction" id="closeStoryInfo">VOLVER AL JUEGO</button>
   </div>
@@ -4006,7 +4006,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function hideStoryDialog(){const p=document.getElementById('storyDialog');if(p)p.style.display='none';}
         function advanceFarmCinematic(){
             if(!storyCinematicPlaying){hideStoryDialog();return;}
-            storyCinematicStep++;storyCinematicFrame=0;storyCinematicFrom=camera.position.clone();
+            storyCinematicStep++;storyCinematicFrame=0;storyCinematicFrom=camera.position.clone();playBenjaGrunt(true);
             if(storyCinematicStep===1)showStoryDialog('BENJA','mira nada mas... benja otra vez revolcandose en el lodo. luego se queja cuando lo quiero limpiar.','🐷');
             else if(storyCinematicStep===2)showStoryDialog('A VER, BENJA','bueno, que disfrute. pero hay que comprarle comida. voy a preparar unos pedidos y con eso saco para su primer saco.','🌾');
             else{
