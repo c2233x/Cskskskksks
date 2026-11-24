@@ -409,8 +409,27 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmTVPanel{position:fixed;left:50%;top:5%;transform:translateX(-50%);z-index:1520;display:none;flex-direction:column;gap:9px;width:min(760px,94vw);max-height:90vh;max-height:90dvh;overflow-y:auto;padding:12px;border:2px solid #d8b36d;border-radius:16px;background:linear-gradient(145deg,rgba(17,25,26,.98),rgba(5,12,17,.99));color:#fff;box-shadow:0 18px 50px rgba(0,0,0,.7)}
 #farmTVHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#ffe0a0;font-size:14px;font-weight:950}
 #farmTVHeader button,#farmTVOpenOfficial{border:0;border-radius:9px;padding:8px 11px;background:#79512e;color:#fff;font-weight:900}
-#farmTVScreenShell{position:relative;width:100%;aspect-ratio:16/9;min-height:150px;background:#000;border:4px solid #4a3321;border-radius:9px;overflow:hidden}
-#farmTVFrame{display:block;width:100%;height:100%;border:0;background:#000}
+#farmTVScreenShell{position:relative;width:100%;min-height:58px;background:linear-gradient(145deg,#16212c,#080d12);border:1px solid #806544;border-radius:9px;overflow:hidden;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px}
+#farmTVPlayerStatus{font-size:12px;font-weight:950;color:#efd29a;line-height:1.5}
+#farmTVPowerControls,#farmTVVolumeControls{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#farmTVPowerBtn,#farmRadioPowerBtn{border:1px solid #c6a64d;border-radius:9px;padding:9px 12px;background:#30281a;color:#ffdf91;font-weight:950}
+#farmTVPowerBtn.on,#farmRadioPowerBtn.on{background:linear-gradient(145deg,#146d41,#0b3423);border-color:#71ffb2;color:#b8ffd7}
+.farmMediaButton{min-width:38px;min-height:36px;border:1px solid #78684b;border-radius:9px;background:#253744;color:#fff;font-size:16px;font-weight:950}
+.farmMediaVolume{flex:1;min-width:100px;accent-color:#d7ad5d}
+.farmMediaValue{min-width:35px;text-align:right;color:#f4dcae;font-size:10px;font-weight:950}
+#farmTVScreenOverlay{position:fixed;left:0;top:0;width:1000px;height:625px;display:none;z-index:8;pointer-events:none;transform-origin:0 0;overflow:hidden;background:#000}
+#farmTVWorldFrame{display:block;width:100%;height:100%;border:0;background:#000;pointer-events:none}
+#farmRadioPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1530;display:none;flex-direction:column;gap:9px;width:min(430px,94vw);max-height:88vh;max-height:88dvh;overflow-y:auto;padding:12px;border:2px solid #7f9a9d;border-radius:15px;background:linear-gradient(145deg,rgba(10,22,30,.98),rgba(5,12,18,.99));color:#fff;box-shadow:0 18px 50px rgba(0,0,0,.72);touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#farmRadioHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#9ce8e4;font-size:14px;font-weight:950}
+#farmRadioHeader button{border:0;border-radius:9px;padding:8px 11px;background:#29424a;color:#fff;font-weight:950}
+#farmRadioStatus{font-size:10px;color:#d5e5e7;line-height:1.4}
+#farmRadioStations{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:6px;max-height:35vh;overflow-y:auto;touch-action:pan-y}
+#farmRadioStations button{min-height:42px;border:1px solid #516c70;border-radius:9px;padding:7px;background:#172c31;color:#fff;font-size:10px;font-weight:900;text-align:left}
+#farmRadioStations button.active{background:#315b52;border-color:#8de2ba}
+#farmRadioPowerControls,#farmRadioVolumeControls{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+#farmTVPanel,#farmRadioPanel,#farmTVChannels,#farmRadioStations{touch-action:pan-y;-webkit-overflow-scrolling:touch}
+@media(max-width:600px){#farmTVPanel,#farmRadioPanel{max-height:92dvh;padding:10px}#farmRadioStations{grid-template-columns:1fr 1fr}}
+
 #farmTVHint{font-size:10px;line-height:1.35;color:#e8d5b7}
 #farmTVChannels{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:6px}
 #farmTVChannels button{min-height:42px;border:1px solid #7d714f;border-radius:9px;padding:7px;background:#263b35;color:#fff;font-size:10px;font-weight:900;text-align:left}
@@ -499,10 +518,20 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 </div>
 <div id="farmTVPanel" role="dialog" aria-label="Televisión de la granja">
   <div id="farmTVHeader"><span>📺 TELEVISIÓN · CANALES</span><button id="farmTVClose" type="button">✕</button></div>
-  <div id="farmTVScreenShell"><iframe id="farmTVFrame" title="Canal de televisión" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
-  <div id="farmTVHint">Selecciona un canal. Algunos operadores bloquean la reproducción dentro del juego; usa «ABRIR CANAL OFICIAL» cuando ocurra.</div>
+  <div id="farmTVScreenShell"><div id="farmTVPlayerStatus">TELEVISOR APAGADO<br/>Enciéndelo para ver la señal en la pantalla de la granja</div></div>
+  <div id="farmTVPowerControls"><button id="farmTVPowerBtn" type="button">⏻ ENCENDER TV</button><span id="farmTVPowerLabel" class="farmMediaValue">APAGADA</span></div>
+  <div id="farmTVVolumeControls"><button id="farmTVVolDown" class="farmMediaButton" type="button" aria-label="Bajar volumen de TV">−</button><input id="farmTVVolume" class="farmMediaVolume" type="range" min="0" max="100" value="55"><button id="farmTVVolUp" class="farmMediaButton" type="button" aria-label="Subir volumen de TV">+</button><span id="farmTVVolumeValue" class="farmMediaValue">55%</span></div>
+  <div id="farmTVHint">El canal se ve directamente en la pantalla física del televisor aunque cierres este menú. El sonido solo se escucha cerca del aparato.</div>
   <div id="farmTVChannels"></div>
   <button id="farmTVOpenOfficial" type="button">ABRIR CANAL OFICIAL</button>
+</div>
+<div id="farmTVScreenOverlay" aria-hidden="true"><iframe id="farmTVWorldFrame" title="Pantalla del televisor de la granja" loading="eager" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+<div id="farmRadioPanel" role="dialog" aria-label="Radio de la granja">
+  <div id="farmRadioHeader"><span>📻 RADIO DE LA GRANJA</span><button id="farmRadioClose" type="button">✕</button></div>
+  <div id="farmRadioStatus">Elige una emisora y enciende la radio. El sonido se escucha cerca del aparato.</div>
+  <div id="farmRadioPowerControls"><button id="farmRadioPowerBtn" type="button">⏻ ENCENDER RADIO</button><span id="farmRadioPowerLabel" class="farmMediaValue">APAGADA</span></div>
+  <div id="farmRadioVolumeControls"><button id="farmRadioVolDown" class="farmMediaButton" type="button" aria-label="Bajar volumen de radio">−</button><input id="farmRadioVolume" class="farmMediaVolume" type="range" min="0" max="100" value="55"><button id="farmRadioVolUp" class="farmMediaButton" type="button" aria-label="Subir volumen de radio">+</button><span id="farmRadioVolumeValue" class="farmMediaValue">55%</span></div>
+  <div id="farmRadioStations"></div>
 </div>
 <div id="mapTravelOverlay"><div id="mapTravelTitle">RUMBO A LA CIUDAD</div><div id="mapTravelSubtitle">Preparando el viaje…</div></div>
 <div id="cinematicLetterTop"><span>CUIDA A BENJA</span></div><div id="cinematicLetterBottom"><span>LA GRANJA DE BENJA</span></div>
@@ -776,6 +805,7 @@ const FARM_WELL_POS=FARM_MAP_CONFIG.well;
 const FARM_TRACTOR_POS=FARM_MAP_CONFIG.tractor;
 const FARM_REPAIR_POS=FARM_MAP_CONFIG.repair;
 const FARM_TV_POS=FARM_MAP_CONFIG.tv||{x:FARM_CENTER.x-84,z:FARM_CENTER.z-35};
+const FARM_RADIO_POS=FARM_MAP_CONFIG.radio||{x:FARM_TV_POS.x+24,z:FARM_TV_POS.z};
 const FARM_AMBIENT_ZONES=FARM_MAP_CONFIG.ambientZones||[];
 const BENJA_SAVE_WEIGHT_GOAL=FARM_MAP_CONFIG.saveWeightGoal||52;
 const FARM_GOODS=FARM_MAP_CONFIG.goods;
@@ -797,7 +827,9 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
         let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null,farmTVProp=null;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
-        let farmTVPanelBound=false,farmTVCurrentChannel=null;
+        let farmTVPanelBound=false,farmTVCurrentChannel=null,farmTVPowerOn=false,farmTVVolume=.55,farmTVScreenMaterial=null,farmTVLastAudioCheck=0;
+        let farmRadioProp=null,farmRadioPanelBound=false,farmRadioAudio=new Audio(),farmRadioPowerOn=false,farmRadioStationIndex=0,farmRadioVolume=.55,farmRadioLastCheck=0;
+        farmRadioAudio.preload='none';farmRadioAudio.setAttribute('playsinline','');
         let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0;
         let farmBenjaHunger=100,farmBenjaHungerLast=0,farmBenjaHungerLinePlayed=false,benjaWalkTarget=null,benjaWalkTargetAt=0;
         let farmThrownFood=[],farmCarryVisualHash='',farmCarryVisualGroup=null,farmLastSubtitleAt=0;
