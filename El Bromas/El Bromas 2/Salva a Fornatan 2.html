@@ -378,7 +378,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmBenjaHud{position:fixed;top:215px;left:50%;transform:translateX(-50%);z-index:54;display:none;align-items:center;gap:8px;min-width:180px;padding:6px 10px;border-radius:12px;background:rgba(8,17,28,.84);border:1px solid rgba(255,190,120,.55);color:#fff;font-size:10px;font-weight:900;pointer-events:none}
 #farmBenjaHealthTrack{width:96px;height:8px;border-radius:9px;overflow:hidden;background:#362528;border:1px solid rgba(255,255,255,.4)}
 #farmBenjaHealthFill{height:100%;width:100%;background:linear-gradient(90deg,#54c953,#bcf46b);transition:width .2s}
-#farmBenjaHealthText{font-size:9px;color:#f9dcb4}
+#farmBenjaHealthText{font-size:9px;color:#f9dcb4}#farmBenjaHungerText{font-size:9px;color:#ffd38b;margin-left:3px}
 #farmInventoryPanel{position:fixed;left:50%;top:8%;transform:translateX(-50%);z-index:1500;display:none;width:min(390px,92vw);max-height:82vh;max-height:82dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px;border:2px solid #d5ac64;border-radius:17px;background:linear-gradient(150deg,rgba(24,31,28,.98),rgba(7,15,18,.98));box-shadow:0 16px 55px rgba(0,0,0,.72);color:#fff;touch-action:pan-y;pointer-events:auto}
 #farmInventoryHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 #farmInventoryHeader b{font-size:14px;color:#ffdd9b}
@@ -450,7 +450,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="statusText">Listo</div>
 <div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
 <div id="storyGuide"><div id="storyGuideArrow">⬆</div><div id="storyGuideText">OBJETIVO</div></div>
-<div id="farmBenjaHud"><span>🐷 BENJA</span><div id="farmBenjaHealthTrack"><div id="farmBenjaHealthFill"></div></div><small id="farmBenjaHealthText">100%</small></div>
+<div id="farmBenjaHud"><span>🐷 BENJA</span><div id="farmBenjaHealthTrack"><div id="farmBenjaHealthFill"></div></div><small id="farmBenjaHealthText">100%</small><small id="farmBenjaHungerText">HAMBRE 100%</small></div>
 <div id="farmInventoryPanel" role="dialog" aria-label="Inventario de la granja">
 <div id="farmInventoryHeader"><b id="farmInventoryTitle">ALMACEN DE LA GRANJA</b><button type="button" data-farm-action="close">✕</button></div>
 <div id="farmInventoryMoney"></div><div id="farmInventorySummary"></div><div id="farmInventoryButtons"></div>
@@ -4524,13 +4524,13 @@ function farmTakeItem(type,amount=1){
 }
 
 function farmUpdateBenjaHud(){
- const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText');
- if(hud)hud.style.display=storyModeActive?'flex':'none';
+ const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText'),hunger=document.getElementById('farmBenjaHungerText');
+ if(hud)hud.style.display=storyModeActive&&!farmCityMode?'flex':'none';
  if(fill){fill.style.width=Math.max(0,Math.min(100,farmBenjaHealth))+'%';fill.style.background=farmBenjaHealth<35?'linear-gradient(90deg,#a92121,#ff6868)':'linear-gradient(90deg,#54c953,#bcf46b)';}
  if(label)label.textContent=Math.round(farmBenjaHealth)+'%';
+ if(hunger)hunger.textContent='HAMBRE '+Math.round(farmBenjaHunger)+'%';
 }
-
-function farmUpdateInventoryPanel(){
+        function farmUpdateInventoryPanel(){
  const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
  const mode=farmInventoryPanelMode,buttons=document.getElementById('farmInventoryButtons');
  const carried=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmCarriedGoods[k]||0)).join(' · ');
@@ -4665,7 +4665,7 @@ function setupFarmUiControls(){
             try{localStorage.setItem(STORY_SAVE_KEY,JSON.stringify({
                 stage:storyStage,money:storyMoney,pigWeight:storyPigWeight,feed:storyFeedInventory,workCount:storyWorkCount,feedings:storyFeedingCount,
                 carried:farmCarriedGoods,warehouse:farmWarehouseStock,missionOrder:farmMissionOrder,missionIndex:farmMissionIndex,missionCycle:farmMissionCycle,missionId:farmMissionId,
-                defenseLevel:farmDefenseLevel,benjaHealth:farmBenjaHealth,raidKillCarry:farmRaidKillCarry,raidKillsTotal:farmRaidKillsTotal,raidTriggered:farmRaidTriggered,
+                defenseLevel:farmDefenseLevel,benjaHealth:farmBenjaHealth,benjaHunger:farmBenjaHunger,raidKillCarry:farmRaidKillCarry,raidKillsTotal:farmRaidKillsTotal,raidTriggered:farmRaidTriggered,
                 x:character.position.x,y:character.position.y,z:character.position.z,savedAt:Date.now()
             }));}catch(e){}
         }
@@ -4684,18 +4684,15 @@ function setupFarmUiControls(){
                 farmMissionCycle=Math.max(0,Number(d.missionCycle)||0);farmMissionId=FARM_MISSION_DATA[d.missionId]?d.missionId:(farmMissionOrder[farmMissionIndex]||'harvest');
                 farmDefenseLevel=Math.max(0,Math.min(3,Number(d.defenseLevel)||0));
                 farmBenjaHealth=Math.max(0,Math.min(100,Number(d.benjaHealth)||100));
+                farmBenjaHunger=Math.max(0,Math.min(100,d.benjaHunger===0?0:(Number(d.benjaHunger)||85)));
                 farmRaidKillCarry=Math.max(0,Number(d.raidKillCarry)||0);farmRaidKillsTotal=Math.max(0,Number(d.raidKillsTotal)||0);
-                farmRaidTriggered=!!d.raidTriggered;farmRaidActive=false;storyStage=4;
+                farmRaidTriggered=!!d.raidTriggered;farmRaidActive=false;farmCityMode=false;storyStage=4;
                 if(character&&Number.isFinite(d.x)&&Number.isFinite(d.z))character.position.set(Number(d.x),farmGroundAt(Number(d.x),Number(d.z)),Number(d.z));
-                storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);refreshFarmStorageVisuals();return true;
+                storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+                refreshFarmStorageVisuals();updateFarmCarryVisual(true);return true;
             }catch(e){return false;}
         }
-        function startFarmIntroCinematic(){
-            storyCinematicPlaying=true;storyCinematicStep=0;storyCinematicFrame=0;storyCinematicFrom=camera.position.clone();
-            isCinematic=true;cameraTheta=0;cameraPhi=Math.PI/3;cameraDistance=25;document.body.classList.add('farmCinematic');
-            showStoryDialog('LA GRANJA','bueno, por fin llegue. hacia rato que no venia por aca.','🌾');playBenjaGrunt(true);
-        }
-        function farmStartMission(id){
+                function farmStartMission(id){
             farmMissionId=FARM_MISSION_DATA[id]?id:'harvest';storyStage=4;
             const m=FARM_MISSION_DATA[farmMissionId];setFarmGuideTarget(m.target.x,m.target.z,m.label);
             updateMissionUI();updateFarmMoneyLabel();saveStoryProgress();
@@ -4713,20 +4710,20 @@ function setupFarmUiControls(){
             if(title)showStoryDialog(title,dialog||'listo, vamos con el siguiente encargo.',icon||'✅');
         }
         function startStoryCampaign(reset){
-            storyModeActive=true;waveActive=false;waitingNextWave=false;waveNumber=0;missionActive=true;missionType='story';
+            storyModeActive=true;farmCityMode=false;waveActive=false;waitingNextWave=false;waveNumber=0;missionActive=true;missionType='story';farmClearNPCs(true);
             let restored=false;
             if(reset){try{localStorage.removeItem(STORY_SAVE_KEY);}catch(e){}
                 storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;
                 farmCarriedGoods=farmDefaultGoods();farmWarehouseStock=farmDefaultGoods();farmWarehouseStock.madera=6;
                 farmMissionOrder=FARM_MISSION_ORDER.slice();farmMissionIndex=0;farmMissionCycle=0;farmMissionId='harvest';
-                farmDefenseLevel=0;farmBenjaHealth=100;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
+                farmDefenseLevel=0;farmBenjaHealth=100;farmBenjaHunger=85;farmBenjaHungerLinePlayed=false;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
             }else{restored=loadStoryProgress();if(!restored){
                 storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;
                 farmCarriedGoods=farmDefaultGoods();farmWarehouseStock=farmDefaultGoods();farmWarehouseStock.madera=6;
                 farmMissionOrder=FARM_MISSION_ORDER.slice();farmMissionIndex=0;farmMissionCycle=0;farmMissionId='harvest';
                 farmDefenseLevel=0;farmBenjaHealth=100;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
             }}
-            if(reset||!restored){character.position.set(FARM_CENTER.x-24,farmGroundAt(FARM_CENTER.x-24,FARM_CENTER.z+8),FARM_CENTER.z+8);character.rotation.set(0,0,0);}
+            if(reset||!restored){farmCityMode=false;character.position.set(FARM_CENTER.x-24,farmGroundAt(FARM_CENTER.x-24,FARM_CENTER.z+8),FARM_CENTER.z+8);character.rotation.set(0,0,0);}
             updateBenjaWeightVisual();createFarmDefensiveCorral();refreshFarmStorageVisuals();farmUpdateBenjaHud();
             document.getElementById('missionUI').style.display='block';updateMissionUI();updateFarmMoneyLabel();
             if(!restored||reset){setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'ve a conocer a benja');startFarmIntroCinematic();}
