@@ -4736,7 +4736,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             clearFarmColliders('farm-pigsty');
             if(farmPigstyGroup&&farmPigstyGroup.parent)farmPigstyGroup.parent.remove(farmPigstyGroup);
             farmPigstyGroup=new THREE.Group();farmGroup.add(farmPigstyGroup);
-            const level=Math.max(0,Math.min(4,Number(farmPigstyLevel)||0)),x=FARM_PIG_POS.x,z=FARM_PIG_POS.z-14,y=farmGroundAt(x,z);
+            const level=Math.max(0,Math.min(4,Number(farmPigstyLevel)||0)),x=FARM_CENTER.x-108,z=FARM_CENTER.z-48,y=farmGroundAt(x,z);
             const wood=new THREE.MeshStandardMaterial({color:level>=2?0x745033:0x8b6138,roughness:.92}),dark=new THREE.MeshStandardMaterial({color:0x3f2b1b,roughness:.95}),trim=new THREE.MeshStandardMaterial({color:0xe2c89b,roughness:.9}),roof=new THREE.MeshStandardMaterial({color:level>=2?0x8f4c37:0x72503a,roughness:.88}),metal=new THREE.MeshStandardMaterial({color:0x71818a,metalness:.48,roughness:.46});
             // Three solid sides leave the front completely open as the entrance to Benja's pen.
             makeFarmBox(farmPigstyGroup,0,0,-6.2,16,.65,13,dark);
@@ -4778,7 +4778,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const solar=new THREE.Mesh(new THREE.BoxGeometry(4.2,.16,2.4),new THREE.MeshStandardMaterial({color:0x28506d,metalness:.35,roughness:.38}));solar.position.set(0,7.9,-1);solar.rotation.z=-.38;farmPigstyGroup.add(solar);
             }
             farmPigstyGroup.position.set(x,y,z);farmPigstyGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-            farmGroup.add(createFarmSign('POCILGA DE BENJA · NIVEL '+level,x,y+10,z-9));
+            farmGroup.add(createFarmSign('TU POCILGA BASE · NIVEL '+level,x,y+10,z-9));
             if(level>=2)farmGroup.add(createFarmSign('ENTRADA',x,y+3,z+9));
         }
         function createFarmPonds(){
@@ -4906,7 +4906,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             for(let i=0;i<3;i++){const sack=new THREE.Mesh(new THREE.SphereGeometry(1.25,10,8),sackMat);sack.scale.set(.85,1.1,.75);sack.position.set(sx-3+i*3,sy+1.5,sz+1);sack.castShadow=true;farmGroup.add(sack);addFarmCollider(sack.position.x,sack.position.z,2.1,2.1,0,'farm-feed-sack',2.8);}
             const hayMat=new THREE.MeshStandardMaterial({color:0xc9a34d,roughness:1});
             for(const p of [{x:-407,z:-330},{x:-400,z:-335},{x:-405,z:-339}]){const hay=new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,4,10),hayMat);hay.rotation.z=Math.PI/2;hay.position.set(p.x,farmGroundAt(p.x,p.z)+2,p.z);hay.castShadow=true;farmGroup.add(hay);addFarmCollider(p.x,p.z,4.6,4.6,Math.PI/2,'farm-hay-bale',4);}
-            createFarmPrivateProperty(FARM_CENTER.x-108,FARM_CENTER.z-48,0xe7d7b7,0x744136,'CASA DEL CAMPO',.92);
+            // La casa del campo fue sustituida por la pocilga base que se amplía con cada mejora.
             createFarmPrivateProperty(FARM_CENTER.x+112,FARM_CENTER.z-105,0xd5c49d,0x4d6574,'CASA DEL VECINO',.78);
             createFarmNature();
             createFarmMissionProps();
