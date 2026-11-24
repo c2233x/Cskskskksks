@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.0",
+  "version": "1.7.1",
   "updates": [
     {
       "version": "1.0",
@@ -254,6 +254,18 @@
         "El cargador descarga únicamente los recursos de Cuida a Benja para evitar descargar toda la carpeta El Bromas y quedarse detenido durante el inicio.",
         "Se actualizan las rutas de Granja.js, Ciudad.js, Version.txt y del audio ambiente.",
         "Se reserva Sonidos/ambiente/ para el MP3 original de chicharras, con la ruta chicharra_original.mp3."
+      ]
+    },
+    {
+      "version": "1.7.1",
+      "title": "Corrección de inicio en Android y WebView",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Las consultas de versión y archivos de GitHub ahora tienen tiempos máximos y rutas alternativas; ninguna petición de inicio queda esperando sin límite.",
+        "Se elimina el ZIP de todo el repositorio como descarga automática de respaldo para evitar transferencias enormes en dispositivos móviles.",
+        "Se integra la configuración completa de la granja en el HTML para que el arranque no dependa de descargar Granja.js por separado.",
+        "Se retira la descarga de JSZip durante el inicio porque el ZIP completo ya no se utiliza como respaldo automático.",
+        "Se limita la descarga a los recursos de Cuida a Benja y se muestra un error con opción de reintentar si todas las rutas de red fallan."
       ]
     }
   ]
