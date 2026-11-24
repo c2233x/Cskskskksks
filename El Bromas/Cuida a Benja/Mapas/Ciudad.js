@@ -29,7 +29,7 @@ window.CUIDA_BENJA_CITY_MAP.buildWorld = function(engine) {
   engine.createBuildings();
   engine.createStreetLamps();
   engine.createCityProps();
-  engine.initDrones();
+  // Cuida a Benja usa trabajos y NPC locales; los drones de reconstrucción de Salva a Cornatan crean objetos fuera de la raíz del mapa y los duplican al volver.
   engine.createBillboards();
   engine.createCityJobBoard();
   engine.applyBillboardTextures();
