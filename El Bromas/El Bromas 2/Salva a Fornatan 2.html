@@ -648,6 +648,8 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const STORY_SAVE_KEY = 'ElBromas2_StoryProgress_v1';
         const STORY_FRAGMENT_SPOTS = [{x:48,z:0},{x:-48,z:36},{x:0,z:-72}];
         const STORY_ANTENNA_SPOTS = [{x:145,z:80},{x:-145,z:-80}];
+        const WORLD_TERRAIN_SEGMENTS=72;
+        const IS_MOBILE_DEVICE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'') || ((navigator.maxTouchPoints||0)>1 && Math.min(window.innerWidth||0,window.innerHeight||0)<=900);
         const FARM_CENTER={x:-330,z:-330};
         const FARM_PIG_POS={x:-286,z:-354};
         const FARM_WORK_POS={x:-388,z:-302};
@@ -2257,18 +2259,18 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         }
         
         function initGame() {
-            scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a1526); scene.fog = new THREE.Fog(0x0a1526, 140, 420);
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a1526); scene.fog = new THREE.Fog(0x0a1526, IS_MOBILE_DEVICE ? 145 : 140, IS_MOBILE_DEVICE ? 385 : 420);
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.35, 1800); camera.position.set(0, 25, 40);
-            renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance", alpha: false });
-            renderer.setSize(window.innerWidth, window.innerHeight); renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.25));
+            renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true });
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, IS_MOBILE_DEVICE ? 0.9 : 1.2)); renderer.setSize(window.innerWidth, window.innerHeight, false);
         // Filtrado de alta calidad para evitar parpadeo/pixelado al alejar la cámara.
         renderer.capabilities.getMaxAnisotropy(); renderer.outputEncoding = THREE.sRGBEncoding;
-            renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+            renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.shadowMap.enabled = !IS_MOBILE_DEVICE; renderer.shadowMap.type = THREE.PCFShadowMap;
             document.body.appendChild(renderer.domElement);
             
             window.ambientLight = new THREE.AmbientLight(0x1a2c3a, 1.2); scene.add(window.ambientLight);
-            window.sunLight = new THREE.DirectionalLight(0xffffee, 1.3); window.sunLight.position.set(120, 180, 80); window.sunLight.castShadow = true;
-            window.sunLight.shadow.mapSize.width = 768; window.sunLight.shadow.mapSize.height = 768;
+            window.sunLight = new THREE.DirectionalLight(0xffffee, 1.3); window.sunLight.position.set(120, 180, 80); window.sunLight.castShadow = !IS_MOBILE_DEVICE;
+            window.sunLight.shadow.mapSize.width = IS_MOBILE_DEVICE ? 256 : 768; window.sunLight.shadow.mapSize.height = IS_MOBILE_DEVICE ? 256 : 768;
             const d = 190; window.sunLight.shadow.camera.left = -d; window.sunLight.shadow.camera.right = d; window.sunLight.shadow.camera.top = d; window.sunLight.shadow.camera.bottom = -d;
             window.sunLight.shadow.camera.near = 5; window.sunLight.shadow.camera.far = 650;
             window.sunLight.shadow.normalBias = 0.035; window.sunLight.shadow.bias = -0.0002; scene.add(window.sunLight);
@@ -2289,17 +2291,17 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
             const skyMat = new THREE.ShaderMaterial({ side:THREE.BackSide, depthWrite:false, uniforms:skyUniforms, vertexShader:`varying vec3 vDir; void main(){ vDir = normalize(position); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`, fragmentShader:`varying vec3 vDir; uniform vec3 top; uniform vec3 horizon; uniform vec3 sun; uniform vec3 sunPos; uniform float night; void main(){ float h=smoothstep(-0.15,0.95,vDir.y); vec3 c=mix(horizon,top,h); float s=max(0.0,dot(normalize(vDir),normalize(sunPos))); c += sun*(pow(s,90.0)*0.75 + pow(s,8.0)*0.08); float band=sin(vDir.x*12.0+vDir.z*9.0+vDir.y*18.0); float cloud=smoothstep(0.68,0.9,band)*smoothstep(0.05,0.55,vDir.y); c=mix(c,vec3(0.96,0.98,1.0),cloud*0.12*(1.0-night)); if(night>0.5) c*=0.05; gl_FragColor=vec4(c,1.0); }`});
             stylizedSky = new THREE.Mesh(new THREE.SphereGeometry(580,32,18), skyMat); stylizedSky.frustumCulled=false; scene.add(stylizedSky);
             
-            const groundGeo = new THREE.PlaneGeometry(1100, 1100, 100, 100); groundGeo.rotateX(-Math.PI / 2);
+            const groundGeo = new THREE.PlaneGeometry(1100, 1100, WORLD_TERRAIN_SEGMENTS, WORLD_TERRAIN_SEGMENTS); groundGeo.rotateX(-Math.PI / 2);
             const grassMat = new THREE.MeshStandardMaterial({ color: 0x2d4c1e, roughness: 0.9, metalness: 0.05 });
             // Orden y offset solo para evitar z-fighting cuando el terreno se deforma.
             // No altera la textura ni sus colores/filtrado.
             grassMat.polygonOffset = true; grassMat.polygonOffsetFactor = -1; grassMat.polygonOffsetUnits = -1; grassMat.depthWrite = true;
             groundPlane = new THREE.Mesh(groundGeo, grassMat); groundPlane.receiveShadow = true; groundPlane.position.y = 0; groundPlane.renderOrder = 20; scene.add(groundPlane);
-            const dirtGeo = new THREE.PlaneGeometry(1100, 1100, 100, 100); dirtGeo.rotateX(-Math.PI / 2);
+            const dirtGeo = new THREE.PlaneGeometry(1100, 1100, WORLD_TERRAIN_SEGMENTS, WORLD_TERRAIN_SEGMENTS); dirtGeo.rotateX(-Math.PI / 2);
             const dirtMat = new THREE.MeshStandardMaterial({ color: 0x5c4033, roughness: 1.0 });
             dirtMat.polygonOffset = true; dirtMat.polygonOffsetFactor = 0; dirtMat.polygonOffsetUnits = 0; dirtMat.depthWrite = true;
             dirtPlane = new THREE.Mesh(dirtGeo, dirtMat); dirtPlane.receiveShadow = true; dirtPlane.position.y = -2; dirtPlane.renderOrder = 10; scene.add(dirtPlane);
-            const stoneGeo = new THREE.PlaneGeometry(1100, 1100, 100, 100); stoneGeo.rotateX(-Math.PI / 2);
+            const stoneGeo = new THREE.PlaneGeometry(1100, 1100, WORLD_TERRAIN_SEGMENTS, WORLD_TERRAIN_SEGMENTS); stoneGeo.rotateX(-Math.PI / 2);
             const stoneMat = new THREE.MeshStandardMaterial({ color: 0x444444, roughness: 0.8 });
             stoneMat.polygonOffset = true; stoneMat.polygonOffsetFactor = 1; stoneMat.polygonOffsetUnits = 1; stoneMat.depthWrite = true;
             stonePlane = new THREE.Mesh(stoneGeo, stoneMat); stonePlane.receiveShadow = true; stonePlane.position.y = -5; stonePlane.renderOrder = 0; scene.add(stonePlane);
@@ -2333,7 +2335,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
 
         function getTerrainYRaw(mesh, originalYOffset, x, z) {
             if (!mesh || !mesh.geometry) return originalYOffset;
-            const size = 1100; const segs = 100; const half = size / 2;
+            const size = 1100; const segs = WORLD_TERRAIN_SEGMENTS; const half = size / 2;
             if (x <= -half || x >= half || z <= -half || z >= half) return originalYOffset;
             const cellX = (x + half) / size * segs; const cellZ = (z + half) / size * segs; const ix = Math.floor(cellX); const iz = Math.floor(cellZ); const fx = cellX - ix; const fz = cellZ - iz;
             const positions = mesh.geometry.attributes.position;
@@ -2361,7 +2363,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         
         function rebuildTerrain(x, z, radius) {
             if (groundPlane && groundPlane.geometry) {
-                const positions = groundPlane.geometry.attributes.position; const size = 1100; const segs = 100; const half = size / 2;
+                const positions = groundPlane.geometry.attributes.position; const size = 1100; const segs = WORLD_TERRAIN_SEGMENTS; const half = size / 2;
                 const minX = Math.max(0, Math.floor((x - radius + half) / size * segs)); const maxX = Math.min(segs, Math.ceil((x + radius + half) / size * segs)); const minZ = Math.max(0, Math.floor((z - radius + half) / size * segs)); const maxZ = Math.min(segs, Math.ceil((z + radius + half) / size * segs));
                 let updated = false;
                 for (let iz = minZ; iz <= maxZ; iz++) { for (let ix = minX; ix <= maxX; ix++) { const i = iz * (segs + 1) + ix; const currY = positions.getY(i); if (currY < 0) { positions.setY(i, Math.min(0, currY + 0.5)); updated = true; } } }
@@ -4066,9 +4068,15 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const body=new THREE.Mesh(new THREE.SphereGeometry(2.35,18,14),pink);body.scale.set(1.38,.92,.94);body.position.set(0,2.3,0);body.castShadow=true;pig.add(body);benjaPigBody=body;
             const head=new THREE.Mesh(new THREE.SphereGeometry(1.28,16,12),pink);head.position.set(0,2.85,2.55);head.castShadow=true;pig.add(head);
             const muzzle=new THREE.Mesh(new THREE.SphereGeometry(.72,12,10),pale);muzzle.scale.set(1,.76,.62);muzzle.position.set(0,2.45,3.58);pig.add(muzzle);
+            const eyeWhite=new THREE.MeshStandardMaterial({color:0xfff9ef,roughness:.48});
+            const eyePupil=new THREE.MeshBasicMaterial({color:0x21171b});
+            const eyeGlint=new THREE.MeshBasicMaterial({color:0xffffff});
             for(const side of [-1,1]){
                 const nostril=new THREE.Mesh(new THREE.SphereGeometry(.14,8,6),black);nostril.position.set(side*.25,2.47,4);nostril.scale.set(.75,1,.45);pig.add(nostril);
-                const eye=new THREE.Mesh(new THREE.SphereGeometry(.13,8,6),black);eye.position.set(side*.86,3.14,3.16);pig.add(eye);
+                const eyeSocket=new THREE.Mesh(new THREE.SphereGeometry(.235,12,10),eyeWhite);eyeSocket.position.set(side*.69,3.35,3.57);pig.add(eyeSocket);
+                const pupil=new THREE.Mesh(new THREE.SphereGeometry(.125,10,8),eyePupil);pupil.position.set(side*.68,3.35,3.775);pig.add(pupil);
+                const glint=new THREE.Mesh(new THREE.SphereGeometry(.046,8,6),eyeGlint);glint.position.set(side*.72,3.405,3.875);pig.add(glint);
+                const brow=new THREE.Mesh(new THREE.SphereGeometry(.24,8,6),pink);brow.scale.set(1.15,.28,.25);brow.position.set(side*.7,3.69,3.48);pig.add(brow);
                 const ear=new THREE.Mesh(new THREE.ConeGeometry(.48,1.18,7),pink);ear.position.set(side*.88,4.03,2.38);ear.rotation.z=side*.42;ear.rotation.x=-.22;pig.add(ear);
             }
             const legGeo=new THREE.CylinderGeometry(.28,.34,1.08,8);
@@ -4084,15 +4092,71 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function updateBenjaWeightVisual(){
             if(!benjaPig)return;const scale=1+Math.max(0,storyPigWeight-32)*.009;benjaPig.scale.set(scale,scale,scale);benjaPig.userData.weight=storyPigWeight;
         }
+        function createFarmPrivateProperty(x,z,wallColor,roofColor,label,scale=1){
+            const y=farmGroundAt(x,z),house=new THREE.Group(),w=17*scale,d=14*scale,h=9*scale;
+            const wall=new THREE.MeshLambertMaterial({color:wallColor}),roof=new THREE.MeshLambertMaterial({color:roofColor}),trim=new THREE.MeshLambertMaterial({color:0xeee0bd}),wood=new THREE.MeshLambertMaterial({color:0x543521}),glass=new THREE.MeshLambertMaterial({color:0x9bd9ed});
+            const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),wall);body.position.y=h/2;body.castShadow=true;house.add(body);
+            const roofA=new THREE.Mesh(new THREE.BoxGeometry(w*.58,1.1*scale,d+1.5*scale),roof);roofA.position.set(-w*.24,h+.45*scale,0);roofA.rotation.z=-.48;house.add(roofA);
+            const roofB=new THREE.Mesh(new THREE.BoxGeometry(w*.58,1.1*scale,d+1.5*scale),roof);roofB.position.set(w*.24,h+.45*scale,0);roofB.rotation.z=.48;house.add(roofB);
+            const door=new THREE.Mesh(new THREE.BoxGeometry(2.6*scale,5.8*scale,.35),wood);door.position.set(0,2.9*scale,d/2+.2);house.add(door);
+            for(const side of [-1,1]){
+                const win=new THREE.Mesh(new THREE.BoxGeometry(2.7*scale,2.25*scale,.3),glass);win.position.set(side*4.7*scale,5.2*scale,d/2+.2);house.add(win);
+                const frame=new THREE.Mesh(new THREE.BoxGeometry(3.05*scale,2.58*scale,.18),trim);frame.position.set(side*4.7*scale,5.2*scale,d/2+.07);house.add(frame);
+            }
+            const chimney=new THREE.Mesh(new THREE.BoxGeometry(2*scale,5*scale,2*scale),wood);chimney.position.set(w*.28,h+2.5*scale,-d*.18);house.add(chimney);
+            const porch=new THREE.Mesh(new THREE.BoxGeometry(8*scale,.45*scale,3*scale),wood);porch.position.set(0,.42*scale,d/2+1.4*scale);house.add(porch);
+            house.position.set(x,y,z);farmGroup.add(house);
+            buildingColliders.push({x,z,width:w+2,depth:d+2,group:house});
+            const fenceMat=new THREE.MeshLambertMaterial({color:0x805a36}),fx=12*scale,fz=11*scale,railY=y+1.05*scale;
+            for(const side of [-1,1]){
+                const rail=new THREE.Mesh(new THREE.BoxGeometry(2*fx,.35*scale,.35*scale),fenceMat);rail.position.set(x,y+railY-y,z+side*fz);farmGroup.add(rail);
+                const post=new THREE.Mesh(new THREE.BoxGeometry(.55*scale,2.3*scale,.55*scale),fenceMat);post.position.set(x+side*fx,y+1.15*scale,z+side*fz);farmGroup.add(post);
+                const sideRail=new THREE.Mesh(new THREE.BoxGeometry(.35*scale,.35*scale,2*fz),fenceMat);sideRail.position.set(x+side*fx,y+railY-y,z);farmGroup.add(sideRail);
+            }
+            farmGroup.add(createFarmSign(label,x,y+12*scale,z-d*.65));
+            return house;
+        }
+        function createFarmNature(){
+            if(!farmGroup || !THREE.InstancedMesh)return;
+            const nature=new THREE.Group(),dummy=new THREE.Object3D();
+            const treeCount=54,pineCount=28;
+            const trunkMat=new THREE.MeshLambertMaterial({color:0x65452b}),leafMat=new THREE.MeshLambertMaterial({color:0x3f7e3d}),pineMat=new THREE.MeshLambertMaterial({color:0x285d3b});
+            const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.38,.62,5.2,5),trunkMat,treeCount);
+            const crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.5,0),leafMat,treeCount);
+            for(let i=0;i<treeCount;i++){
+                const angle=i*2.39996+(Math.random()-.5)*.22,dist=112+Math.random()*105,s=.72+Math.random()*.48;
+                const x=FARM_CENTER.x+Math.cos(angle)*dist,z=FARM_CENTER.z+Math.sin(angle)*dist,y=farmGroundAt(x,z);
+                dummy.position.set(x,y+2.6*s,z);dummy.rotation.set(0,Math.random()*Math.PI,0);dummy.scale.set(s,s,s);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
+                dummy.position.set(x,y+6.3*s,z);dummy.rotation.set(0,Math.random()*Math.PI,0);dummy.scale.set(s,s*1.08,s);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
+            }
+            const pines=new THREE.InstancedMesh(new THREE.ConeGeometry(3.3,9,6),pineMat,pineCount);
+            for(let i=0;i<pineCount;i++){
+                const angle=i*2.39996+.8,dist=142+Math.random()*95,s=.72+Math.random()*.55;
+                const x=FARM_CENTER.x+Math.cos(angle)*dist,z=FARM_CENTER.z+Math.sin(angle)*dist,y=farmGroundAt(x,z);
+                dummy.position.set(x,y+4.3*s,z);dummy.rotation.set(0,Math.random()*Math.PI,0);dummy.scale.set(s,s,s);dummy.updateMatrix();pines.setMatrixAt(i,dummy.matrix);
+            }
+            for(const mesh of [trunks,crowns,pines]){mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=!IS_MOBILE_DEVICE;mesh.receiveShadow=false;if(mesh.computeBoundingSphere)mesh.computeBoundingSphere();nature.add(mesh);}
+            const mountainCount=12,mountainGeo=new THREE.ConeGeometry(1,1,6);
+            const mountains=new THREE.InstancedMesh(mountainGeo,new THREE.MeshLambertMaterial({color:0x64788c}),mountainCount);
+            const snow=new THREE.InstancedMesh(new THREE.ConeGeometry(.42,.35,6),new THREE.MeshLambertMaterial({color:0xdce8ed}),mountainCount);
+            for(let i=0;i<mountainCount;i++){
+                const angle=(i/mountainCount)*Math.PI*2+.12,dist=255+(i%3)*18,w=24+(i%4)*8,h=58+(i%5)*13;
+                const x=FARM_CENTER.x+Math.cos(angle)*dist,z=FARM_CENTER.z+Math.sin(angle)*dist,y=farmGroundAt(x,z);
+                dummy.position.set(x,y+h/2,z);dummy.rotation.set(0,angle,0);dummy.scale.set(w,h,w*.82);dummy.updateMatrix();mountains.setMatrixAt(i,dummy.matrix);
+                dummy.position.set(x,y+h*.82,z);dummy.rotation.set(0,angle,0);dummy.scale.set(w*.42,h*.28,w*.35);dummy.updateMatrix();snow.setMatrixAt(i,dummy.matrix);
+            }
+            for(const mesh of [mountains,snow]){mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=false;mesh.receiveShadow=false;if(mesh.computeBoundingSphere)mesh.computeBoundingSphere();nature.add(mesh);}
+            farmGroup.add(nature);
+        }
+
         function createFarmWorld(){
             if(farmGroup&&farmGroup.parent)farmGroup.parent.remove(farmGroup);
             farmGroup=new THREE.Group();scene.add(farmGroup);
-            const grass=new THREE.MeshStandardMaterial({color:0x567b36,roughness:1}),wood=new THREE.MeshStandardMaterial({color:0x69472a,roughness:.92});
+            const wood=new THREE.MeshLambertMaterial({color:0x69472a});
             const darkWood=new THREE.MeshStandardMaterial({color:0x3e2b1c,roughness:.9}),red=new THREE.MeshStandardMaterial({color:0x8f3e31,roughness:.9});
             const cream=new THREE.MeshStandardMaterial({color:0xf0dfb5,roughness:.9}),mud=new THREE.MeshStandardMaterial({color:0x4c3024,roughness:1});
             const metal=new THREE.MeshStandardMaterial({color:0x87949b,metalness:.55,roughness:.4});
-            const cy=farmGroundAt(FARM_CENTER.x,FARM_CENTER.z),floor=new THREE.Mesh(new THREE.CircleGeometry(86,40),grass);
-            floor.rotation.x=-Math.PI/2;floor.scale.set(1,.82,1);floor.position.set(FARM_CENTER.x,cy+.045,FARM_CENTER.z);floor.receiveShadow=true;farmGroup.add(floor);
+            const cy=farmGroundAt(FARM_CENTER.x,FARM_CENTER.z); // Se usa el terreno global para evitar una plataforma circular con borde visible.
             const barn=new THREE.Group(),bx=FARM_CENTER.x-54,bz=FARM_CENTER.z-42,by=farmGroundAt(bx,bz);
             makeFarmBox(barn,0,0,0,24,14,19,red);
             const roof1=new THREE.Mesh(new THREE.BoxGeometry(14,1.2,21),darkWood);roof1.position.set(-5,15,0);roof1.rotation.z=-.48;roof1.castShadow=true;
@@ -4121,6 +4185,9 @@ function removeCarRadioStation(index, reason='Sin señal'){
             for(let i=0;i<3;i++){const sack=new THREE.Mesh(new THREE.SphereGeometry(1.25,10,8),sackMat);sack.scale.set(.85,1.1,.75);sack.position.set(sx-3+i*3,sy+1.5,sz+1);sack.castShadow=true;farmGroup.add(sack);}
             const hayMat=new THREE.MeshStandardMaterial({color:0xc9a34d,roughness:1});
             for(const p of [{x:-407,z:-330},{x:-400,z:-335},{x:-405,z:-339}]){const hay=new THREE.Mesh(new THREE.CylinderGeometry(2.5,2.5,4,10),hayMat);hay.rotation.z=Math.PI/2;hay.position.set(p.x,farmGroundAt(p.x,p.z)+2,p.z);hay.castShadow=true;farmGroup.add(hay);}
+            createFarmPrivateProperty(FARM_CENTER.x-108,FARM_CENTER.z-48,0xe7d7b7,0x744136,'CASA DEL CAMPO',.92);
+            createFarmPrivateProperty(FARM_CENTER.x+112,FARM_CENTER.z-105,0xd5c49d,0x4d6574,'CASA DEL VECINO',.78);
+            createFarmNature();
             const tx=FARM_CENTER.x+64,tz=FARM_CENTER.z+46,ty=farmGroundAt(tx,tz);
             const trunk=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.6,12,8),darkWood);trunk.position.set(tx,ty+6,tz);trunk.castShadow=true;farmGroup.add(trunk);
             const leaves=new THREE.Mesh(new THREE.SphereGeometry(8,10,8),new THREE.MeshStandardMaterial({color:0x2f6635,roughness:1}));leaves.position.set(tx,ty+15,tz);leaves.castShadow=true;farmGroup.add(leaves);
@@ -4299,20 +4366,20 @@ function removeCarRadioStation(index, reason='Sin señal'){
 
         function createCrater(x, z, radius=30, depth=6) {
             if (groundPlane && groundPlane.geometry) {
-                const positions = groundPlane.geometry.attributes.position; const size = 1100; const segs = 100; const half = size / 2;
+                const positions = groundPlane.geometry.attributes.position; const size = 1100; const segs = WORLD_TERRAIN_SEGMENTS; const half = size / 2;
                 const minX = Math.max(0, Math.floor((x - radius + half) / size * segs)); const maxX = Math.min(segs, Math.ceil((x + radius + half) / size * segs)); const minZ = Math.max(0, Math.floor((z - radius + half) / size * segs)); const maxZ = Math.min(segs, Math.ceil((z + radius + half) / size * segs));
                 let deformed = false;
                 for (let iz = minZ; iz <= maxZ; iz++) { for (let ix = minX; ix <= maxX; ix++) { const i = iz * (segs + 1) + ix; const vx = positions.getX(i); const vz = positions.getZ(i); const dist = Math.sqrt((vx-x)**2 + (vz-z)**2); if(dist < radius) { const currentY = positions.getY(i); const smooth = Math.cos((dist/radius) * Math.PI * 0.5); positions.setY(i, currentY - (depth * smooth)); deformed = true; } } }
                 if(deformed) { positions.needsUpdate = true; }
             }
             if (dirtPlane && dirtPlane.geometry) {
-                const dirtPositions = dirtPlane.geometry.attributes.position; const size = 1100; const segs = 100; const half = size / 2;
+                const dirtPositions = dirtPlane.geometry.attributes.position; const size = 1100; const segs = WORLD_TERRAIN_SEGMENTS; const half = size / 2;
                 const minX = Math.max(0, Math.floor((x - radius + half) / size * segs)); const maxX = Math.min(segs, Math.ceil((x + radius + half) / size * segs)); const minZ = Math.max(0, Math.floor((z - radius + half) / size * segs)); const maxZ = Math.min(segs, Math.ceil((z + radius + half) / size * segs));
                 for (let iz = minZ; iz <= maxZ; iz++) { for (let ix = minX; ix <= maxX; ix++) { const i = iz * (segs + 1) + ix; const vx = dirtPositions.getX(i); const vz = dirtPositions.getZ(i); const dist = Math.sqrt((vx-x)**2 + (vz-z)**2); if(dist < radius) { const smooth = Math.cos((dist/radius) * Math.PI * 0.5); dirtPositions.setY(i, dirtPositions.getY(i) - (depth * smooth * 0.5)); } } }
                 dirtPositions.needsUpdate = true;
             }
             if (stonePlane && stonePlane.geometry) {
-                const stonePositions = stonePlane.geometry.attributes.position; const size = 1100; const segs = 100; const half = size / 2;
+                const stonePositions = stonePlane.geometry.attributes.position; const size = 1100; const segs = WORLD_TERRAIN_SEGMENTS; const half = size / 2;
                 const minX = Math.max(0, Math.floor((x - radius + half) / size * segs)); const maxX = Math.min(segs, Math.ceil((x + radius + half) / size * segs)); const minZ = Math.max(0, Math.floor((z - radius + half) / size * segs)); const maxZ = Math.min(segs, Math.ceil((z + radius + half) / size * segs));
                 for (let iz = minZ; iz <= maxZ; iz++) { for (let ix = minX; ix <= maxX; ix++) { const i = iz * (segs + 1) + ix; const vx = stonePositions.getX(i); const vz = stonePositions.getZ(i); const dist = Math.sqrt((vx-x)**2 + (vz-z)**2); if(dist < radius) { const smooth = Math.cos((dist/radius) * Math.PI * 0.5); stonePositions.setY(i, stonePositions.getY(i) - (depth * smooth * 0.2)); } } }
                 stonePositions.needsUpdate = true;
@@ -4479,11 +4546,11 @@ function removeCarRadioStation(index, reason='Sin señal'){
             if(graphicsSettings.dynamicResolution===false){ dynamicResolutionScale=1; return; }
             let target=dynamicResolutionScale;
             if(perfFps<22) target-=0.10; else if(perfFps<28) target-=0.06; else if(perfFps>48) target+=0.04;
-            target=THREE.MathUtils.clamp(target,0.62,1);
+            target=THREE.MathUtils.clamp(target,IS_MOBILE_DEVICE?0.54:0.62,1);
             if(Math.abs(target-dynamicResolutionScale)>=0.03){
                 dynamicResolutionScale=target;
                 const base=(window.devicePixelRatio||1)*getTargetResolutionScale(graphicsSettings.resolutionTarget)*(Number(graphicsSettings.resolution)||100)/100;
-                renderer.setPixelRatio(Math.min(1.35,Math.max(.5,base*dynamicResolutionScale)));
+                renderer.setPixelRatio(Math.min(IS_MOBILE_DEVICE?0.94:1.35,Math.max(.5,base*dynamicResolutionScale)));
                 renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             // Limpieza/culling extra a baja tasa, sin tocar la lógica de gameplay.
@@ -5190,8 +5257,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         
 
-        const GRAPHICS_KEY = 'cornatan_graphics_settings_v1';
-        const defaultGraphics = {contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:true,shadowDetail:55,resolution:100,resolutionTarget:"auto",shadowDistance:280,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:8,worldOptimizer:true,carShadows:true,carShadowQuality:2,carDetail:100,carDrawDistance:360,carMetallic:35,carOptimizer:true,ultraPerformance:false,carPhysicsRate:2,distanceCulling:true,particleCulling:true,animationCulling:true,lightOptimizer:true,simpleMaterials:true,effectLimiter:true,dynamicResolution:true};
+        const GRAPHICS_KEY = 'fornatan2_graphics_settings_v1';
+        const defaultGraphics = {contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:!IS_MOBILE_DEVICE,shadowDetail:IS_MOBILE_DEVICE?35:55,resolution:IS_MOBILE_DEVICE?82:100,resolutionTarget:"auto",shadowDistance:IS_MOBILE_DEVICE?190:280,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:IS_MOBILE_DEVICE?6:8,worldOptimizer:true,carShadows:!IS_MOBILE_DEVICE,carShadowQuality:IS_MOBILE_DEVICE?0:2,carDetail:IS_MOBILE_DEVICE?78:100,carDrawDistance:IS_MOBILE_DEVICE?250:360,carMetallic:35,carOptimizer:true,ultraPerformance:false,carPhysicsRate:2,distanceCulling:true,particleCulling:true,animationCulling:true,lightOptimizer:true,simpleMaterials:true,effectLimiter:true,dynamicResolution:true};
         let graphicsSettings = Object.assign({}, defaultGraphics);
         function loadGraphicsSettings(){ try{ const saved=JSON.parse(localStorage.getItem(GRAPHICS_KEY)||'null'); if(saved) graphicsSettings=Object.assign({},defaultGraphics,saved); delete graphicsSettings.shadowQuality; }catch(e){} }
         function getTargetResolutionScale(target){
@@ -5206,7 +5273,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             if(canvas){
                 canvas.style.filter=`contrast(${g.contrast}%) saturate(${g.saturation}%) brightness(${g.brightness}%)`;
                 const targetScale=getTargetResolutionScale(g.resolutionTarget);
-                const finalScale=THREE.MathUtils.clamp((window.devicePixelRatio||1)*targetScale*(g.resolution/100),0.5,1.75);
+                const finalScale=THREE.MathUtils.clamp((window.devicePixelRatio||1)*targetScale*(g.resolution/100),0.5,IS_MOBILE_DEVICE?0.94:1.45);
                 renderer.setPixelRatio(finalScale); renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             const bloom=document.getElementById('bloomOverlay'); if(bloom){ bloom.style.display=g.bloom>0?'block':'none'; bloom.style.boxShadow=`inset 0 0 ${30+g.bloom*0.9}px rgba(255,255,255,${g.bloom/700})`; }
@@ -5215,9 +5282,9 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 // Sombras es independiente del resto de los ajustes.
                 renderer.shadowMap.enabled = !!g.shadows;
                 if(window.sunLight) window.sunLight.castShadow = !!g.shadows;
-                const q=Number(g.carShadowQuality)>=3?2048:(Number(g.carShadowQuality)===2?1024:(Number(g.carShadowQuality)===1?512:256));
+                const q=IS_MOBILE_DEVICE?256:(Number(g.carShadowQuality)>=3?2048:(Number(g.carShadowQuality)===2?1024:(Number(g.carShadowQuality)===1?512:256)));
                 if(window.sunLight){
-                    const sq=g.shadows?(g.shadowDetail>75?2048:q):256;
+                    const sq=g.shadows?(IS_MOBILE_DEVICE?256:(g.shadowDetail>75?2048:q)):256;
                     window.sunLight.shadow.mapSize.width=sq; window.sunLight.shadow.mapSize.height=sq;
                     const d=Math.max(80,g.shadowDistance*0.50); const c=window.sunLight.shadow.camera;
                     c.left=-d;c.right=d;c.top=d;c.bottom=-d;c.far=Math.max(260,g.shadowDistance*2.0);c.near=1;
