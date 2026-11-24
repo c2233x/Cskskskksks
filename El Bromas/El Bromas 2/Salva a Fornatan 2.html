@@ -4408,7 +4408,80 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const text=document.getElementById('storyGuideText');if(text)text.textContent=farmGuideLabel+' · '+Math.round(Math.hypot(dx,dz))+' m';
             if(farmGuideMarker){farmGuideMarker.position.y=farmGroundAt(farmGuideTarget.x,farmGuideTarget.z)+Math.sin(performance.now()*.002)*.35;farmGuideMarker.rotation.y+=.012;}
         }
-                function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
+        function farmDefaultGoods(){return {maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0};}
+
+function farmTotalGoods(obj){return Object.keys(FARM_GOODS).reduce((sum,key)=>sum+(Number(obj&&obj[key])||0),0);}
+
+function farmTotalFood(obj){return Object.keys(FARM_GOODS).reduce((sum,key)=>sum+(FARM_GOODS[key].food?(Number(obj&&obj[key])||0):0),0);}
+
+function farmTakeItem(type,amount=1){
+ let left=amount;const carried=Math.min(Number(farmCarriedGoods[type])||0,left);
+ farmCarriedGoods[type]=(Number(farmCarriedGoods[type])||0)-carried;left-=carried;
+ if(left>0){const stored=Math.min(Number(farmWarehouseStock[type])||0,left);farmWarehouseStock[type]=(Number(farmWarehouseStock[type])||0)-stored;left-=stored;}
+ storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);refreshFarmStorageVisuals();return left===0;
+}
+
+function farmUpdateBenjaHud(){
+ const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText');
+ if(hud)hud.style.display=storyModeActive?'flex':'none';
+ if(fill){fill.style.width=Math.max(0,Math.min(100,farmBenjaHealth))+'%';fill.style.background=farmBenjaHealth<35?'linear-gradient(90deg,#a92121,#ff6868)':'linear-gradient(90deg,#54c953,#bcf46b)';}
+ if(label)label.textContent=Math.round(farmBenjaHealth)+'%';
+}
+
+function farmUpdateInventoryPanel(){
+ const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
+ const mode=farmInventoryPanelMode,buttons=document.getElementById('farmInventoryButtons');
+ const carried=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmCarriedGoods[k]||0)).join(' · ');
+ const stored=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmWarehouseStock[k]||0)).join(' · ');
+ const money=document.getElementById('farmInventoryMoney'),summary=document.getElementById('farmInventorySummary'),title=document.getElementById('farmInventoryTitle');
+ if(money)money.textContent='Dinero disponible: $'+storyMoney;
+ if(summary)summary.textContent='EN TU CARGA: '+carried+' | GUARDADO EN EL ALMACEN: '+stored;
+ if(title)title.textContent=mode==='shop'?'PUESTO DE SUMINISTROS':'ALMACEN DE LA GRANJA';
+ if(!buttons)return;let html='';
+ if(mode==='shop'){
+  ['maiz','trigo','zanahoria','heno','pienso','madera'].forEach(type=>{const good=FARM_GOODS[type],price=type==='madera'?9:good.price;html+='<button type="button" data-farm-action="buy" data-good="'+type+'">Comprar '+good.label+' · $'+price+'</button>';});
+  html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
+ }else{
+  html+='<button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button>';
+  Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';});
+  html+='<button type="button" class="primary" data-farm-action="close">CERRAR ALMACEN</button>';
+ }
+ buttons.innerHTML=html;
+ if(!farmInventoryPanelBound){
+  panel.addEventListener('click',event=>{
+   const button=event.target.closest('button[data-farm-action]');if(!button)return;
+   const action=button.dataset.farmAction,type=button.dataset.good;
+   if(action==='close'){panel.style.display='none';return;}
+   if(action==='buy'){
+    const good=FARM_GOODS[type],price=type==='madera'?9:(good&&good.price);
+    if(!good||storyMoney<price){showToast('no tienes suficiente dinero');return;}
+    storyMoney-=price;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
+    storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+    updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('compraste '+good.label+'. puedes guardarlo en el almacen.');
+   }else if(action==='store'){
+    const moved=farmTotalGoods(farmCarriedGoods);if(!moved){showToast('no llevas nada para guardar');return;}
+    Object.keys(FARM_GOODS).forEach(key=>{farmWarehouseStock[key]=(farmWarehouseStock[key]||0)+(farmCarriedGoods[key]||0);farmCarriedGoods[key]=0;});
+    storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+    refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+    showToast('guardaste '+moved+' productos. el stock se acumulo.');
+    if(farmMissionId==='warehouse')farmCompleteMission('ALMACEN ORGANIZADO','todo quedo guardado. ahora ya tenemos existencias para los siguientes encargos.','🏠');
+   }else if(action==='withdraw'){
+    if(!type||!(farmWarehouseStock[type]>0)){showToast('no hay unidades de ese producto');return;}
+    farmWarehouseStock[type]--;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
+    storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+    refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+   }
+  });
+  farmInventoryPanelBound=true;
+ }
+}
+
+function openFarmInventoryPanel(mode){
+ const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
+ farmInventoryPanelMode=mode||'warehouse';farmUpdateInventoryPanel();panel.style.display='block';
+}
+
+        function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
         function getStoryMissionProgress(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).progress;}
         function saveStoryProgress(){
             if(!storyModeActive||!character)return;
