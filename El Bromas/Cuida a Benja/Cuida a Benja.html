@@ -3551,7 +3551,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function createBuildings() {
             const colors = [0x2a353c, 0x3b474e, 0x2c373e, 0x1c242b, 0x424e4f, 0x5a636b, 0x2f3a44]; const winTex = createWindowTexture();
             sharedBuildingMaterials = colors.map(col => { const wt = winTex.clone(); wt.needsUpdate = true; wt.repeat.set(2, 4); return new THREE.MeshStandardMaterial({ color: col, roughness: 0.8, emissiveMap: wt, emissive: 0x222222, emissiveIntensity: 0.8 }); });
-            for (let i = 0; i < 35; i++) {
+            const cityBuildingCount=IS_MOBILE_DEVICE?18:35;
+            for (let i = 0; i < cityBuildingCount; i++) {
                 const x = (Math.random() - 0.5) * 800; const z = (Math.random() - 0.5) * 800;
                 if (Math.hypot(x-FARM_CENTER.x,z-FARM_CENTER.z)<78) continue;
                 if (Math.abs(x) < 30 && Math.abs(z) < 30) continue;
@@ -3571,7 +3572,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
 
         function createBillboards() {
-            for (let i = 0; i < 14; i++) {
+            const billboardCount=IS_MOBILE_DEVICE?7:14;
+            for (let i = 0; i < billboardCount; i++) {
                 const x = (Math.random() - 0.5) * 600; const z = (Math.random() - 0.5) * 600;
                 if (Math.hypot(x-FARM_CENTER.x,z-FARM_CENTER.z)<78) continue;
                 if (Math.abs(x) < 30 && Math.abs(z) < 30) continue; if (checkCollision(x, z)) continue;
