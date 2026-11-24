@@ -407,6 +407,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmBenjaHealthTrack,#farmBenjaHungerTrack{height:7px;flex:1;min-width:55px;border-radius:9px;overflow:hidden;background:#352a27;border:1px solid rgba(255,255,255,.32)}
 #farmBenjaHungerFill{height:100%;width:85%;background:linear-gradient(90deg,#e5ad43,#ff7040);transition:width .2s}
 #farmBenjaHealthText,#farmBenjaHungerText{width:37px;text-align:right;font-size:8px}
+#farmBenjaCleanHud{display:flex;align-items:center;justify-content:space-between;padding-top:2px;border-top:1px solid rgba(255,255,255,.11);font-size:8px;font-weight:900;color:#9ed9ef}#farmBenjaCleanText{color:#b6f2fa}
 #farmInventoryPanel,#farmTVPanel,#cityJobPanel{touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
 #farmInventoryPanel{max-height:86vh;max-height:86dvh;overflow-y:auto;touch-action:pan-y}
 #farmInventoryButtons{max-height:48vh;max-height:48dvh;overflow-y:auto;touch-action:pan-y}
@@ -517,6 +518,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="farmBenjaHudTop"><span>🐷 BENJA</span><span>ESTADO</span></div>
 <div class="farmBenjaStat"><small>VIDA</small><div id="farmBenjaHealthTrack"><div id="farmBenjaHealthFill"></div></div><small id="farmBenjaHealthText">100%</small></div>
 <div class="farmBenjaStat"><small>HAMBRE</small><div id="farmBenjaHungerTrack"><div id="farmBenjaHungerFill"></div></div><small id="farmBenjaHungerText">85%</small></div>
+<div id="farmBenjaCleanHud">🧼 ASEO <span id="farmBenjaCleanText">100%</span></div>
 </div>
 <div id="farmInventoryPanel" role="dialog" aria-label="Inventario de la granja">
 <div id="farmInventoryHeader"><b id="farmInventoryTitle">ALMACEN DE LA GRANJA</b><button type="button" data-farm-action="close">✕</button></div>
@@ -808,7 +810,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const WORLD_TERRAIN_SEGMENTS=88;
         const IS_MOBILE_DEVICE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'') || ((navigator.maxTouchPoints||0)>1 && Math.min(window.innerWidth||0,window.innerHeight||0)<=900);
         const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
-    center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},
+    center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
     crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},
     tv:{x:-414,z:-365},flatRadius:245,ambientZones:[
         {id:'huerto',x:-220,z:-250,radius:62,insects:true},
@@ -854,6 +856,7 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
 
         let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null,farmTVProp=null;
 let farmWaterStorageGroup=null,farmPigstyGroup=null,farmPondWaterMeshes=[],farmPondRippleMeshes=[];
+let farmWaterTankWater=null,farmWaterTankLabel=null,farmWaterTankLabelTexture=null;
 let farmTVPhysicalButtons=[],farmTVPhysicalControlsBound=false,farmClockLastUi=0;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
@@ -4325,6 +4328,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 if(dist>1.1){const step=Math.min(.045,dist);benjaPig.position.x+=dx/dist*step;benjaPig.position.z+=dz/dist*step;benjaPig.rotation.y=Math.atan2(dx,dz);}
                 benjaPig.userData.groundY=farmGroundAt(benjaPig.position.x,benjaPig.position.z);
                 if(now-farmBenjaHungerLast>70000){farmBenjaHungerLast=now;farmBenjaHunger=Math.max(0,farmBenjaHunger-3);farmUpdateBenjaHud();if(farmBenjaHunger<=28&&!farmBenjaHungerLinePlayed){farmBenjaHungerLinePlayed=true;speakFarmLine('benja','ocupo pa la renta. ¿no traes algo de comer?');}}
+                if(!farmBenjaLastCleanlinessTick)farmBenjaLastCleanlinessTick=now;
+                if(now-farmBenjaLastCleanlinessTick>180000){farmBenjaLastCleanlinessTick=now;farmBenjaCleanliness=Math.max(0,farmBenjaCleanliness-2);farmUpdateBenjaHud();}
             }
             benjaPig.position.y=benjaPig.userData.groundY+Math.abs(Math.sin(t*2.1))*.16;
             benjaPig.rotation.z=Math.sin(t*1.18)*.12;benjaPig.rotation.x=Math.sin(t*1.55)*.1;
@@ -4334,7 +4339,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 function updateFarmMoneyLabel(){
             const el=document.getElementById('peneCountInfo');
             if(el)el.textContent='💰 $'+storyMoney+'  ·  🐷 '+storyPigWeight+' kg\n📦 '+farmTotalGoods(farmWarehouseStock)+' guardados';
-            farmUpdateBenjaHud();updateFarmCarryVisual();
+            farmUpdateBenjaHud();farmUpdateWaterTankVisual();updateFarmCarryVisual();
         }
                 function farmGroundAt(x,z){return getTerrainY(x,z,null);}
         function makeFarmBox(parent,x,y,z,w,h,d,mat){
@@ -4938,9 +4943,44 @@ function farmTakeItem(type,amount=1){
  farmCarriedGoods[type]=(Number(farmCarriedGoods[type])||0)-carried;left-=carried;
  if(left>0){const stored=Math.min(Number(farmWarehouseStock[type])||0,left);farmWarehouseStock[type]=(Number(farmWarehouseStock[type])||0)-stored;left-=stored;}
  storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
- refreshFarmStorageVisuals();updateFarmCarryVisual(true);return left===0;
+ refreshFarmStorageVisuals();farmUpdateWaterTankVisual();updateFarmCarryVisual(true);return left===0;
 }
 
+function farmUpgradePigsty(){
+ if(farmPigstyLevel>=4){showToast('la pocilga ya está en su mejor nivel');return;}
+ const woodCost=[3,4,6,8][farmPigstyLevel]||8,coinCost=[35,60,95,140][farmPigstyLevel]||140;
+ const available=(Number(farmCarriedGoods.madera)||0)+(Number(farmWarehouseStock.madera)||0);
+ if(available<woodCost||storyMoney<coinCost){showToast('necesitas '+woodCost+' maderas y $'+coinCost+' para mejorar la pocilga');return;}
+ farmTakeItem('madera',woodCost);storyMoney-=coinCost;farmPigstyLevel++;
+ createFarmPigsty();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+ showToast('pocilga mejorada · nivel '+farmPigstyLevel+'/4');
+ speakFarmLine('narrador','la pocilga de benja quedó mejorada. ahora tiene más techo y mejor refugio.');
+}
+function farmUpgradeWaterStorage(){
+ if(farmWaterStorageLevel>=4){showToast('el depósito ya alcanzó su tamaño máximo');return;}
+ const woodCost=[3,5,7][farmWaterStorageLevel-1]||7,coinCost=[30,65,110][farmWaterStorageLevel-1]||110;
+ const available=(Number(farmCarriedGoods.madera)||0)+(Number(farmWarehouseStock.madera)||0);
+ if(available<woodCost||storyMoney<coinCost){showToast('necesitas '+woodCost+' maderas y $'+coinCost+' para ampliar el depósito');return;}
+ farmTakeItem('madera',woodCost);storyMoney-=coinCost;farmWaterStorageLevel++;
+ createFarmWaterStorage();farmUpdateWaterTankVisual();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+ showToast('depósito ampliado · capacidad '+farmWaterCapacity()+' L');
+}
+function farmWashBenja(){
+ if(!storyModeActive||farmCityMode||!benjaPig||!character)return;
+ const distance=character.position.distanceTo(benjaPig.position);
+ if(distance>32){showToast('acércate a benja para bañarlo');setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'acércate a benja');return;}
+ const available=(Number(farmCarriedGoods.agua)||0)+(Number(farmWarehouseStock.agua)||0);
+ if(available<3){showToast('necesitas 3 unidades de agua del depósito o del almacén');setFarmGuideTarget(FARM_WATER_STORAGE_POS.x,FARM_WATER_STORAGE_POS.z,'ve por agua');return;}
+ farmTakeItem('agua',3);farmBenjaCleanliness=100;farmBenjaHealth=Math.min(100,farmBenjaHealth+5);farmUpdateBenjaHud();updateFarmMoneyLabel();saveStoryProgress();
+ for(let i=0;i<18;i++){
+  const drop=new THREE.Mesh(new THREE.SphereGeometry(.16+Math.random()*.14,7,6),new THREE.MeshBasicMaterial({color:0x70c8ee,transparent:true,opacity:.82}));
+  drop.position.set(benjaPig.position.x+(Math.random()-.5)*7,benjaPig.position.y+2+Math.random()*5,benjaPig.position.z+(Math.random()-.5)*7);
+  scene.add(drop);const start=performance.now(),origin=drop.position.clone();
+  const tick=()=>{if(!drop.parent)return;const k=Math.min(1,(performance.now()-start)/850);drop.position.set(origin.x,origin.y+Math.sin(k*Math.PI)*2.2-k*2.4,origin.z);drop.material.opacity=.82*(1-k);if(k>=1){scene.remove(drop);drop.geometry.dispose();drop.material.dispose();}else requestAnimationFrame(tick);};
+  requestAnimationFrame(tick);
+ }
+ showToast('benja ya está bañado · aseo al 100%');speakFarmLine('benja','¡ahora sí quedé limpio!');
+}
 function farmUpdateBenjaHud(){
  const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText'),hunger=document.getElementById('farmBenjaHungerText'),hungerFill=document.getElementById('farmBenjaHungerFill');
  if(hud)hud.style.display=storyModeActive&&!farmCityMode?'flex':'none';
@@ -4948,6 +4988,7 @@ function farmUpdateBenjaHud(){
  if(label)label.textContent=Math.round(farmBenjaHealth)+'%';
  if(hungerFill){hungerFill.style.width=Math.max(0,Math.min(100,farmBenjaHunger))+'%';hungerFill.style.background=farmBenjaHunger>70?'linear-gradient(90deg,#ed9a2c,#ef5b42)':'linear-gradient(90deg,#c4c85b,#85c95b)';}
  if(hunger)hunger.textContent=Math.round(farmBenjaHunger)+'%';
+ const clean=document.getElementById('farmBenjaCleanText');if(clean)clean.textContent=Math.round(farmBenjaCleanliness)+'%';
 }
         function farmUpdateInventoryPanel(){
  const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
@@ -4965,6 +5006,9 @@ function farmUpdateBenjaHud(){
  }else{
   html+='<button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button>';
   Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">'+(good.icon||'📦')+' Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';});
+  html+='<button type="button" data-farm-action="wash-benja">🚿 BAÑAR A BENJA · 3 AGUA</button>';
+  html+='<button type="button" data-farm-action="upgrade-pigsty">🐷 MEJORAR POCILGA · NIVEL '+farmPigstyLevel+'/4</button>';
+  html+='<button type="button" data-farm-action="upgrade-water">💧 AMPLIAR DEPÓSITO · NIVEL '+farmWaterStorageLevel+'/4</button>';
   html+='<button type="button" class="primary" data-farm-action="close">CERRAR ALMACEN</button>';
  }
  buttons.innerHTML=html;
@@ -4983,7 +5027,7 @@ function farmUpdateBenjaHud(){
     const moved=farmTotalGoods(farmCarriedGoods);if(!moved){showToast('no llevas nada para guardar');return;}
     Object.keys(FARM_GOODS).forEach(key=>{farmWarehouseStock[key]=(farmWarehouseStock[key]||0)+(farmCarriedGoods[key]||0);farmCarriedGoods[key]=0;});
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
-    refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+    refreshFarmStorageVisuals();farmUpdateWaterTankVisual();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
     showToast('guardaste '+moved+' productos. el stock se acumulo.');
     if(farmMissionId==='warehouse')farmCompleteMission('ALMACEN ORGANIZADO','todo quedo guardado. ahora ya tenemos existencias para los siguientes encargos.','🏠');
    }else if(action==='withdraw'){
@@ -4991,7 +5035,9 @@ function farmUpdateBenjaHud(){
     farmWarehouseStock[type]--;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
     refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
-   }
+   }else if(action==='wash-benja'){farmWashBenja();farmUpdateInventoryPanel();}
+   else if(action==='upgrade-pigsty'){farmUpgradePigsty();}
+   else if(action==='upgrade-water'){farmUpgradeWaterStorage();}
   });
   farmInventoryPanelBound=true;
  }
@@ -5843,7 +5889,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
             try{localStorage.setItem(STORY_SAVE_KEY,JSON.stringify({
                 stage:storyStage,money:storyMoney,pigWeight:storyPigWeight,feed:storyFeedInventory,workCount:storyWorkCount,feedings:storyFeedingCount,
                 carried:farmCarriedGoods,warehouse:farmWarehouseStock,missionOrder:farmMissionOrder,missionIndex:farmMissionIndex,missionCycle:farmMissionCycle,missionId:farmMissionId,
-                defenseLevel:farmDefenseLevel,benjaHealth:farmBenjaHealth,benjaHunger:farmBenjaHunger,raidKillCarry:farmRaidKillCarry,raidKillsTotal:farmRaidKillsTotal,raidTriggered:farmRaidTriggered,
+                defenseLevel:farmDefenseLevel,pigstyLevel:farmPigstyLevel,waterStorageLevel:farmWaterStorageLevel,benjaCleanliness:farmBenjaCleanliness,benjaHealth:farmBenjaHealth,benjaHunger:farmBenjaHunger,raidKillCarry:farmRaidKillCarry,raidKillsTotal:farmRaidKillsTotal,raidTriggered:farmRaidTriggered,
                 x:character.position.x,y:character.position.y,z:character.position.z,savedAt:Date.now()
             }));}catch(e){}
         }
@@ -5861,6 +5907,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 farmMissionIndex=Math.max(0,Math.min(farmMissionOrder.length-1,Number(d.missionIndex)||0));
                 farmMissionCycle=Math.max(0,Number(d.missionCycle)||0);farmMissionId=FARM_MISSION_DATA[d.missionId]?d.missionId:(farmMissionOrder[farmMissionIndex]||'harvest');
                 farmDefenseLevel=Math.max(0,Math.min(3,Number(d.defenseLevel)||0));
+                farmPigstyLevel=Math.max(0,Math.min(4,Number(d.pigstyLevel)||0));farmWaterStorageLevel=Math.max(1,Math.min(4,Number(d.waterStorageLevel)||1));farmBenjaCleanliness=Math.max(0,Math.min(100,Number(d.benjaCleanliness)||100));
                 farmBenjaHealth=Math.max(0,Math.min(100,Number(d.benjaHealth)||100));
                 farmBenjaHunger=Math.max(0,Math.min(100,d.benjaHunger===0?0:(Number(d.benjaHunger)||85)));
                 farmRaidKillCarry=Math.max(0,Number(d.raidKillCarry)||0);farmRaidKillsTotal=Math.max(0,Number(d.raidKillsTotal)||0);
@@ -5894,15 +5941,15 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;
                 farmCarriedGoods=farmDefaultGoods();farmWarehouseStock=farmDefaultGoods();farmWarehouseStock.madera=6;
                 farmMissionOrder=FARM_MISSION_ORDER.slice();farmMissionIndex=0;farmMissionCycle=0;farmMissionId='harvest';
-                farmDefenseLevel=0;farmBenjaHealth=100;farmBenjaHunger=85;farmBenjaHungerLinePlayed=false;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
+                farmDefenseLevel=0;farmPigstyLevel=0;farmWaterStorageLevel=1;farmBenjaCleanliness=100;farmBenjaHealth=100;farmBenjaHunger=85;farmBenjaHungerLinePlayed=false;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
             }else{restored=loadStoryProgress();if(!restored){
                 storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;
                 farmCarriedGoods=farmDefaultGoods();farmWarehouseStock=farmDefaultGoods();farmWarehouseStock.madera=6;
                 farmMissionOrder=FARM_MISSION_ORDER.slice();farmMissionIndex=0;farmMissionCycle=0;farmMissionId='harvest';
-                farmDefenseLevel=0;farmBenjaHealth=100;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
+                farmDefenseLevel=0;farmPigstyLevel=0;farmWaterStorageLevel=1;farmBenjaCleanliness=100;farmBenjaHealth=100;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
             }}
             if(reset||!restored){farmCityMode=false;character.position.set(FARM_CENTER.x-24,farmGroundAt(FARM_CENTER.x-24,FARM_CENTER.z+8),FARM_CENTER.z+8);character.rotation.set(0,0,0);}
-            updateBenjaWeightVisual();createFarmDefensiveCorral();refreshFarmStorageVisuals();farmUpdateBenjaHud();
+            updateBenjaWeightVisual();createFarmDefensiveCorral();createFarmPigsty();createFarmWaterStorage();refreshFarmStorageVisuals();farmUpdateWaterTankVisual();farmUpdateBenjaHud();
             document.getElementById('missionUI').style.display='block';updateMissionUI();updateFarmMoneyLabel();
             if(!restored||reset){setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'ve a conocer a benja');startFarmIntroCinematic();}
             else{isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');farmStartMission(farmMissionId);showStoryDialog('LA GRANJA SIGUE EN MARCHA','hay nuevos encargos, un almacen para organizar y que estar pendientes de benja por las noches.','🌾');}
