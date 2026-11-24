@@ -4737,34 +4737,118 @@ function startCityJob(id){
  const j=(CITY_MAP_CONFIG.jobs||[]).find(x=>x.id===id);if(!j)return;cityActiveJob=j;const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';
  setFarmGuideTarget(j.target.x,j.target.z,'ve a '+j.title.toLowerCase());updateMissionUI();showToast('nuevo trabajo: '+j.title.toLowerCase());
 }
-function enterCityMap(){
- if(!storyModeActive||farmCityMode)return;farmCityMode=true;farmRaidActive=false;farmClearNPCs(true);if(farmGroup)farmGroup.visible=false;if(benjaPig)benjaPig.visible=false;if(farmGuideMarker)farmGuideMarker.visible=false;
- const p=CITY_MAP_CONFIG.spawn||{x:0,z:0};character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.rotation.y=0;cameraTheta=0;cameraDistance=28;farmGuideTarget=null;cityActiveJob=null;waveNumber=0;waitingNextWave=false;waveActive=true;
- document.getElementById('missionUI').style.display='block';document.getElementById('farmGoCity').style.display='none';document.getElementById('cityBackFarm').style.display='inline-flex';document.getElementById('farmQuickJobs').style.display='inline-flex';document.getElementById('storyGuide').style.display='none';
- farmUpdateBenjaHud();speakFarmLine('narrador','llegaste a la ciudad. puedes trabajar, usar los coches y defender las calles en las oleadas.');spawnNextWave();
+async function loadCityMapModule(){
+ if(CITY_MAP_CONFIG&&window.CUIDA_BENJA_CITY_MAP)return CITY_MAP_CONFIG;
+ if(cityMapScriptPromise)return cityMapScriptPromise;
+ cityMapScriptPromise=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');
+  script.src='https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.5.0';
+  script.async=true;
+  script.onload=()=>{CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;if(CITY_MAP_CONFIG)resolve(CITY_MAP_CONFIG);else reject(new Error('No se encontraron los datos de la ciudad.'));};
+  script.onerror=()=>reject(new Error('No se pudo descargar Ciudad.js.'));
+  document.head.appendChild(script);
+ });
+ return cityMapScriptPromise;
+}
+async function ensureCityWorldLoaded(){
+ await loadCityMapModule();
+ if(cityWorldLoaded&&cityWorldGroup){
+  cityWorldGroup.visible=true;
+  if(cityWorldGroup.parent!==scene)scene.add(cityWorldGroup);
+  return;
+ }
+ cityWorldGroup=new THREE.Group();cityWorldGroup.name='CiudadPrincipal_CargaDiferida';
+ const originalAdd=scene.add;
+ scene.add=function(...objects){cityWorldGroup.add(...objects);return scene;};
+ try{
+  createRoads();createDrivableCars();createBuildings();createStreetLamps();createCityProps();initDrones();createBillboards();createCityJobBoard();applyBillboardTextures();
+ }catch(error){
+  scene.add=originalAdd;cityWorldGroup=null;throw error;
+ }finally{scene.add=originalAdd;}
+ scene.add(cityWorldGroup);cityWorldLoaded=true;rebuildCarCollisionGrid();
+}
+function showMapTravelOverlay(title,subtitle){
+ const panel=document.getElementById('mapTravelOverlay'),heading=document.getElementById('mapTravelTitle'),sub=document.getElementById('mapTravelSubtitle');
+ if(heading)heading.textContent=title||'VIAJANDO';if(sub)sub.textContent=subtitle||'Un momento…';
+ if(panel){panel.style.display='flex';panel.classList.add('active');}
+}
+function hideMapTravelOverlay(){
+ const panel=document.getElementById('mapTravelOverlay');if(panel){panel.classList.remove('active');panel.style.display='none';}
+}
+async function travelToCity(){
+ if(!storyModeActive||farmCityMode||mapTravelInProgress)return;
+ mapTravelInProgress=true;isCinematic=true;stopFarmAmbience();
+ const inv=document.getElementById('farmInventoryPanel');if(inv)inv.style.display='none';
+ const tv=document.getElementById('farmTVPanel');if(tv)tv.style.display='none';
+ showMapTravelOverlay('RUMBO A LA CIUDAD','Atravesando el camino hacia la ciudad…');
+ try{
+  await new Promise(resolve=>setTimeout(resolve,650));await ensureCityWorldLoaded();await enterCityMap();
+  showMapTravelOverlay('LLEGASTE A LA CIUDAD','La granja quedó fuera de este mapa.');
+  await new Promise(resolve=>setTimeout(resolve,550));
+ }catch(error){
+  showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga'));isCinematic=false;
+ }finally{hideMapTravelOverlay();mapTravelInProgress=false;}
+}
+async function travelToFarm(){
+ if(!farmCityMode||mapTravelInProgress)return;
+ mapTravelInProgress=true;isCinematic=true;
+ const panel=document.getElementById('cityJobPanel');if(panel)panel.style.display='none';
+ showMapTravelOverlay('REGRESANDO A LA GRANJA','Los trabajos de ciudad se cancelarán al regresar…');
+ await new Promise(resolve=>setTimeout(resolve,850));returnToFarmMap();
+ showMapTravelOverlay('DE VUELTA CON BENJA','La misión de la granja continúa.');
+ await new Promise(resolve=>setTimeout(resolve,450));hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;
+}
+async function enterCityMap(){
+ if(!storyModeActive||farmCityMode)return;
+ if(!cityWorldLoaded)await ensureCityWorldLoaded();
+ farmCityMode=true;farmRaidActive=false;stopFarmAmbience();farmClearNPCs(true);
+ if(farmGroup)farmGroup.visible=false;if(benjaPig)benjaPig.visible=false;
+ if(cityWorldGroup){cityWorldGroup.visible=true;if(cityWorldGroup.parent!==scene)scene.add(cityWorldGroup);}
+ if(farmGuideMarker)farmGuideMarker.visible=false;
+ const p=CITY_MAP_CONFIG.spawn||{x:0,z:0};
+ character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.rotation.y=0;cameraTheta=0;cameraDistance=28;farmGuideTarget=null;cityActiveJob=null;waveNumber=0;waitingNextWave=false;waveActive=true;
+ document.getElementById('missionUI').style.display='block';
+ const jobs=document.getElementById('farmQuickJobs');if(jobs)jobs.style.display='inline-flex';
+ document.getElementById('storyGuide').style.display='none';
+ farmUpdateBenjaHud();updateMissionUI();speakFarmLine('narrador','llegaste a la ciudad. puedes trabajar y usar los coches. al salir del limite volveras a la granja.');spawnNextWave();
 }
 function returnToFarmMap(){
- if(!farmCityMode)return;farmCityMode=false;waveActive=false;waitingNextWave=false;farmClearNPCs(true);if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
- const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.rotation.y=0;cameraTheta=0;cameraDistance=26;cityActiveJob=null;
- document.getElementById('cityBackFarm').style.display='none';document.getElementById('farmQuickJobs').style.display='none';document.getElementById('farmGoCity').style.display='none';farmStartMission(farmMissionId);farmUpdateBenjaHud();showToast('volviste a la granja con benja.');
+ if(!farmCityMode)return;
+ const exitCar=document.getElementById('carExitBtn');if(isDriving&&exitCar)exitCar.click();
+ farmCityMode=false;waveActive=false;waitingNextWave=false;farmClearNPCs(true);
+ if(cityWorldGroup){cityWorldGroup.visible=false;if(cityWorldGroup.parent===scene)scene.remove(cityWorldGroup);}
+ if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
+ const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};
+ character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.visible=true;character.rotation.y=0;cameraTheta=0;cameraDistance=26;
+ cityActiveJob=null;const jobs=document.getElementById('farmQuickJobs');if(jobs)jobs.style.display='none';
+ const cityPanel=document.getElementById('cityJobPanel');if(cityPanel)cityPanel.style.display='none';
+ farmStartMission(farmMissionId);farmUpdateBenjaHud();updateMissionUI();showToast('volviste a la granja con benja.');
 }
 function updateCityMapMode(now){
- let prompt='ve al tablero de trabajos para elegir un encargo.';const dBoard=cityJobBoard?Math.hypot(character.position.x-cityJobBoard.position.x,character.position.z-cityJobBoard.position.z):999;if(dBoard<20)prompt='pulsa TRABAJOS para aceptar un encargo.';
- if(cityActiveJob){const j=cityActiveJob,d=Math.hypot(character.position.x-j.target.x,character.position.z-j.target.z);prompt=d<18?'pulsa ATACAR para terminar: '+j.title.toLowerCase():j.detail+' · '+Math.round(d)+' m';
-  if(d<18&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1500;storyMoney+=j.reward;cityActiveJob=null;updateFarmMoneyLabel();saveStoryProgress();farmGuideTarget=null;removeFarmGuideMarker();updateMissionUI();showToast('trabajo terminado: +$'+j.reward);speakFarmLine('narrador','buen trabajo. ya te pagaron el encargo.');}
+ const spawn=CITY_MAP_CONFIG.spawn||{x:0,z:0};
+ if(Math.hypot(character.position.x-spawn.x,character.position.z-spawn.z)>(Number(CITY_MAP_CONFIG.exitRadius)||345)){travelToFarm();return;}
+ let prompt='ve al tablero de trabajos para elegir un encargo.';
+ const dBoard=cityJobBoard?Math.hypot(character.position.x-cityJobBoard.position.x,character.position.z-cityJobBoard.position.z):999;
+ if(dBoard<20)prompt='pulsa TRABAJOS para aceptar un encargo.';
+ if(cityActiveJob){
+  const j=cityActiveJob,d=Math.hypot(character.position.x-j.target.x,character.position.z-j.target.z);
+  prompt=d<18?'pulsa ATACAR para terminar: '+j.title.toLowerCase():j.detail+' · '+Math.round(d)+' m';
+  if(d<18&&isAttacking&&now>storyInteractAfter){
+   storyInteractAfter=now+1500;storyMoney+=j.reward;cityActiveJob=null;updateFarmMoneyLabel();saveStoryProgress();farmGuideTarget=null;removeFarmGuideMarker();updateMissionUI();showToast('trabajo terminado: +$'+j.reward);speakFarmLine('narrador','buen trabajo. ya te pagaron el encargo.');
+  }
  }
  if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}else interactionPrompt.style.display='none';
- if(timeOfDay>=.68&&timeOfDay<.73&&!cityNightWarningDone){cityNightWarningDone=true;speakFarmLine('benja','ya casi es de noche, por cierto. apurate con tus trabajos y vuelve a la granja.');}if(timeOfDay<.24)cityNightWarningDone=false;
- const b=document.getElementById('farmGoCity');if(b)b.style.display='none';
+ if(timeOfDay>=.68&&timeOfDay<.73&&!cityNightWarningDone){cityNightWarningDone=true;speakFarmLine('benja','ya casi es de noche, por cierto. apurate con tus trabajos y vuelve a la granja.');}
+ if(timeOfDay<.24)cityNightWarningDone=false;
 }
 function setupFarmUiControls(){
- const shop=document.getElementById('farmQuickShop'),store=document.getElementById('farmQuickWarehouse'),jobs=document.getElementById('farmQuickJobs'),go=document.getElementById('farmGoCity'),back=document.getElementById('cityBackFarm'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
- if(shop)shop.addEventListener('click',()=>openFarmInventoryPanel('shop'));if(store)store.addEventListener('click',()=>openFarmInventoryPanel('warehouse'));if(jobs)jobs.addEventListener('click',showCityJobPanel);if(go)go.addEventListener('click',enterCityMap);if(back)back.addEventListener('click',returnToFarmMap);
+ const jobs=document.getElementById('farmQuickJobs'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
+ if(jobs)jobs.addEventListener('click',showCityJobPanel);
  if(close)close.addEventListener('click',()=>{const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';});
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-city-job]');if(b)startCityJob(b.dataset.cityJob);});
+ setupFarmTVControls();
 }
-
-        function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
+function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
         function getStoryMissionProgress(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).progress;}
         function saveStoryProgress(){
             if(!storyModeActive||!character)return;
