@@ -1,7 +1,7 @@
 {
   "game": "Salva a Fornatan 2",
   "edition": "El Bromas 2",
-  "version": "1.3",
+  "version": "1.3.1",
   "updates": [
     {
       "version": "1.0",
@@ -55,6 +55,17 @@
         "Durante la noche aparecen intrusos que avanzan hacia Benja y le bajan la salud; cada dos intrusos derrotados dan $5.",
         "Se agrego un indicador de salud para Benja y las defensas del corral reducen el daño recibido.",
         "La colision visual por camara usa frustum culling junto con la distancia de los grupos del mundo; la montana ahora nace de la deformacion del terreno."
+      ]
+    },
+    {
+      "version": "1.3.1",
+      "title": "Correccion de inicio en Android",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "Se corrigio el error de inicio causado por llamadas computeBoundingSphere no disponibles en InstancedMesh de Three.js r128.",
+        "Se quitaron las llamadas incompatibles en arboles, pinos, cultivos, huevos y existencias visuales del almacen.",
+        "Los grupos instanciados de la granja ya no usan frustum culling automatico para evitar que el motor r128 los descarte incorrectamente.",
+        "Se valido la sintaxis del script principal despues del arreglo."
       ]
     }
   ]
