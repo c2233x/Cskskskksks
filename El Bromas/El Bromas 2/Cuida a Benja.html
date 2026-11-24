@@ -5212,8 +5212,8 @@ function hideMapTravelOverlay(){
 async function travelToCity(){
  if(!storyModeActive||farmCityMode||mapTravelInProgress)return;
  mapTravelInProgress=true;isCinematic=true;stopFarmAmbience();
+ setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();
  const inv=document.getElementById('farmInventoryPanel');if(inv)inv.style.display='none';
- const tv=document.getElementById('farmTVPanel');if(tv)tv.style.display='none';
  showMapTravelOverlay('RUMBO A LA CIUDAD','Atravesando el camino hacia la ciudad…');
  try{
   await new Promise(resolve=>setTimeout(resolve,650));await ensureCityWorldLoaded();await enterCityMap();
@@ -5235,7 +5235,7 @@ async function travelToFarm(){
 async function enterCityMap(){
  if(!storyModeActive||farmCityMode)return;
  if(!cityWorldLoaded)await ensureCityWorldLoaded();
- farmCityMode=true;farmRaidActive=false;stopFarmAmbience();farmClearNPCs(true);
+ farmCityMode=true;farmRaidActive=false;stopFarmAmbience();setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();farmClearNPCs(true);
  if(farmGroup)farmGroup.visible=false;if(benjaPig)benjaPig.visible=false;
  if(cityWorldGroup){cityWorldGroup.visible=true;if(cityWorldGroup.parent!==scene)scene.add(cityWorldGroup);}
  if(farmGuideMarker)farmGuideMarker.visible=false;
@@ -6345,6 +6345,7 @@ function startProtestMission() {
             updateFarmGuide();
             updateFarmCinematic();
             if(graphicsSettings && graphicsSettings.worldOptimizer!==false && (worldCullFrameCounter%8===0))updateWorldChunkVisibility();
+            updateFarmTVScreenOverlay();
             renderer.render(scene, camera);
         }
         
