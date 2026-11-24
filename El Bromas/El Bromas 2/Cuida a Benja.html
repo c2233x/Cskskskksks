@@ -5112,29 +5112,23 @@ function updateFarmThrownFood(){
 }
 
 function ensureFarmCicadaAudio(){
- if(!farmAmbienceContext){const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;farmAmbienceContext=new Ctx();}
- const ctx=farmAmbienceContext;
- if(!farmCicadaMaster){
-  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=4380;filter.Q.value=.76;
-  farmCicadaMaster=ctx.createGain();farmCicadaMaster.gain.value=0;
-  farmCicadaGain=ctx.createGain();farmCicadaGain.gain.value=.34;
-  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=4200;
-  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=4770;
-  const secondGain=ctx.createGain();secondGain.gain.value=.48;
-  farmCicadaLfo=ctx.createOscillator();farmCicadaLfo.type='sine';farmCicadaLfo.frequency.value=24;
-  const lfoDepth=ctx.createGain();lfoDepth.gain.value=.22;farmCicadaLfo.connect(lfoDepth);lfoDepth.connect(farmCicadaGain.gain);
-  farmCicadaOscillatorA.connect(filter);farmCicadaOscillatorB.connect(secondGain);secondGain.connect(filter);
-  filter.connect(farmCicadaGain);farmCicadaGain.connect(farmCicadaMaster);farmCicadaMaster.connect(ctx.destination);
-  farmCicadaOscillatorA.start();farmCicadaOscillatorB.start();farmCicadaLfo.start();
- }
- return farmCicadaMaster;
+ if(farmCicadaAudio)return farmCicadaAudio;
+ // Se reproduce el MP3 original tal cual: sin osciladores, cambio de tono ni filtros.
+ const audio=new Audio("../Sonidos/Effectos/la chicharra japonesa(MP3_160K).mp3");
+ audio.loop=true;audio.preload='auto';audio.volume=0;audio.setAttribute('playsinline','');
+ audio.addEventListener('error',()=>{const status=document.getElementById('farmAmbienceStatus');if(status)status.textContent='Falta el MP3 original de chicharras en El Bromas/Sonidos/Effectos.';});
+ farmCicadaAudio=audio;return audio;
 }
 function setFarmCicadas(active,strength=1){
- if(!active&&!farmCicadaMaster)return;
- const master=ensureFarmCicadaAudio();if(!master)return;
- const ctx=farmAmbienceContext,level=Math.max(0,Math.min(1,Number(strength)||0));
- if(ctx.state==='suspended'&&audioUnlocked)ctx.resume().catch(()=>{});
- master.gain.setTargetAtTime((active&&audioUnlocked)?(.68*level):0,ctx.currentTime,.18);
+ if(!active&&!farmCicadaAudio)return;
+ const audio=ensureFarmCicadaAudio();if(!audio)return;
+ const level=Math.max(0,Math.min(1,Number(strength)||0));
+ audio.volume=(active&&audioUnlocked)?Math.min(1,.82*level):0;
+ if(active&&audioUnlocked){
+  if(audio.paused){const p=audio.play();if(p&&p.catch)p.catch(()=>{});}
+ }else{
+  try{audio.pause();if(!active)audio.currentTime=0;}catch(_){}
+ }
 }
 function stopFarmAmbience(){
  farmAmbienceActiveZone='';farmAmbienceLevel=0;
