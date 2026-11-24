@@ -815,7 +815,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         {id:'pozo',x:-390,z:-440,radius:48,insects:false}
     ],
     cityExitRadius:235,cityGate:{x:-135,z:-330},saveWeightGoal:52,
-    goods:{maiz:{label:'Maiz',price:8,color:0xe3b949,food:true,icon:'🌽'},trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true,icon:'🌾'},zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true,icon:'🥕'},heno:{label:'Heno',price:6,color:0xc4a24c,food:true,icon:'🌿'},pienso:{label:'Pienso',price:12,color:0x8c7049,food:true,icon:'🫘'},huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false,icon:'🥚'},agua:{label:'Agua',price:0,color:0x5aa8d7,food:false,icon:'🛢️'},madera:{label:'Madera',price:0,color:0x805536,food:false,icon:'🪵'}},
+    goods:{maiz:{label:'Maíz',price:8,color:0xe3b949,food:true,icon:'🌽',buyable:true},trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true,icon:'🌾',buyable:true},zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true,icon:'🥕',buyable:true},heno:{label:'Heno',price:6,color:0xc4a24c,food:true,icon:'🌿',buyable:true},pienso:{label:'Pienso',price:12,color:0x8c7049,food:true,icon:'🫘',buyable:true},huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false,icon:'🥚',buyable:false},agua:{label:'Agua',price:0,color:0x5aa8d7,food:false,icon:'💧',buyable:false},madera:{label:'Madera',price:9,color:0x805536,food:false,icon:'🪵',buyable:true},balde:{label:'Balde resistente',price:18,color:0x7f9aa7,food:false,icon:'🪣',buyable:true,model:'bucket'},antorcha:{label:'Antorcha',price:22,color:0xd78332,food:false,icon:'🔥',buyable:true,buildable:true,model:'torch'},muro_madera:{label:'Muro de madera',price:28,color:0x8f633b,food:false,icon:'🪵',buyable:true,buildable:true,model:'wood-wall'},muro_ladrillo:{label:'Muro de ladrillo',price:42,color:0x9a5542,food:false,icon:'🧱',buyable:true,buildable:true,model:'brick-wall'},puerta:{label:'Puerta de madera',price:32,color:0x754727,food:false,icon:'🚪',buyable:true,buildable:true,model:'door'},ventana:{label:'Ventana con cristal',price:24,color:0x8bc8dc,food:false,icon:'🪟',buyable:true,buildable:true,model:'window'},techo:{label:'Panel de tejado',price:30,color:0x765044,food:false,icon:'🏠',buyable:true,buildable:true,model:'roof'}},
     missionOrder:['harvest','eggs','delivery','repair','water','tractor','feed','warehouse']
 };
 const FARM_CENTER=FARM_MAP_CONFIG.center;
@@ -855,6 +855,8 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
 let farmWaterStorageGroup=null,farmPigstyGroup=null,farmPondWaterMeshes=[],farmPondRippleMeshes=[];
 let farmBenjaFenceGroup=null;
 let farmWaterTankWater=null,farmWaterTankLabel=null,farmWaterTankLabelTexture=null;
+let farmPlacedBuildGroup=null,farmPlacedBuilds=[],farmBuildPreview=null,farmBuildType=null,farmBuildRotation=0,farmBuildPanelBound=false;
+let farmTorchLights=[],farmCityLampPool=[],farmCityLampUpdateAt=0,farmTVPointLight=null;
 let farmTVPhysicalButtons=[],farmTVPhysicalHitTargets=[],farmTVPhysicalControlsBound=false,farmClockLastUi=0;
 let farmTVShowNoSignal=false;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
@@ -4553,7 +4555,14 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 pienso:new THREE.CylinderGeometry(.48,.62,1.3,8),
                 huevos:new THREE.SphereGeometry(.43,10,8),
                 agua:new THREE.CylinderGeometry(.52,.52,1.45,10),
-                madera:new THREE.BoxGeometry(1.65,.34,.52)
+                madera:new THREE.BoxGeometry(1.65,.34,.52),
+                balde:new THREE.CylinderGeometry(.48,.62,1.15,10,1,true),
+                antorcha:new THREE.CylinderGeometry(.14,.22,1.35,7),
+                muro_madera:new THREE.BoxGeometry(1.6,1.05,.28),
+                muro_ladrillo:new THREE.BoxGeometry(1.6,1.05,.38),
+                puerta:new THREE.BoxGeometry(1.1,1.55,.16),
+                ventana:new THREE.BoxGeometry(1.35,1.05,.16),
+                techo:new THREE.BoxGeometry(1.6,.22,1.15)
             };
             const itemMaterials={
                 maiz:new THREE.MeshStandardMaterial({color:0xe7bd39,roughness:.9}),
@@ -4563,12 +4572,19 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 pienso:new THREE.MeshStandardMaterial({color:0x96704c,roughness:1}),
                 huevos:new THREE.MeshStandardMaterial({color:0xf4e9d0,roughness:.75}),
                 agua:new THREE.MeshStandardMaterial({color:0x378dc1,roughness:.6,metalness:.12}),
-                madera:new THREE.MeshStandardMaterial({color:0x7b4d2b,roughness:.98})
+                madera:new THREE.MeshStandardMaterial({color:0x7b4d2b,roughness:.98}),
+                balde:new THREE.MeshStandardMaterial({color:0x778f9d,metalness:.38,roughness:.52}),
+                antorcha:new THREE.MeshStandardMaterial({color:0x80502d,roughness:.92}),
+                muro_madera:new THREE.MeshStandardMaterial({color:0x8f633b,roughness:.95}),
+                muro_ladrillo:new THREE.MeshStandardMaterial({color:0x9a5542,roughness:.96}),
+                puerta:new THREE.MeshStandardMaterial({color:0x754727,roughness:.93}),
+                ventana:new THREE.MeshStandardMaterial({color:0x8bc8dc,transparent:true,opacity:.72,roughness:.2}),
+                techo:new THREE.MeshStandardMaterial({color:0x765044,roughness:.94})
             };
             const types=Object.keys(FARM_GOODS),dummy=new THREE.Object3D();
             types.forEach((type,index)=>{
-                const col=index%4,row=Math.floor(index/4);
-                const x=FARM_STORAGE_POS.x-17.1+col*11.4,z=FARM_STORAGE_POS.z-8+row*15.2,y=storageY;
+                const col=index%5,row=Math.floor(index/5);
+                const x=FARM_STORAGE_POS.x-18.8+col*9.4,z=FARM_STORAGE_POS.z-10+row*10.5,y=storageY;
                 // Pallet y separador propio para que cada producto se distinga.
                 const pallet=new THREE.Mesh(new THREE.BoxGeometry(8.6,.75,10.7),darkWood);
                 pallet.position.set(x,y+.45,z);pallet.castShadow=true;farmGroup.add(pallet);addFarmCollider(x,z,7.2,8.8,0,'farm-storage-pallet',2.4);
@@ -4587,6 +4603,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                     if(type==='zanahoria')dummy.rotation.z=Math.PI;
                     else if(type==='maiz'||type==='trigo')dummy.rotation.z=(i%2?-.12:.12);
                     else if(type==='madera')dummy.rotation.y=.18*(i%3);
+                    else if(type==='techo')dummy.rotation.z=(i%2?-.24:.24);
                     else dummy.rotation.y=(i%3)*.11;
                     dummy.scale.set(1,1,1);dummy.updateMatrix();items.setMatrixAt(i,dummy.matrix);
                 }
@@ -4867,6 +4884,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             deformFarmTerrain();clearFarmColliders();
             if(farmGroup&&farmGroup.parent)farmGroup.parent.remove(farmGroup);
             farmGroup=new THREE.Group();scene.add(farmGroup);
+            farmPlacedBuildGroup=new THREE.Group();farmPlacedBuildGroup.name='ConstruccionesDelJugador';farmGroup.add(farmPlacedBuildGroup);
             const wood=new THREE.MeshLambertMaterial({color:0x69472a});
             const darkWood=new THREE.MeshStandardMaterial({color:0x3e2b1c,roughness:.9}),red=new THREE.MeshStandardMaterial({color:0x8f3e31,roughness:.9});
             const cream=new THREE.MeshStandardMaterial({color:0xf0dfb5,roughness:.9}),mud=new THREE.MeshStandardMaterial({color:0x4c3024,roughness:1});
@@ -4959,7 +4977,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const text=document.getElementById('storyGuideText');if(text)text.textContent=farmGuideLabel+' · '+Math.round(Math.hypot(dx,dz))+' m';
             if(farmGuideMarker){farmGuideMarker.position.y=farmGroundAt(farmGuideTarget.x,farmGuideTarget.z)+Math.sin(performance.now()*.002)*.35;farmGuideMarker.rotation.y+=.012;}
         }
-        function farmDefaultGoods(){return {maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0};}
+        function farmDefaultGoods(){const goods={};Object.keys(FARM_GOODS).forEach(key=>goods[key]=0);return goods;}
 
 function farmTotalGoods(obj){return Object.keys(FARM_GOODS).reduce((sum,key)=>sum+(Number(obj&&obj[key])||0),0);}
 
@@ -5028,11 +5046,15 @@ function farmUpdateBenjaHud(){
  if(title)title.textContent=mode==='shop'?'PUESTO DE SUMINISTROS':'ALMACEN DE LA GRANJA';
  if(!buttons)return;let html='';
  if(mode==='shop'){
-  ['maiz','trigo','zanahoria','heno','pienso','madera'].forEach(type=>{const good=FARM_GOODS[type],price=type==='madera'?9:good.price;html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar '+good.label+' · $'+price+'</button>';});
+  const buyables=Object.keys(FARM_GOODS).filter(type=>FARM_GOODS[type]&&FARM_GOODS[type].buyable!==false&&Number(FARM_GOODS[type].price)>0);
+  html+='<div class="farmShopSectionTitle">🌽 COMIDA Y SUMINISTROS</div>';
+  buyables.filter(type=>FARM_GOODS[type].food||type==='madera'||type==='balde').forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar '+good.label+' · $'+good.price+'</button>';});
+  html+='<div class="farmShopSectionTitle">🛠️ CONSTRUCCIÓN E ILUMINACIÓN</div>';
+  buyables.filter(type=>FARM_GOODS[type].buildable).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar y colocar '+good.label+' · $'+good.price+'</button>';});
   html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
  }else{
   html+='<button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button>';
-  Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">'+(good.icon||'📦')+' Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';});
+  Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">'+(good.icon||'📦')+' Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';if(good.buildable&&(farmCarriedGoods[type]||0)>0)html+='<button type="button" data-farm-action="place-item" data-good="'+type+'">🛠️ COLOCAR '+good.label+' ('+farmCarriedGoods[type]+')</button>';});
   html+='<button type="button" data-farm-action="wash-benja">🚿 BAÑAR A BENJA · 3 AGUA</button>';
   html+='<button type="button" data-farm-action="upgrade-pigsty">🐷 MEJORAR POCILGA · NIVEL '+farmPigstyLevel+'/4</button>';
   html+='<button type="button" data-farm-action="upgrade-water">💧 AMPLIAR DEPÓSITO · NIVEL '+farmWaterStorageLevel+'/4</button>';
@@ -5049,7 +5071,9 @@ function farmUpdateBenjaHud(){
     if(!good||storyMoney<price){showToast('no tienes suficiente dinero');return;}
     storyMoney-=price;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
-    updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('compraste '+good.label+'. puedes guardarlo en el almacen.');
+    updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+    if(good.buildable){panel.style.display='none';startFarmBuildPlacement(type);}
+    else showToast('compraste '+good.label+'. puedes guardarlo en el almacen.');
    }else if(action==='store'){
     const moved=farmTotalGoods(farmCarriedGoods);if(!moved){showToast('no llevas nada para guardar');return;}
     Object.keys(FARM_GOODS).forEach(key=>{farmWarehouseStock[key]=(farmWarehouseStock[key]||0)+(farmCarriedGoods[key]||0);farmCarriedGoods[key]=0;});
@@ -5063,6 +5087,8 @@ function farmUpdateBenjaHud(){
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
     refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
    }else if(action==='wash-benja'){farmWashBenja();farmUpdateInventoryPanel();}
+   else if(action==='place-item'){panel.style.display='none';startFarmBuildPlacement(type);}
+   else if(action==='collect-water'){farmCollectWaterWithBucket();farmUpdateInventoryPanel();}
    else if(action==='upgrade-pigsty'){farmUpgradePigsty();}
    else if(action==='upgrade-water'){farmUpgradeWaterStorage();}
   });
