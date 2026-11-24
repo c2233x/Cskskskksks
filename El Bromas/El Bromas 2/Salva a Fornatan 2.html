@@ -4545,6 +4545,81 @@ function openFarmInventoryPanel(mode){
  farmInventoryPanelMode=mode||'warehouse';farmUpdateInventoryPanel();panel.style.display='block';
 }
 
+
+function farmCountCarried(){return Object.keys(FARM_GOODS).reduce((a,k)=>a+(Number(farmCarriedGoods[k])||0),0);}
+function updateFarmCarryVisual(force=false){
+ if(!character||!character.userData)return;const hash=Object.keys(FARM_GOODS).map(k=>k+':'+(farmCarriedGoods[k]||0)).join('|');if(!force&&hash===farmCarryVisualHash)return;farmCarryVisualHash=hash;
+ if(farmCarryVisualGroup&&farmCarryVisualGroup.parent)farmCarryVisualGroup.parent.remove(farmCarryVisualGroup);
+ farmCarryVisualGroup=new THREE.Group();const wood=new THREE.MeshLambertMaterial({color:0x76502f}),crate=new THREE.Mesh(new THREE.BoxGeometry(1.8,1.05,.85),wood);
+ crate.position.y=.35;farmCarryVisualGroup.add(crate);farmCarryVisualGroup.visible=farmCountCarried()>0;
+ const types=[];Object.keys(FARM_GOODS).forEach(k=>{for(let i=0;i<Math.min(12,Number(farmCarriedGoods[k])||0);i++)types.push(k);});
+ types.slice(0,8).forEach((k,i)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(.42,.38,.42),new THREE.MeshLambertMaterial({color:FARM_GOODS[k].color}));m.position.set(-.62+(i%4)*.42,.95+Math.floor(i/4)*.3,-.2);farmCarryVisualGroup.add(m);});
+ farmCarryVisualGroup.position.set(0,3.55,-.78);character.add(farmCarryVisualGroup);character.userData.farmCarryGroup=farmCarryVisualGroup;
+}
+function speakFarmLine(speaker,line){
+ const box=document.getElementById('farmSubtitles');farmLastSubtitleAt=Date.now();if(box){box.textContent=(speaker?String(speaker).toUpperCase()+': ':'')+line;box.style.display='block';}
+ try{if('speechSynthesis'in window&&typeof SpeechSynthesisUtterance!=='undefined'){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(line);u.lang='es-MX';u.rate=.94;const voices=window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];const v=voices.find(x=>/^es([-_]|$)/i.test(x.lang));if(v)u.voice=v;window.speechSynthesis.speak(u);}}catch(e){}
+ const stamp=farmLastSubtitleAt;window.setTimeout(()=>{if(box&&farmLastSubtitleAt===stamp)box.style.display='none';},Math.max(4200,Math.min(8500,line.length*65)));
+}
+function farmThrowFood(){
+ if(!storyModeActive||farmCityMode||!benjaPig||!character)return false;const type=Object.keys(FARM_GOODS).find(k=>FARM_GOODS[k].food&&(farmCarriedGoods[k]||0)>0);
+ if(!type){showToast('no llevas comida. compra algo en la tienda o sacalo del almacen.');return true;}
+ farmCarriedGoods[type]--;storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+ const mesh=new THREE.Mesh(new THREE.SphereGeometry(.62,9,7),new THREE.MeshStandardMaterial({color:FARM_GOODS[type].color,roughness:.9}));
+ const from=character.position.clone();from.y+=4.2;from.x+=Math.sin(character.rotation.y)*1.8;from.z+=Math.cos(character.rotation.y)*1.8;const target=benjaPig.position.clone();target.y+=2.55;
+ mesh.position.copy(from);scene.add(mesh);farmThrownFood.push({mesh,start:from.clone(),target,type,progress:0});updateFarmMoneyLabel();saveStoryProgress();playPumSound();showToast('le lanzaste '+FARM_GOODS[type].label.toLowerCase()+' a benja.');return true;
+}
+function updateFarmThrownFood(){
+ for(let i=farmThrownFood.length-1;i>=0;i--){const p=farmThrownFood[i];p.progress=Math.min(1,p.progress+.035);const t=p.progress,e=t*t*(3-2*t);p.mesh.position.lerpVectors(p.start,p.target,e);p.mesh.position.y+=Math.sin(t*Math.PI)*7;p.mesh.rotation.x+=.15;p.mesh.rotation.z+=.12;
+  if(t>=1){if(benjaPig&&p.target.distanceTo(benjaPig.position.clone().add(new THREE.Vector3(0,2.5,0)))<10){farmBenjaHunger=Math.min(100,farmBenjaHunger+42);farmBenjaHungerLinePlayed=false;storyPigWeight=Math.min(FARM_MAP_CONFIG.maxBenjaWeight||100,storyPigWeight+1);updateBenjaWeightVisual();playBenjaGrunt(true);speakFarmLine('benja','asi si. ya me hacia falta comer.');showToast('benja se comio la comida.');farmUpdateBenjaHud();if(farmMissionId==='feed')farmCompleteMission('BENJA COMIO','ahi tienes, benja. ya no tienes que andar pidiendo comida.','🐷');saveStoryProgress();}
+   scene.remove(p.mesh);p.mesh.geometry.dispose();p.mesh.material.dispose();farmThrownFood.splice(i,1);
+  }
+ }
+}
+function farmClearNPCs(includeRaiders=true){for(let i=smallPenes.length-1;i>=0;i--){const p=smallPenes[i];if(!p||!p.userData||includeRaiders||!p.userData.farmRaider){if(p&&p.parent)p.parent.remove(p);smallPenes.splice(i,1);}}if(includeRaiders)farmRaidActive=false;if(typeof updatePeneCountUI==='function')updatePeneCountUI();}
+function createCityJobBoard(){
+ if(cityJobBoard&&cityJobBoard.parent)return;const p=CITY_MAP_CONFIG.jobBoard||{x:38,z:-22},y=farmGroundAt(p.x,p.z);cityJobBoard=new THREE.Group();
+ const wood=new THREE.MeshLambertMaterial({color:0x654329}),paper=new THREE.MeshLambertMaterial({color:0xf1dda9});
+ const post=new THREE.Mesh(new THREE.BoxGeometry(1,7,1),wood);post.position.y=3.5;cityJobBoard.add(post);
+ const board=new THREE.Mesh(new THREE.BoxGeometry(9,5,.8),wood);board.position.set(0,6.7,0);cityJobBoard.add(board);
+ const notice=new THREE.Mesh(new THREE.BoxGeometry(7.8,3.8,.16),paper);notice.position.set(0,6.7,.49);cityJobBoard.add(notice);
+ cityJobBoard.position.set(p.x,y,p.z);scene.add(cityJobBoard);
+}
+function showCityJobPanel(){
+ const p=document.getElementById('cityJobPanel'),list=document.getElementById('cityJobList');if(!p||!list)return;
+ list.innerHTML=(CITY_MAP_CONFIG.jobs||[]).map(j=>'<button type="button" data-city-job="'+j.id+'">'+j.icon+' '+j.title+'<span>'+j.detail+' · $'+j.reward+'</span></button>').join('');p.style.display='block';
+}
+function startCityJob(id){
+ const j=(CITY_MAP_CONFIG.jobs||[]).find(x=>x.id===id);if(!j)return;cityActiveJob=j;const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';
+ setFarmGuideTarget(j.target.x,j.target.z,'ve a '+j.title.toLowerCase());updateMissionUI();showToast('nuevo trabajo: '+j.title.toLowerCase());
+}
+function enterCityMap(){
+ if(!storyModeActive||farmCityMode)return;farmCityMode=true;farmRaidActive=false;farmClearNPCs(true);if(farmGroup)farmGroup.visible=false;if(benjaPig)benjaPig.visible=false;if(farmGuideMarker)farmGuideMarker.visible=false;
+ const p=CITY_MAP_CONFIG.spawn||{x:0,z:0};character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.rotation.y=0;cameraTheta=0;cameraDistance=28;farmGuideTarget=null;cityActiveJob=null;waveNumber=0;waitingNextWave=false;waveActive=true;
+ document.getElementById('missionUI').style.display='block';document.getElementById('farmGoCity').style.display='none';document.getElementById('cityBackFarm').style.display='inline-flex';document.getElementById('farmQuickJobs').style.display='inline-flex';document.getElementById('storyGuide').style.display='none';
+ farmUpdateBenjaHud();speakFarmLine('narrador','llegaste a la ciudad. puedes trabajar, usar los coches y defender las calles en las oleadas.');spawnNextWave();
+}
+function returnToFarmMap(){
+ if(!farmCityMode)return;farmCityMode=false;waveActive=false;waitingNextWave=false;farmClearNPCs(true);if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
+ const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.rotation.y=0;cameraTheta=0;cameraDistance=26;cityActiveJob=null;
+ document.getElementById('cityBackFarm').style.display='none';document.getElementById('farmQuickJobs').style.display='none';document.getElementById('farmGoCity').style.display='none';farmStartMission(farmMissionId);farmUpdateBenjaHud();showToast('volviste a la granja con benja.');
+}
+function updateCityMapMode(now){
+ let prompt='ve al tablero de trabajos para elegir un encargo.';const dBoard=cityJobBoard?Math.hypot(character.position.x-cityJobBoard.position.x,character.position.z-cityJobBoard.position.z):999;if(dBoard<20)prompt='pulsa TRABAJOS para aceptar un encargo.';
+ if(cityActiveJob){const j=cityActiveJob,d=Math.hypot(character.position.x-j.target.x,character.position.z-j.target.z);prompt=d<18?'pulsa ATACAR para terminar: '+j.title.toLowerCase():j.detail+' · '+Math.round(d)+' m';
+  if(d<18&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1500;storyMoney+=j.reward;cityActiveJob=null;updateFarmMoneyLabel();saveStoryProgress();farmGuideTarget=null;removeFarmGuideMarker();updateMissionUI();showToast('trabajo terminado: +$'+j.reward);speakFarmLine('narrador','buen trabajo. ya te pagaron el encargo.');}
+ }
+ if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}else interactionPrompt.style.display='none';
+ if(timeOfDay>=.68&&timeOfDay<.73&&!cityNightWarningDone){cityNightWarningDone=true;speakFarmLine('benja','ya casi es de noche, por cierto. apurate con tus trabajos y vuelve a la granja.');}if(timeOfDay<.24)cityNightWarningDone=false;
+ const b=document.getElementById('farmGoCity');if(b)b.style.display='none';
+}
+function setupFarmUiControls(){
+ const shop=document.getElementById('farmQuickShop'),store=document.getElementById('farmQuickWarehouse'),jobs=document.getElementById('farmQuickJobs'),go=document.getElementById('farmGoCity'),back=document.getElementById('cityBackFarm'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
+ if(shop)shop.addEventListener('click',()=>openFarmInventoryPanel('shop'));if(store)store.addEventListener('click',()=>openFarmInventoryPanel('warehouse'));if(jobs)jobs.addEventListener('click',showCityJobPanel);if(go)go.addEventListener('click',enterCityMap);if(back)back.addEventListener('click',returnToFarmMap);
+ if(close)close.addEventListener('click',()=>{const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';});
+ if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-city-job]');if(b)startCityJob(b.dataset.cityJob);});
+}
+
         function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
         function getStoryMissionProgress(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).progress;}
         function saveStoryProgress(){
