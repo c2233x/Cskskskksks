@@ -1,8 +1,18 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.1",
+  "version": "1.7.2",
   "updates": [
+    {
+      "version": "1.7.2",
+      "title": "Arranque fiable en Android",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Three.js r128 se carga desde la propia carpeta del juego y el arranque ya no depende de CDNJS.",
+        "El acceso al caché local tiene un límite de espera para evitar bloqueos de IndexedDB.",
+        "Si falla la conexión, se intenta usar el caché disponible y, si no hay archivos guardados, se permite entrar en modo local."
+      ]
+    },
     {
       "version": "1.0",
       "title": "Lanzamiento · Base 3D",
