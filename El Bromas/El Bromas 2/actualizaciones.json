@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "updates": [
     {
       "version": "1.0",
@@ -136,6 +136,19 @@
         "El video permanece proyectado en la pantalla física al cerrar la interfaz; apagar la TV detiene el flujo y deja la pantalla negra.",
         "El volumen del televisor y la radio de la granja se regula desde sus paneles y baja al alejarse de cada aparato.",
         "Las emisoras de radio tienen URL alternativa cuando la primera señal no responde."
+      ]
+    },
+    {
+      "version": "1.6.2",
+      "title": "TV 3D, canales hondureños y ambiente de granja",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "El video de la TV se renderiza en una textura de Three.js sobre la pantalla física; se elimina la proyección 2D que deformaba la imagen.",
+        "Se amplía el catálogo a 26 señales de Honduras e internacionales con búsqueda por nombre y categorías.",
+        "El panel de TV incorpora un escáner secuencial que prueba las señales en el navegador y permite detener la búsqueda.",
+        "Se añade el botón único RUMBO A CIUDAD para iniciar el viaje sin tener que alcanzar el borde del mapa; también se conserva el viaje automático.",
+        "Se integra el MP3 de chicharras en zonas seleccionadas y se atenúan chicharras, viento y pájaros según la distancia.",
+        "La radio física queda más cerca de la TV, con mayor alcance de interacción y reintentos de emisoras corregidos."
       ]
     }
   ]
