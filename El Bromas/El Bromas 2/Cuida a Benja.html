@@ -4602,6 +4602,22 @@ function removeCarRadioStation(index, reason='Sin señal'){
             farmTVScreenMaterial=new THREE.MeshStandardMaterial({map:tex,emissive:0xffffff,emissiveMap:tex,emissiveIntensity:0,roughness:.68,metalness:0});
             const screen=new THREE.Mesh(new THREE.PlaneGeometry(7.75,4.85),farmTVScreenMaterial);
             screen.position.set(0,6.15,1.73);tv.add(screen);
+            // Physical channel controls below the television screen.
+            const controlPlate=new THREE.Mesh(new THREE.BoxGeometry(4.9,.78,.18),new THREE.MeshStandardMaterial({color:0x302319,roughness:.86}));
+            controlPlate.position.set(0,1.62,1.42);tv.add(controlPlate);
+            function makeChannelButton(x,label,action,color){
+                const base=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.2,14),new THREE.MeshStandardMaterial({color,metalness:.18,roughness:.55}));
+                base.rotation.x=Math.PI/2;base.position.set(x,1.62,1.59);base.userData.tvChannelAction=action;base.userData.isTVChannelButton=true;tv.add(base);
+                const cap=new THREE.Mesh(new THREE.CylinderGeometry(.32,.34,.09,14),new THREE.MeshStandardMaterial({color:0xd7c49c,roughness:.5}));
+                cap.rotation.x=Math.PI/2;cap.position.set(x,1.62,1.72);cap.userData.tvChannelAction=action;cap.userData.isTVChannelButton=true;tv.add(cap);
+                const labelCanvas=document.createElement('canvas');labelCanvas.width=256;labelCanvas.height=96;const lc=labelCanvas.getContext('2d');
+                lc.fillStyle='#f3dfb7';lc.fillRect(0,0,256,96);lc.fillStyle='#34251a';lc.font='bold 45px Arial';lc.textAlign='center';lc.textBaseline='middle';lc.fillText(label,128,49);
+                const labelMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.42),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,side:THREE.DoubleSide}));
+                labelMesh.position.set(x,2.12,1.58);tv.add(labelMesh);
+                farmTVPhysicalButtons.push(base,cap);
+            }
+            makeChannelButton(-1.22,'◀','prev',0x446078);
+            makeChannelButton(1.22,'▶','next',0x467e5a);
             for(const side of [-1,1]){
                 const leg=new THREE.Mesh(new THREE.BoxGeometry(.8,1,.8),new THREE.MeshStandardMaterial({color:0x252525}));leg.position.set(side*2.8,2.1,1.3);tv.add(leg);
             }
@@ -4979,7 +4995,14 @@ const FARM_TV_CHANNELS=[
  {id:'vtv',name:'VTV Honduras',region:'HONDURAS',category:'GENERAL',url:'https://d3q93l5bumjyoq.cloudfront.net/index.m3u8',hls:'https://d3q93l5bumjyoq.cloudfront.net/index.m3u8'},
  {id:'tvc277',name:'TV Centro 27.2 HD',region:'HONDURAS',category:'GENERAL',url:'https://cloud2.streaminglivehd.com:1936/8004/8004/playlist.m3u8',hls:'https://cloud2.streaminglivehd.com:1936/8004/8004/playlist.m3u8'},
  {id:'aljazeera',name:'Al Jazeera English',region:'INTERNACIONAL',category:'NOTICIAS',url:'https://www.aljazeera.com/video/live/',hls:'https://live-hls-web-aje-gcp.thehlive.com/AJE/04.m3u8',backupHls:'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8'},
- {id:'france24',name:'France 24 English',region:'INTERNACIONAL',category:'NOTICIAS',url:'https://www.france24.com/en/live',hls:'https://live.france24.com/hls/live/2037218/F24_EN_HI_HLS/master_2300.m3u8'}
+ {id:'france24',name:'France 24 English',region:'INTERNACIONAL',category:'NOTICIAS',url:'https://www.france24.com/en/live',hls:'https://live.france24.com/hls/live/2037218/F24_EN_HI_HLS/master_2300.m3u8'},
+ {id:'pluto-anime',name:'Pluto TV · Catálogo Anime',region:'USA / INTERNACIONAL',category:'ANIME',provider:'PLUTO TV',officialOnly:true,url:'https://pluto.tv/us/watch/live-tv/category/anime/'},
+ {id:'pluto-anime-hidive',name:'ANIME x HIDIVE · Pluto TV',region:'USA / INTERNACIONAL',category:'ANIME',provider:'PLUTO TV',officialOnly:true,url:'https://pluto.tv/us/watch/live-tv/29789/'},
+ {id:'pluto-its-anime',name:"It's Anime · Pluto TV",region:'USA / INTERNACIONAL',category:'ANIME',provider:'PLUTO TV',officialOnly:true,url:'https://pluto.tv/us/watch/live-tv/32096/'},
+ {id:'pluto-anime-movies',name:'Pluto TV · Anime y películas',region:'USA / INTERNACIONAL',category:'ANIME',provider:'PLUTO TV',officialOnly:true,url:'https://pluto.tv/us/watch/live-tv/category/anime/'},
+ {id:'pluto-kids',name:'Pluto TV · Kids',region:'USA / INTERNACIONAL',category:'CARICATURAS',provider:'PLUTO TV',officialOnly:true,url:'https://pluto.tv/us/watch/live-tv/category/kids-us/'},
+ {id:'pluto-cartoons',name:'Pluto TV · Dibujos y caricaturas',region:'USA / INTERNACIONAL',category:'CARICATURAS',provider:'PLUTO TV',officialOnly:true,url:'https://pluto.tv/us/watch/live-tv/category/kids-us/'},
+ {id:'pluto-family',name:'Pluto TV · Familiar',region:'USA / INTERNACIONAL',category:'CARICATURAS',provider:'PLUTO TV',officialOnly:true,url:'https://pluto.tv/us/watch/live-tv/category/kids-us/'}
 ];
 function getFilteredFarmTVChannels(){
  const term=(document.getElementById('farmTVSearch')?.value||'').trim().toLocaleLowerCase('es');
@@ -4995,7 +5018,7 @@ function renderFarmTVChannels(){
  const channels=getFilteredFarmTVChannels();
  if(!channels.length){list.innerHTML='<div style="grid-column:1/-1;padding:10px;color:#f1d9a8;font-size:11px">No hay canales con ese nombre o categoría.</div>';return;}
  list.innerHTML=channels.map(c=>{
-  const state=c.scanState||'SIN PROBAR';
+  const state=c.scanState||(c.provider==='PLUTO TV'?'SITIO OFICIAL':'SIN PROBAR');
   const statusColor=state==='FUNCIONA'?'#9af0b5':state==='NO RESPONDE'?'#ffb5a6':'#f1d9a8';
   return '<button type="button" data-tv-channel="'+c.id+'">📺 '+c.name+'<br><small>'+c.category+' · '+c.region+' · <span style="color:'+statusColor+'">'+state+'</span></small></button>';
  }).join('');
@@ -5059,6 +5082,16 @@ function probeFarmTVChannel(channel,token){
   return false;
  })();
 }
+function scanFarmPlutoCatalog(){
+ const channelEntries=FARM_TV_CHANNELS.filter(c=>c.provider==='PLUTO TV');
+ const category=document.getElementById('farmTVCategory'),search=document.getElementById('farmTVSearch');
+ if(category)category.value='TODOS';
+ if(search)search.value='Pluto TV';
+ channelEntries.forEach(c=>c.scanState='SITIO OFICIAL');
+ renderFarmTVChannels();
+ const status=document.getElementById('farmTVScanStatus');
+ if(status)status.textContent='Catálogo oficial Pluto TV: '+channelEntries.length+' páginas de Anime y Kids encontradas. Selecciona una y pulsa ABRIR CANAL OFICIAL. Pluto reproduce desde su propio sitio; no es una señal HLS directa de la pantalla 3D.';
+}
 async function startFarmTVChannelScan(){
  if(farmTVScanActive)stopFarmTVChannelScan();
  const channels=getFilteredFarmTVChannels();
@@ -5113,6 +5146,12 @@ function updateFarmTVPanelStatus(){
  if(value)value.textContent=Math.round(farmTVVolume*100)+'%';
  const list=document.getElementById('farmTVChannels');
  if(list)list.querySelectorAll('button[data-tv-channel]').forEach(b=>b.classList.toggle('active',!!farmTVCurrentChannel&&b.dataset.tvChannel===farmTVCurrentChannel.id));
+}
+function cycleFarmTVChannel(direction){
+ const total=FARM_TV_CHANNELS.length;if(!total)return;
+ const current=FARM_TV_CHANNELS.findIndex(c=>farmTVCurrentChannel&&c.id===farmTVCurrentChannel.id);
+ const next=((current<0?0:current)+Math.sign(direction||1)+total)%total;
+ selectFarmTVChannel(FARM_TV_CHANNELS[next].id);
 }
 function selectFarmTVChannel(id){
  const channel=FARM_TV_CHANNELS.find(x=>x.id===id);if(!channel)return;
@@ -5190,6 +5229,13 @@ async function loadFarmTVChannel(){
  clearFarmTVPlayback();
  const token=farmTVPlaybackToken,video=document.getElementById('farmTVWorldVideo'),frame=document.getElementById('farmTVWorldFrame');
  if(!video||!frame)return;
+ if(channel.officialOnly&&channel.provider==='PLUTO TV'){
+  const link=document.getElementById('farmTVOpenOfficial'),hint=document.getElementById('farmTVHint'),status=document.getElementById('farmTVPlayerStatus');
+  if(link){link.dataset.url=channel.url;link.textContent='ABRIR '+channel.name.toUpperCase()+' EN PLUTO TV';}
+  if(hint)hint.textContent='Esta señal se abre en el reproductor oficial de Pluto TV. El catálogo y los canales disponibles pueden variar por país.';
+  if(status)status.textContent='📡 '+channel.name+' · ABRE EL SITIO OFICIAL PARA REPRODUCIR';
+  restoreFarmTVScreenTexture();return;
+ }
  if(!channel.hls){startFarmTVIframeFallback(channel,token);return;}
  frame.style.display='none';video.style.display='block';video.volume=farmTVVolume;video.muted=false;video.playsInline=true;attachFarmTVVideoTexture(video);
  const sources=[channel.hls,channel.backupHls].filter(Boolean);let sourceIndex=0,usingHlsJs=false;
@@ -5294,9 +5340,29 @@ function closeFarmTV(){
  const panel=document.getElementById('farmTVPanel');if(panel)panel.style.display='none';
  // El televisor sigue encendido y reproduciendo al cerrar el menú.
 }
+function setupFarmTVPhysicalControls(){
+ if(farmTVPhysicalControlsBound||!renderer||!renderer.domElement)return;
+ renderer.domElement.addEventListener('click',event=>{
+  if(!storyModeActive||farmCityMode||!character||!farmTVPhysicalButtons.length)return;
+  if(Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z)>34)return;
+  const rect=renderer.domElement.getBoundingClientRect();
+  const pointer=new THREE.Vector2(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
+  const ray=new THREE.Raycaster();ray.setFromCamera(pointer,camera);
+  const hit=ray.intersectObjects(farmTVPhysicalButtons,false)[0];
+  if(!hit)return;
+  event.preventDefault();event.stopPropagation();
+  const action=hit.object.userData.tvChannelAction;
+  if(action==='prev'||action==='next'){
+   cycleFarmTVChannel(action==='next'?1:-1);
+   if(!farmTVPowerOn)setFarmTVPower(true);
+   showToast(action==='next'?'siguiente canal':'canal anterior');
+  }
+ });
+ farmTVPhysicalControlsBound=true;
+}
 function setupFarmTVControls(){
  if(farmTVPanelBound)return;
- const close=document.getElementById('farmTVClose'),list=document.getElementById('farmTVChannels'),open=document.getElementById('farmTVOpenOfficial'),power=document.getElementById('farmTVPowerBtn'),vol=document.getElementById('farmTVVolume'),down=document.getElementById('farmTVVolDown'),up=document.getElementById('farmTVVolUp'),category=document.getElementById('farmTVCategory'),search=document.getElementById('farmTVSearch'),scanStart=document.getElementById('farmTVScanStart'),scanStop=document.getElementById('farmTVScanStop');
+ const close=document.getElementById('farmTVClose'),list=document.getElementById('farmTVChannels'),open=document.getElementById('farmTVOpenOfficial'),power=document.getElementById('farmTVPowerBtn'),vol=document.getElementById('farmTVVolume'),down=document.getElementById('farmTVVolDown'),up=document.getElementById('farmTVVolUp'),category=document.getElementById('farmTVCategory'),search=document.getElementById('farmTVSearch'),scanStart=document.getElementById('farmTVScanStart'),scanStop=document.getElementById('farmTVScanStop'),plutoScan=document.getElementById('farmTVPlutoScan');
  if(close)close.addEventListener('click',closeFarmTV);
  if(power)power.addEventListener('click',()=>setFarmTVPower(!farmTVPowerOn));
  if(vol)vol.addEventListener('input',()=>setFarmTVVolume(vol.value));
@@ -5307,6 +5373,7 @@ function setupFarmTVControls(){
  if(search)search.addEventListener('input',renderFarmTVChannels);
  if(scanStart)scanStart.addEventListener('click',startFarmTVChannelScan);
  if(scanStop)scanStop.addEventListener('click',stopFarmTVChannelScan);
+ if(plutoScan)plutoScan.addEventListener('click',scanFarmPlutoCatalog);
  if(open)open.addEventListener('click',()=>{const url=open.dataset.url;if(url)window.open(url,'_blank','noopener');});
  if(!farmTVCurrentChannel)farmTVCurrentChannel=FARM_TV_CHANNELS[0];
  updateFarmTVPanelStatus();updateFarmTVScreenVisual();farmTVPanelBound=true;
@@ -5607,7 +5674,7 @@ function setupFarmUiControls(){
  if(go)go.addEventListener('click',()=>{cityTravelRetryAt=0;travelToCity();});
  if(close)close.addEventListener('click',()=>{const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';});
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-city-job]');if(b)startCityJob(b.dataset.cityJob);});
- setupFarmTVControls();setupFarmRadioControls();
+ setupFarmTVControls();setupFarmTVPhysicalControls();setupFarmRadioControls();
 }
 function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
         function getStoryMissionProgress(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).progress;}
