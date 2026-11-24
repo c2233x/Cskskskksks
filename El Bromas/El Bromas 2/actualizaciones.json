@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
-  "edition": "El Bromas 2",
-  "version": "1.6.6",
+  "edition": "Cuida a Benja",
+  "version": "1.6.7",
   "updates": [
     {
       "version": "1.0",
@@ -203,6 +203,20 @@
         "Se desactiva la luz automática del avatar; la antorcha comprable queda pendiente.",
         "La interfaz de TV muestra durante unos segundos el número y nombre del canal al cambiar.",
         "El audio original de chicharras no está disponible en el repo; queda pendiente integrarlo cuando se suba."
+      ]
+    },
+    {
+      "version": "1.6.7",
+      "title": "Inicio directo, historia local, corral y emisoras",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Se elimina la pantalla de código de acceso; el juego carga directamente.",
+        "Se crea la cinemática introductoria que faltaba y se conectan los diálogos a speechSynthesis local con subtítulos inferiores.",
+        "El corral base tiene una abertura frontal de 12 m; al reforzar, se elimina la cerca y sus colisiones anteriores antes de colocar el nuevo corral.",
+        "Los botones físicos del televisor tienen áreas táctiles mayores y usan pointerup para responder mejor a toques Android.",
+        "La lista de radio de la granja usa el mismo catálogo de emisoras que la radio del vehículo e incorpora prueba de audio, parada y estados.",
+        "La TV permite mostrar u ocultar canales marcados sin señal. El acceso de Pluto abre el catálogo oficial y no se presenta como emisión HLS integrada.",
+        "El sonido sintetizado de chicharras se reemplaza por la referencia al MP3 original, sin cambios de tono o velocidad; el archivo binario debe publicarse en El Bromas/Sonidos/Effectos."
       ]
     }
   ]
