@@ -4895,6 +4895,39 @@ async function ensureCityWorldLoaded(){
  }finally{scene.add=originalAdd;}
  scene.add(cityWorldGroup);cityWorldLoaded=true;rebuildCarCollisionGrid();
 }
+function unloadCityWorld(){
+ if(!cityWorldGroup)return;
+ const group=cityWorldGroup,objects=new Set(),geometries=new Set(),materials=new Set(),textures=new Set();
+ group.traverse(object=>{
+  objects.add(object);
+  if(object.geometry)geometries.add(object.geometry);
+  const list=Array.isArray(object.material)?object.material:(object.material?[object.material]:[]);
+  list.forEach(material=>{
+   if(!material)return;
+   materials.add(material);
+   ['map','emissiveMap','alphaMap','normalMap','roughnessMap','metalnessMap','bumpMap'].forEach(key=>{
+    const texture=material[key];if(texture&&texture.isTexture)textures.add(texture);
+   });
+  });
+ });
+ const removeMatches=(array,test)=>{
+  if(!Array.isArray(array))return;
+  for(let i=array.length-1;i>=0;i--)if(test(array[i]))array.splice(i,1);
+ };
+ removeMatches(drivableCars,car=>objects.has(car));
+ removeMatches(drones,drone=>drone&&objects.has(drone.mesh));
+ removeMatches(destructibleProps,object=>objects.has(object));
+ removeMatches(buildingColliders,entry=>entry&&objects.has(entry.group));
+ removeMatches(streetLights,entry=>entry&&objects.has(entry.group));
+ geometries.forEach(geometry=>{try{geometry.dispose();}catch(_){}});
+ materials.forEach(material=>{try{material.dispose();}catch(_){}});
+ textures.forEach(texture=>{try{texture.dispose();}catch(_){}});
+ billboardMaterials.length=0;cartelTextures.forEach(texture=>{try{texture.dispose();}catch(_){}});cartelTextures=[];
+ sharedBuildingMaterials=[];
+ if(group.parent)group.parent.remove(group);
+ cityWorldGroup=null;cityWorldLoaded=false;cityJobBoard=null;
+ try{if(typeof rebuildCarCollisionGrid==='function')rebuildCarCollisionGrid();}catch(_){}
+}
 function showMapTravelOverlay(title,subtitle){
  const panel=document.getElementById('mapTravelOverlay'),heading=document.getElementById('mapTravelTitle'),sub=document.getElementById('mapTravelSubtitle');
  if(heading)heading.textContent=title||'VIAJANDO';if(sub)sub.textContent=subtitle||'Un momento…';
@@ -4944,7 +4977,7 @@ function returnToFarmMap(){
  if(!farmCityMode)return;
  const exitCar=document.getElementById('carExitBtn');if(isDriving&&exitCar)exitCar.click();
  farmCityMode=false;waveActive=false;waitingNextWave=false;farmClearNPCs(true);
- if(cityWorldGroup){cityWorldGroup.visible=false;if(cityWorldGroup.parent===scene)scene.remove(cityWorldGroup);}
+ unloadCityWorld();
  if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
  const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};
  character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.visible=true;character.rotation.y=0;cameraTheta=0;cameraDistance=26;
