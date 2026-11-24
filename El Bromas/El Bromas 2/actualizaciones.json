@@ -90,7 +90,7 @@
       "title": "Mapas independientes, radio manual y ambiente de granja",
       "date": "23 de noviembre de 2026",
       "changes": [
-        "La ciudad se carga bajo demanda desde Mapas/Ciudad.js al cruzar el límite de la granja; su geometría no se crea durante la partida en la granja.",
+        "La ciudad se carga bajo demanda desde Mapas/Ciudad.js al cruzar el límite de la granja; sus geometrías no se crean durante la partida en la granja y se descargan al regresar.",
         "El viaje entre granja y ciudad muestra una transición cinematográfica y volver al rancho cancela el trabajo de ciudad activo.",
         "La granja tiene una zona central amplia y plana, y ya no muestra accesos rápidos de tienda o almacén: se interactúa al acercarse a cada edificio.",
         "El almacén ahora es una estructura grande abierta con existencias visuales y formas diferentes para maíz, trigo, zanahorias, heno, pienso, huevos, agua y madera.",
