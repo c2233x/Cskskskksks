@@ -5418,7 +5418,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
  if(!storyModeActive||!character||!scene||storyCinematicPlaying)return;
  const now=performance.now();
  if(farmCityMode){stopFarmAmbience();updateCityMapMode(now);return;}
- updateFarmAmbience();
+ updateFarmAmbience();updateFarmTVProximity();updateFarmRadioProximity();
  let prompt='';
  if(farmRaidActive){
   const n=smallPenes.filter(p=>p&&p.userData&&p.userData.farmRaider).length;
@@ -5427,10 +5427,13 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   const shopDist=Math.hypot(character.position.x-FARM_SHOP_POS.x,character.position.z-FARM_SHOP_POS.z);
   const storeDist=Math.hypot(character.position.x-FARM_STORAGE_POS.x,character.position.z-FARM_STORAGE_POS.z);
   const tvDist=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
+  const radioDist=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
   if(shopDist<19&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
   if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
-  if(tvDist<18&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
-  if(tvDist<18)prompt='pulsa ATACAR para encender la televisión y elegir un canal.';
+  if(tvDist<18&&tvDist<=radioDist&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
+  else if(radioDist<12&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
+  if(tvDist<18&&tvDist<=radioDist)prompt='pulsa ATACAR para cambiar el canal o encender/apagar la televisión.';
+  else if(radioDist<12)prompt='pulsa ATACAR para elegir una emisora y encender/apagar la radio.';
   else if(shopDist<19)prompt='pulsa ATACAR para entrar al puesto y comprar suministros.';
   else if(storeDist<21)prompt='pulsa ATACAR para abrir el almacén y organizar tus productos.';
   const m=FARM_MISSION_DATA[farmMissionId];
@@ -5442,7 +5445,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
     else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar el corral';
     else if(farmMissionId==='feed')prompt='lanzale comida a benja cuando tenga hambre';
     else prompt='pulsa ATACAR para completar: '+m.title.toLowerCase();
-    if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse'&&farmMissionId!=='feed'&&shopDist>=19&&storeDist>=21&&tvDist>=18)farmHandleMissionAction();
+    if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse'&&farmMissionId!=='feed'&&shopDist>=19&&storeDist>=21&&tvDist>=18&&radioDist>=12)farmHandleMissionAction();
     if(farmMissionId==='warehouse'&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
    }
   }
