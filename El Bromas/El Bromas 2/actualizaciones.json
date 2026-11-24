@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.5.1",
+  "version": "1.6.0",
   "updates": [
     {
       "version": "1.0",
@@ -110,6 +110,19 @@
         "Al volver a la granja se eliminan del motor las geometrías, materiales, texturas, vehículos, farolas y referencias de ciudad para liberar memoria.",
         "La radio del carro ahora requiere encendido manual y queda apagada al entrar al vehículo.",
         "Se ajustaron los identificadores de caché de los archivos de mapa para evitar cargar versiones antiguas."
+      ]
+    },
+    {
+      "version": "1.6.0",
+      "title": "TV y radio con señal real; ciudad con carga reforzada",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "El televisor conserva su pantalla física en el mundo y muestra imagen sin mantener abierta la interfaz de canales; al apagarlo la pantalla queda negra.",
+        "Se añadió un reproductor HTML5 para señales HLS con hls.js 1.7.4, fuentes alternativas y reproductor oficial de respaldo cuando un flujo directo no está disponible.",
+        "Canales configurados: HCH, TSi, Canal 5, Al Jazeera English y France 24 English.",
+        "El volumen de TV se controla desde la interfaz y se atenúa por distancia al televisor; cerrar el menú no detiene la emisión.",
+        "Se añadió una radio física junto a la TV con siete emisoras hondureñas, encendido manual, control de volumen y una segunda URL de respaldo para Radio Activa.",
+        "El viaje a la ciudad construye objetos en el scene normal y luego los agrupa, evitando reemplazar scene.add() en WebView; si la carga falla aparece un botón para reintentar."
       ]
     }
   ]
