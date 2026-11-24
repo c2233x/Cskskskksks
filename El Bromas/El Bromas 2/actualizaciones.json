@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.6.5",
+  "version": "1.6.6",
   "updates": [
     {
       "version": "1.0",
@@ -189,6 +189,20 @@
         "El ciclo día/noche se basa en el tiempo transcurrido, con una vuelta completa de aproximadamente 20 minutos, variación de luz y un reloj de hora/fase.",
         "Se añaden botones físicos 3D de canal anterior y siguiente debajo del televisor.",
         "Se guarda el nivel de pocilga, la ampliación del depósito y el aseo de Benja."
+      ]
+    },
+    {
+      "version": "1.6.6",
+      "title": "Corrección de tejados y render del campo",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Se corrige la orientación de las dos faldones de tejados en casas, granero y pocilga para que converjan hacia la cumbrera.",
+        "Se reducen y oscurecen surcos y filas de tierra para evitar franjas claras que interfieran con la textura del campo.",
+        "Se ajusta el material y la profundidad de render del agua de las lagunas.",
+        "Se suaviza la transición visual de cielo en amanecer y atardecer.",
+        "Se desactiva la luz automática del avatar; la antorcha comprable queda pendiente.",
+        "La interfaz de TV muestra durante unos segundos el número y nombre del canal al cambiar.",
+        "El audio original de chicharras no está disponible en el repo; queda pendiente integrarlo cuando se suba."
       ]
     }
   ]
