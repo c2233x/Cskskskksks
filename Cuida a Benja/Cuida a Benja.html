@@ -1539,7 +1539,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             const prefix = `${GITHUB_FOLDER}/`;
             const toEntries = (items, allowMissingType = false) => (Array.isArray(items) ? items : [])
                 .map(item => ({
-                    path: String(item.path || item.name || '').replace(/^\\/+/, ''),
+                    path: String(item.path || item.name || '').replace(/^\/+/, ''),
                     type: item.type || (allowMissingType ? 'blob' : ''),
                     size: Number(item.size) || 0
                 }))
