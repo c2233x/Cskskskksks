@@ -723,6 +723,10 @@ const CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||{
 };
 
         let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null;
+        let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
+        let farmBenjaHunger=100,farmBenjaHungerLast=0,farmBenjaHungerLinePlayed=false,benjaWalkTarget=null,benjaWalkTargetAt=0;
+        let farmThrownFood=[],farmCarryVisualHash='',farmCarryVisualGroup=null,farmLastSubtitleAt=0;
+        let farmMissionHintWasVisible=false;
         let farmStorageVisuals={},farmStorageBins={},farmMissionDecor=[];
         let farmMissionOrder=FARM_MISSION_ORDER.slice(),farmMissionIndex=0,farmMissionCycle=0,farmMissionId='harvest';
         let farmCarriedGoods={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0};
