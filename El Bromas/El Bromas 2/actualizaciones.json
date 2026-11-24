@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "updates": [
     {
       "version": "1.0",
@@ -83,6 +83,22 @@
         "Al salir del limite de la granja se habilita el viaje a la ciudad principal. La ciudad mantiene los vehiculos y oleadas del juego; cada enemigo derrotado paga $1.",
         "Se agrego un tablero con ocho tipos de trabajos de ciudad, con pago al completar cada encargo, y un aviso de Benja al acercarse la noche.",
         "Los dialogos usan subtitulos en pantalla y la voz espanola del dispositivo cuando el navegador ofrece speechSynthesis."
+      ]
+    },
+    {
+      "version": "1.5.0",
+      "title": "Mapas independientes, radio manual y ambiente de granja",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "La ciudad se carga bajo demanda desde Mapas/Ciudad.js al cruzar el límite de la granja; su geometría no se crea durante la partida en la granja.",
+        "El viaje entre granja y ciudad muestra una transición cinematográfica y volver al rancho cancela el trabajo de ciudad activo.",
+        "La granja tiene una zona central amplia y plana, y ya no muestra accesos rápidos de tienda o almacén: se interactúa al acercarse a cada edificio.",
+        "El almacén ahora es una estructura grande abierta con existencias visuales y formas diferentes para maíz, trigo, zanahorias, heno, pienso, huevos, agua y madera.",
+        "Se ordenó el HUD: Cornatan reemplaza Explorador y Benja muestra barras separadas de vida y hambre encima del HUD del jugador.",
+        "Los paneles de inventario, almacén, ciudad y televisión permiten desplazamiento táctil.",
+        "La radio del vehículo queda apagada al entrar y se enciende manualmente; no hay música de fondo en la granja.",
+        "Se añadieron viento, pájaros y chicharras sintetizadas en zonas concretas de la granja.",
+        "Se añadió un televisor interactivo con opciones de canales locales de Honduras e internacionales y enlaces a los sitios oficiales cuando el reproductor integrado no está disponible."
       ]
     }
   ]
