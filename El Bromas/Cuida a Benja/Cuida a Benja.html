@@ -100,12 +100,12 @@
         #auraFillNegative { position: absolute; right: 50%; top: 0; height: 100%; width: 0%; background: linear-gradient(270deg, #5500aa, #220066); transition: width 0.3s; }
         #auraLabel { position: fixed; bottom: 135px; left: 15px; color: #dd88ff; font-size: 11px; font-weight: bold; z-index: 15; display: none; text-shadow: 0 0 6px #000; }
         
-        #semenBar {
+        #mudBar {
             position: fixed; bottom: 75px; left: 15px; width: 150px; height: 16px; background: rgba(0,0,0,0.75);
-            border: 2px solid #fff399; border-radius: 8px; z-index: 15; display: none; overflow: hidden;
+            border: 2px solid #b78b52; border-radius: 8px; z-index: 15; display: none; overflow: hidden;
         }
-        #semenFill { width: 0%; height: 100%; background: linear-gradient(90deg, #fffbec, #ffe066); transition: width 0.3s; }
-        #semenLabel { position: fixed; bottom: 93px; left: 15px; color: #fff399; font-size: 11px; font-weight: bold; z-index: 15; display: none; text-shadow: 0 0 6px #000; }
+        #mudFill { width: 0%; height: 100%; background: linear-gradient(90deg, #5d3b26, #b57c3e); transition: width 0.3s; }
+        #mudLabel { position: fixed; bottom: 93px; left: 15px; color: #fff399; font-size: 11px; font-weight: bold; z-index: 15; display: none; text-shadow: 0 0 6px #000; }
         
         #peneCountInfo { position:fixed;bottom:204px;left:14px;width:min(225px,calc(100vw - 180px));box-sizing:border-box;padding:5px 8px;border:1px solid rgba(255,190,120,.4);border-radius:9px;background:rgba(4,12,18,.76);color:#ffd19b;font-size:10px;font-weight:900;line-height:1.25;white-space:pre-line;z-index:57;display:none;text-shadow:0 1px 3px #000; }
         
@@ -577,8 +577,8 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="playerHealthLabel">🧭 Cornatan</div>
 <div id="auraBarContainer"><div id="auraBarCenter"></div><div id="auraFillPositive"></div><div id="auraFillNegative"></div></div>
 <div id="auraLabel">💜 Aura: 0</div>
-<div id="semenBar"><div id="semenFill"></div></div>
-<div id="semenLabel">🟤 Barro: 0%</div>
+<div id="mudBar"><div id="mudFill"></div></div>
+<div id="mudLabel">🟤 Barro: 0%</div>
 <div id="peneCountInfo">🤖 Guardianes: 0</div>
 <div id="auraPopup"></div>
 <div id="interactionPrompt"></div>
@@ -785,7 +785,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Granja.js?v=1.6.8"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Granja.js?v=1.6.9"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -793,13 +793,13 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         // ============ VARIABLES GLOBALES ============
         let billboardMaterials = []; let streetLights = []; let buildingColliders = []; let destructibleProps = []; 
         let sharedBuildingMaterials = []; let activeMiniBosses = []; let cinematicBosses = [];
-        let gameStarted = false; let projectiles = []; let cacaProjectiles = []; let fireParticles = []; let semenStains = [];
+        let gameStarted = false; let projectiles = []; let cacaProjectiles = []; let fireParticles = []; let mudStains = [];
         let smallPenes = []; let debrisParticles = []; let lingeringFires = []; let rebuildTasks = []; let drones = [];
         let tuboProjectiles = []; let commercialZones = []; let vegetationZones = []; let lifeCardStands = []; let bathZones = []; let civilianHouses = [];
         let bossDefeated = true; let totalPenesKilled = 0; let waitingNextWave = false; let waveActive = false; let waveNumber = 0;
         let playerInvincibleUntil = 0; let closeToBossTime = 0; let filesLoaded = false; let windowScreenShake = 0; let missionActive = false;
         let missionType = ''; let posters = []; let postersIntact = 0; const totalPosters = 5; let isCinematic = false;
-        let cinematicPhase = 0; let cinematicTimer = 0; let protestSoundTimer = 0; let epicAsteroid = null; let epicSemen = null; let epicTrail = null; let epicSpaceStart = null; let epicSpaceStars = null; let stylizedSky = null; let epicDeflectMeteors = []; let asteroidRainTimer = 0; const METEOR_RAIN_DURATION = 30 * 60;
+        let cinematicPhase = 0; let cinematicTimer = 0; let protestSoundTimer = 0; let epicAsteroid = null; let epicMud = null; let epicTrail = null; let epicSpaceStart = null; let epicSpaceStars = null; let stylizedSky = null; let epicDeflectMeteors = []; let asteroidRainTimer = 0; const METEOR_RAIN_DURATION = 30 * 60;
         let storyModeActive = false;
         let storyStage = 0;
         let storyFragments = [];
@@ -971,7 +971,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         
         let cacaStains = []; let fartParticles = []; let playerHealth = 100; const playerMaxHealth = 100; let playerAura = 0; const AURA_MAX_DISPLAY = 15000;
         let specialReady = true; let specialCooldownRemaining = 0; const SPECIAL_COOLDOWN = 7; let isSpecialAttacking = false; let specialPhase = 0;
-        let semenStainLevel = 0; let bodyStainMeshes = []; let isDead = false; let ragdollTimer = 0;
+        let mudStainLevel = 0; let bodyStainMeshes = []; let isDead = false; let ragdollTimer = 0;
         
         const MORTERO_DURATION = 20; const MORTERO_COOLDOWN = 30; const MORTERO_BURST_COOLDOWN = 0.16; let morteroReady = true; let morteroActive = false; let morteroTimeLeft = 0;
         let morteroPointerHeld = false; let morteroLastInputAt = 0; let morteroInputPointerId = null;
@@ -1191,8 +1191,8 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         const _smallHeadMat = new THREE.MeshLambertMaterial({ color: 0xff0033 });
         const _smallBallMat = new THREE.MeshLambertMaterial({ color: 0xff6622 });
         const _smallEyeMat = new THREE.MeshBasicMaterial({ color: 0xFF0000 });
-        const _semenGeo = new THREE.SphereGeometry(0.55, 6, 6);
-        const _semenMat = new THREE.MeshBasicMaterial({ color: 0xFFFFEE, transparent: true, opacity: 0.92 });
+        const _mudGeo = new THREE.SphereGeometry(0.55, 6, 6);
+        const _mudMat = new THREE.MeshStandardMaterial({ color: 0x62442e, roughness: 1, transparent: true, opacity: 0.94 });
         const _cacaGeo = new THREE.SphereGeometry(1, 8, 8);
         const _cacaColorsMats = [
             new THREE.MeshLambertMaterial({ color: 0x3b1d08 }), new THREE.MeshLambertMaterial({ color: 0x4a240a }),
@@ -2237,7 +2237,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             forceHudVisible();
             document.getElementById('playerHealthBar').style.display = 'block'; document.getElementById('playerHealthLabel').style.display = 'block';
             document.getElementById('auraBarContainer').style.display = 'block'; document.getElementById('auraLabel').style.display = 'block';
-            document.getElementById('semenBar').style.display = 'block'; document.getElementById('semenLabel').style.display = 'block';
+            document.getElementById('mudBar').style.display = 'block'; document.getElementById('mudLabel').style.display = 'block';
             const pci = document.getElementById('peneCountInfo'); if (pci) pci.style.display = 'block';
             
             if (fueraSoundUrl) { audioFuera.src = fueraSoundUrl; audioFuera.volume = 0.35; }
@@ -2256,12 +2256,12 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         function fullRestartGame() {
             if (isDriving) exitDrivenCar();
             restartModal.style.display = 'none';
-            playerHealth = playerMaxHealth; playerAura = 0; semenStainLevel = 0; isDead = false;
+            playerHealth = playerMaxHealth; playerAura = 0; mudStainLevel = 0; isDead = false;
             isFlying = false; flightControls.style.display = 'none';
             isTuboActive = false; isTuboFiring = false; if(character && character.userData.tuboGroup) character.userData.tuboGroup.visible = false;
             document.getElementById('tuboBigFireBtn').style.display = 'none';
             morteroActive = false; document.getElementById('morteroFireBtn').style.display = 'none'; document.getElementById('morteroTimer').style.display = 'none'; document.getElementById('crosshair').style.display = 'none';
-            updatePlayerHealth(); updateSemenUI(); updateAuraUI(); updateAvatarStainVisual();
+            updatePlayerHealth(); updateMudUI(); updateAuraUI(); updateAvatarStainVisual();
             
             const gs = groundPlane.geometry.attributes.position; const ds = dirtPlane.geometry.attributes.position; const ss = stonePlane.geometry.attributes.position;
             for(let i=0; i<gs.count; i++) { gs.setY(i, 0); ds.setY(i, 0); ss.setY(i, 0); }
@@ -2286,13 +2286,13 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             document.getElementById('bossName').style.display = 'none'; document.getElementById('statusText').style.display = 'none';
             clearEntities(cinematicBosses); clearEntities(projectiles); clearEntities(cacaProjectiles); clearEntities(tuboProjectiles);
             clearEntities(fireParticles); clearEntities(fartParticles); clearEntities(window.greySmokeParticles); clearEntities(debrisParticles);
-            clearEntities(lingeringFires); clearEntities(cacaStains); clearEntities(semenStains); clearEntities(destructibleProps); clearEntities(drones);
+            clearEntities(lingeringFires); clearEntities(cacaStains); clearEntities(mudStains); clearEntities(destructibleProps); clearEntities(drones);
             
             buildingColliders.forEach(b => scene.remove(b.group)); buildingColliders = [];
             streetLights = []; commercialZones = []; vegetationZones = []; rebuildTasks = [];
             lifeCardStands.forEach(l => scene.remove(l)); lifeCardStands = []; bathZones.forEach(b => scene.remove(b)); bathZones = [];
             civilianHouses.forEach(h => scene.remove(h)); civilianHouses = []; posters.forEach(p => scene.remove(p)); posters = [];
-            if(epicAsteroid) { scene.remove(epicAsteroid); epicAsteroid = null; } if(epicSemen) { scene.remove(epicSemen); epicSemen = null; } if(epicTrail) { scene.remove(epicTrail); epicTrail = null; } epicSpaceStart = null; epicDeflectMeteors.forEach(m => scene.remove(m)); epicDeflectMeteors = [];
+            if(epicAsteroid) { scene.remove(epicAsteroid); epicAsteroid = null; } if(epicMud) { scene.remove(epicMud); epicMud = null; } if(epicTrail) { scene.remove(epicTrail); epicTrail = null; } epicSpaceStart = null; epicDeflectMeteors.forEach(m => scene.remove(m)); epicDeflectMeteors = [];
 
             if(cityWorldGroup&&cityWorldGroup.parent===scene)scene.remove(cityWorldGroup);
              cityWorldGroup=null;cityWorldLoaded=false;cityJobBoard=null;
@@ -3622,7 +3622,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
         
         function createCityProps() {
             const trunkMat = new THREE.MeshLambertMaterial({ color: 0x382618 }); const leafMat = new THREE.MeshLambertMaterial({ color: 0x144a18 });
-            for (let i = 0; i < 40; i++) {
+            const cityTreeCount=IS_MOBILE_DEVICE?18:40;
+            for (let i = 0; i < cityTreeCount; i++) {
                 const x = (Math.random()-0.5)*700; const z = (Math.random()-0.5)*700;
                 if (Math.hypot(x-FARM_CENTER.x,z-FARM_CENTER.z)<78) continue;
                 if (Math.abs(x)<25 && Math.abs(z)<25) continue; if (checkCollision(x, z)) continue;
@@ -4151,28 +4152,28 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         
         function takePlayerDamage(amount) {
-            if (performance.now() > playerInvincibleUntil && !isDead) { let finalDmg = amount; if (isBuffActive) finalDmg = Math.floor(finalDmg * 0.3); playerHealth -= finalDmg; playDamageSound(); playerInvincibleUntil = performance.now() + 900; updatePlayerHealth(); addSemenStainToAvatar(amount); }
+            if (performance.now() > playerInvincibleUntil && !isDead) { let finalDmg = amount; if (isBuffActive) finalDmg = Math.floor(finalDmg * 0.3); playerHealth -= finalDmg; playDamageSound(); playerInvincibleUntil = performance.now() + 900; updatePlayerHealth(); addMudStainToAvatar(amount); }
         }
 
         function updatePlayerHealth() {
             const fill = document.getElementById('playerHealthFill'); fill.style.width = Math.max(0, playerHealth / playerMaxHealth * 100) + '%';
             if (playerHealth <= 30) fill.style.background = 'linear-gradient(90deg,#ff0000,#ff4400)'; else if (playerHealth <= 60) fill.style.background = 'linear-gradient(90deg,#ffaa00,#ffcc00)'; else fill.style.background = 'linear-gradient(90deg,#00ff00,#88ff00)';
             if (playerHealth <= 0 && !isDead) {
-                isDead = true; ragdollTimer = 0; playTaradoSound(); semenStainLevel = 0; updateSemenUI(); updateAvatarStainVisual(); changeAura(-500);
+                isDead = true; ragdollTimer = 0; playTaradoSound(); mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-500);
                 isFlying = false; flightControls.style.display = 'none'; updateButtonsState();
                 isTuboActive = false; isTuboFiring = false; if(character && character.userData.tuboGroup) character.userData.tuboGroup.visible = false; document.getElementById('tuboBigFireBtn').style.display = 'none';
                 setTimeout(() => { isDead = false; ragdollTimer = 0; playerHealth = playerMaxHealth; character.position.set(0, getTerrainY(0,0, null), 0); character.rotation.set(0, 0, 0); updatePlayerHealth(); updateButtonsState(); }, 3200);
             }
         }
         
-        function spawnSemenProjectile(fromPos, targetPos, isFromBoss = true, isTargetingPoster = false) {
-            const ball = new THREE.Mesh(_semenGeo, _semenMat); ball.position.copy(fromPos); ball.position.y += isFromBoss ? 12 : (isTargetingPoster ? 3 : 4);
+        function spawnMudProjectile(fromPos, targetPos, isFromBoss = true, isTargetingPoster = false) {
+            const ball = new THREE.Mesh(_mudGeo, _mudMat); ball.position.copy(fromPos); ball.position.y += isFromBoss ? 12 : (isTargetingPoster ? 3 : 4);
             const speed = isFromBoss ? 0.55 : (isTargetingPoster ? 0.5 : 0.4); const dx = targetPos.x - ball.position.x; const dz = targetPos.z - ball.position.z; const distXZ = Math.sqrt(dx*dx + dz*dz) || 0.1; const time = distXZ / speed;
             const vy = (targetPos.y - ball.position.y + 0.5 * 0.018 * time * time) / time;
             ball.userData = { velocity: new THREE.Vector3(dx/time + (Math.random()-0.5)*0.05, vy, dz/time + (Math.random()-0.5)*0.05), gravity: 0.018, life: 180, fromBoss: isFromBoss, hasHit: false, isTargetingPoster: isTargetingPoster }; scene.add(ball); projectiles.push(ball); if (projectiles.length > 35) { scene.remove(projectiles[0]); projectiles.shift(); }
         }
 
-        function spawnAsteroidSemen(targetX, targetZ) {
+        function spawnMudMeteor(targetX, targetZ) {
             const ball = new THREE.Mesh(new THREE.SphereGeometry(6, 12, 12), new THREE.MeshStandardMaterial({ color: 0xFFFFEE, transparent: true, opacity: 0.95, emissive: 0x554422 }));
             ball.position.set(targetX, 300, targetZ); ball.userData = { velocity: new THREE.Vector3((Math.random()-0.5)*0.5, -2.8 - Math.random(), (Math.random()-0.5)*0.5), gravity: 0.05, life: 400, isAsteroid: true, hasHit: false }; scene.add(ball); projectiles.push(ball);
         }
@@ -4195,24 +4196,24 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
         }
         
-        function createSemenStain(x, z, scaleMult = 1) {
-            if (semenStains.length > 10) { const old = semenStains.shift(); scene.remove(old); } const ty = getTerrainY(x, z, null);
-            const stain = new THREE.Mesh(new THREE.CircleGeometry((2.2 + Math.random()*2.5) * scaleMult, 8), new THREE.MeshLambertMaterial({ color: 0xd4c9a0, transparent: true, opacity: 0.85, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
-            stain.rotation.x = -Math.PI / 2; stain.position.set(x, ty + 0.08, z); stain.renderOrder = 50; stain.userData.life = 600 * scaleMult; scene.add(stain); semenStains.push(stain);
+        function createMudStain(x, z, scaleMult = 1) {
+            if (mudStains.length > 10) { const old = mudStains.shift(); scene.remove(old); } const ty = getTerrainY(x, z, null);
+            const stain = new THREE.Mesh(new THREE.CircleGeometry((2.2 + Math.random()*2.5) * scaleMult, 8), new THREE.MeshLambertMaterial({ color: 0x60432f, transparent: true, opacity: 0.88, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+            stain.rotation.x = -Math.PI / 2; stain.position.set(x, ty + 0.08, z); stain.renderOrder = 50; stain.userData.life = 600 * scaleMult; scene.add(stain); mudStains.push(stain);
             if (scaleMult === 1) {
-                const sx = x + (Math.random()-0.5)*4; const sz = z + (Math.random()-0.5)*4; const splash = new THREE.Mesh(new THREE.CircleGeometry(0.5 + Math.random()*1.0, 6), new THREE.MeshLambertMaterial({ color: 0xc8bc90, transparent: true, opacity: 0.7, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
-                splash.rotation.x = -Math.PI / 2; splash.position.set(sx, getTerrainY(sx, sz, null) + 0.06, sz); splash.renderOrder = 1; splash.userData.life = 450; scene.add(splash); semenStains.push(splash);
+                const sx = x + (Math.random()-0.5)*4; const sz = z + (Math.random()-0.5)*4; const splash = new THREE.Mesh(new THREE.CircleGeometry(0.5 + Math.random()*1.0, 6), new THREE.MeshLambertMaterial({ color: 0x765439, transparent: true, opacity: 0.72, side: THREE.DoubleSide, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }));
+                splash.rotation.x = -Math.PI / 2; splash.position.set(sx, getTerrainY(sx, sz, null) + 0.06, sz); splash.renderOrder = 1; splash.userData.life = 450; scene.add(splash); mudStains.push(splash);
             }
         }
         
-        function addSemenStainToAvatar(amount) { semenStainLevel = Math.min(100, semenStainLevel + amount); updateSemenUI(); spawnAvatarStainBlobs(Math.min(4, Math.ceil(amount / 5))); updateAvatarStainVisual(); }
-        function updateSemenUI() { const fill = document.getElementById('semenFill'); const label = document.getElementById('semenLabel'); if (fill) fill.style.width = semenStainLevel + '%'; if (label) label.textContent = '🟤 Barro: ' + Math.floor(semenStainLevel) + '%'; }
+        function addMudStainToAvatar(amount) { mudStainLevel = Math.min(100, mudStainLevel + amount); updateMudUI(); spawnAvatarStainBlobs(Math.min(4, Math.ceil(amount / 5))); updateAvatarStainVisual(); }
+        function updateMudUI() { const fill = document.getElementById('mudFill'); const label = document.getElementById('mudLabel'); if (fill) fill.style.width = mudStainLevel + '%'; if (label) label.textContent = '🟤 Barro: ' + Math.floor(mudStainLevel) + '%'; }
         
         function spawnAvatarStainBlobs(count) {
             if (!character) return; const ud = character.userData; const parents = [ud.torsoGroup, ud.nalgasGroup, ud.headGroup, ud.leftUpperArm, ud.rightUpperArm, ud.chest, ud.abdomen, ud.leftUpperMesh, ud.rightUpperMesh, ud.leftForearm, ud.rightForearm].filter(Boolean);
             for (let i = 0; i < count; i++) {
                 const parent = parents[Math.floor(Math.random() * parents.length)]; if (!parent) continue;
-                const size = 0.15 + Math.random() * 0.35; const blob = new THREE.Mesh(new THREE.SphereGeometry(size, 4, 4), new THREE.MeshBasicMaterial({ color: 0xFFFBE7, transparent: true, opacity: 0.88 }));
+                const size = 0.15 + Math.random() * 0.35; const blob = new THREE.Mesh(new THREE.SphereGeometry(size, 4, 4), new THREE.MeshStandardMaterial({ color: 0x715137, roughness: 1, transparent: true, opacity: 0.88 }));
                 blob.position.set((Math.random() - 0.5) * 1.2, (Math.random() - 0.5) * 1.5, 0.35 + Math.random() * 0.35);
                 blob.userData = { life: 300 + Math.random() * 100, maxLife: 400, growSpeed: 0.008 + Math.random() * 0.01, targetScale: 1.2 + Math.random() * 1.8, spreadVel: new THREE.Vector3((Math.random() - 0.5) * 0.008, (Math.random() - 0.5) * 0.006, Math.random() * 0.004) }; parent.add(blob); bodyStainMeshes.push(blob);
             }
@@ -4220,7 +4221,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         
         function updateAvatarStainVisual() {
-            if (!character) return; const ud = character.userData; const t = semenStainLevel / 100;
+            if (!character) return; const ud = character.userData; const t = mudStainLevel / 100;
             if (ud.nalgaL && ud.nalgaL.material) ud.nalgaL.material.color.lerpColors(new THREE.Color(0x8d5524), new THREE.Color(0xd4c9a0), Math.min(1, t * 1.2));
             if (ud.nalgaR && ud.nalgaR.material) ud.nalgaR.material.color.lerpColors(new THREE.Color(0x8d5524), new THREE.Color(0xd4c9a0), Math.min(1, t * 1.2));
             if (ud.chest && ud.chest.material) ud.chest.material.color.lerpColors(new THREE.Color(0x0066cc), new THREE.Color(0xbfae80), Math.min(1, t * 1.2));
@@ -4229,7 +4230,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const b = bodyStainMeshes[i]; if (!b.parent) { bodyStainMeshes.splice(i, 1); continue; }
                 b.userData.life--; const sc = b.scale.x; if (sc < b.userData.targetScale) b.scale.setScalar(sc + b.userData.growSpeed);
                 b.position.add(b.userData.spreadVel); const lifeRatio = b.userData.life / b.userData.maxLife; b.material.opacity = Math.max(0, lifeRatio * 0.9 * (0.3 + t * 0.7));
-                if (b.userData.life <= 0 || semenStainLevel < 1) { b.parent.remove(b); bodyStainMeshes.splice(i, 1); }
+                if (b.userData.life <= 0 || mudStainLevel < 1) { b.parent.remove(b); bodyStainMeshes.splice(i, 1); }
             }
         }
         
@@ -4736,33 +4737,63 @@ function removeCarRadioStation(index, reason='Sin señal'){
             farmDefenseGroup=null;
             if(farmDefenseLevel>0&&farmBenjaFenceGroup){farmGroup.remove(farmBenjaFenceGroup);farmBenjaFenceGroup=null;clearFarmColliders('farm-fence');}
             if(farmDefenseLevel<=0||!farmGroup)return;
-            farmDefenseGroup=new THREE.Group();farmGroup.add(farmDefenseGroup);
+            farmDefenseGroup=new THREE.Group();farmDefenseGroup.name='CorralReforzadoNivel'+farmDefenseLevel;farmGroup.add(farmDefenseGroup);
             const px=FARM_PIG_POS.x,pz=FARM_PIG_POS.z,level=Math.max(1,Math.min(3,farmDefenseLevel));
-            const height=3.6+level*1.35,thickness=2.5+level*.7;
-            const stone=new THREE.MeshStandardMaterial({color:level>=2?0x858078:0x8b6038,roughness:.95});
-            const cap=new THREE.MeshStandardMaterial({color:level>=3?0xb3a990:0x6c4b30,roughness:.85});
+            const height=level===1?3.4:level===2?5.2:6.6,thickness=level===1?1.25:level===2?2.25:3.0;
+            const wood=new THREE.MeshStandardMaterial({color:0x80502e,roughness:.96}),woodLight=new THREE.MeshStandardMaterial({color:0xb2804c,roughness:.92});
+            const stone=new THREE.MeshStandardMaterial({color:level===2?0x8b8980:0x6f7477,roughness:.96}),brick=new THREE.MeshStandardMaterial({color:0x9a5542,roughness:.95}),cap=new THREE.MeshStandardMaterial({color:level===3?0xc0b69f:0x645347,roughness:.88}),metal=new THREE.MeshStandardMaterial({color:0x78858a,metalness:.52,roughness:.46});
+            function addBlock(x,y,z,w,h,d,mat,angle){
+                const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.rotation.y=angle||0;m.castShadow=!IS_MOBILE_DEVICE;m.receiveShadow=true;farmDefenseGroup.add(m);return m;
+            }
             function wallRun(x1,z1,x2,z2,gateStart=0,gateEnd=0){
-                const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),angle=Math.atan2(dz,dx),usable=Math.max(0,len-gateStart-gateEnd);
-                const count=Math.max(1,Math.ceil(usable/7.8));
+                const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),angle=Math.atan2(dz,dx),usable=Math.max(0,len-gateStart-gateEnd),count=Math.max(1,Math.ceil(usable/(level===1?6.4:5.6)));
                 for(let i=0;i<count;i++){
-                    const along=gateStart+(i+.5)*usable/count,wx=x1+(dx/len)*along,wz=z1+(dz/len)*along,gy=farmGroundAt(wx,wz);
-                    const block=new THREE.Mesh(new THREE.BoxGeometry(usable/count+.12,height,thickness),stone);
-                    block.position.set(wx,gy+height/2,wz);block.rotation.y=-angle;block.castShadow=true;block.receiveShadow=true;farmDefenseGroup.add(block);addFarmCollider(wx,wz,usable/count+.2,thickness,-angle,'farm-defense');
-                    const crown=new THREE.Mesh(new THREE.BoxGeometry(usable/count+.18,.5,thickness+.18),cap);
-                    crown.position.set(wx,gy+height+.18,wz);crown.rotation.y=-angle;crown.castShadow=true;farmDefenseGroup.add(crown);
+                    const along=gateStart+(i+.5)*usable/count,wx=x1+(dx/len)*along,wz=z1+(dz/len)*along,gy=farmGroundAt(wx,wz),span=usable/count;
+                    if(level===1){
+                        addBlock(wx,gy+height*.52,wz,span-.15,height-.35,.42,wood,-angle);
+                        for(let rail=0;rail<3;rail++)addBlock(wx,gy+.7+rail*1.05,wz+.26,span-.12,.16,.18,woodLight,-angle);
+                        for(const side of [-1,1])addBlock(wx+Math.cos(angle)*side*(span/2-.08),gy+height*.52,wz+Math.sin(angle)*side*(span/2-.08),.42,height+.3,.62,woodLight,0);
+                    }else{
+                        addBlock(wx,gy+height*.48,wz,span-.12,height-.45,thickness,stone,-angle);
+                        addBlock(wx,gy+.52,wz,span-.08,.48,thickness+.14,brick,-angle);
+                        addBlock(wx,gy+height-.12,wz,span+.08,.24,thickness+.2,cap,-angle);
+                        if(level===3){
+                            for(const side of [-1,1]){
+                                const bx=wx+Math.cos(angle)*side*(span*.34),bz=wz+Math.sin(angle)*side*(span*.34);
+                                addBlock(bx,gy+height*.48,bz,.58,height+.35,thickness+.35,cap,0);
+                            }
+                            for(let notch=0;notch<2;notch++){
+                                const nx=wx+Math.cos(angle)*(notch?span*.28:-span*.28),nz=wz+Math.sin(angle)*(notch?span*.28:-span*.28);
+                                addBlock(nx,gy+height+.45,nz,Math.max(.7,span*.24),.9,thickness+.22,cap,-angle);
+                            }
+                        }
+                    }
+                    addFarmCollider(wx,wz,span+.2,thickness+.18,-angle,'farm-defense',height+1.5);
                 }
             }
             const hx=22,hz=18,x1=px-hx,x2=px+hx,z1=pz-hz,z2=pz+hz;
-            wallRun(x1,z1,x2,z1);
-            // Entrada principal centrada hacia Benja y segunda entrada lateral para no encerrar al jugador.
-            wallRun(x2,z1,x2,z2,12,12);
-            wallRun(x2,z2,x1,z2,14.5,14.5);
-            wallRun(x1,z2,x1,z1);
-            const towerH=height+2,towerW=4+level;
+            wallRun(x1,z1,x2,z1);wallRun(x2,z1,x2,z2,12,12);wallRun(x2,z2,x1,z2,14.5,14.5);wallRun(x1,z2,x1,z1);
+            const towerW=level===1?3.5:level===2?5.2:6.8,towerH=height+(level===3?4.8:2.2);
             for(const [tx,tz] of [[x1,z1],[x2,z1],[x1,z2],[x2,z2]]){
-                const tower=new THREE.Mesh(new THREE.BoxGeometry(towerW,towerH,towerW),cap);
-                tower.position.set(tx,farmGroundAt(tx,tz)+towerH/2,tz);tower.castShadow=true;farmDefenseGroup.add(tower);addFarmCollider(tx,tz,towerW+.5,towerW+.5,0,'farm-defense');
-                const top=new THREE.Mesh(new THREE.BoxGeometry(towerW+.7,.75,towerW+.7),stone);top.position.set(tx,tower.position.y+towerH/2,tz);farmDefenseGroup.add(top);
+                const gy=farmGroundAt(tx,tz);
+                if(level===1){
+                    addBlock(tx,gy+towerH*.5,tz,towerW*.42,towerH*.92,towerW*.42,wood,0);
+                    for(const side of [-1,1])addBlock(tx+side*.7,gy+towerH*.5,tz,towerW*.25,towerH*.98,towerW*.25,woodLight,0);
+                    addBlock(tx,gy+towerH,tz,towerW,.35,towerW,cap,0);
+                }else{
+                    addBlock(tx,gy+towerH*.5,tz,towerW,towerH,towerW,stone,0);addBlock(tx,gy+towerH+.25,tz,towerW+.65,.5,towerW+.65,cap,0);
+                    if(level===3){
+                        for(let k=-1;k<=1;k++)addBlock(tx+k*1.65,gy+towerH+1,tz,1.05,1.05,towerW+.8,brick,0);
+                        if(!IS_MOBILE_DEVICE){const lamp=new THREE.PointLight(0xffc27b,.42,13,2);lamp.position.set(tx,gy+towerH+2,tz);farmDefenseGroup.add(lamp);}
+                    }
+                }
+                addFarmCollider(tx,tz,towerW+.8,towerW+.8,0,'farm-defense',towerH+2);
+            }
+            if(level===2||level===3){
+                const gateMat=level===3?metal:woodLight,gx=px,gz=z2;
+                for(const side of [-1,1]){const hinge=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,3.4,7),gateMat);hinge.position.set(gx+side*6,1.7,gz);farmDefenseGroup.add(hinge);}
+                const gatePanel=new THREE.Mesh(new THREE.BoxGeometry(8,.22,.24),gateMat);gatePanel.position.set(gx,1.05,gz);farmDefenseGroup.add(gatePanel);
+                for(let i=0;i<6;i++){const slat=new THREE.Mesh(new THREE.BoxGeometry(.16,2.4,.22),wood);slat.position.set(gx-3.35+i*1.34,1.9,gz);farmDefenseGroup.add(slat);}
             }
         }
                 function refreshFarmStorageVisuals(){
@@ -5910,7 +5941,7 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.6.8',
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.6.9',
    'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/Cuida%20a%20Benja/Mapas/Ciudad.js'
   ];
   let lastError=null;
@@ -6367,7 +6398,7 @@ function startProtestMission() {
             spawnFireParticles(pos, 25 * forceScale, 0xff5500);
         }
 
-        function createAsteroidExplosion(x, z) { createCrater(x, z, 20, 5); createSemenStain(x, z, 3.5); windowScreenShake = Math.min(0.9, windowScreenShake + 0.7); spawnExplosion(new THREE.Vector3(x, getTerrainY(x,z, null), z)); }
+        function createAsteroidExplosion(x, z) { createCrater(x, z, 20, 5); createMudStain(x, z, 3.5); windowScreenShake = Math.min(0.9, windowScreenShake + 0.7); spawnExplosion(new THREE.Vector3(x, getTerrainY(x,z, null), z)); }
         
         function createLifeCardStand(x, z) {
             const stand = new THREE.Group(); const base = new THREE.Mesh(new THREE.BoxGeometry(6, 1, 6), new THREE.MeshStandardMaterial({color: 0x444444})); base.position.y = 0.5; stand.add(base);
@@ -6493,7 +6524,7 @@ function startProtestMission() {
             cleanArray(projectiles,45);
             cleanArray(tuboProjectiles,30);
             cleanArray(cacaProjectiles,45);
-            cleanArray(semenStains,10);
+            cleanArray(mudStains,10);
             cleanArray(cacaStains,24);
             if(typeof epicDeflectMeteors !== 'undefined') cleanArray(epicDeflectMeteors,24);
             // El navegador puede conservar nodos huérfanos de efectos si una animación fue interrumpida.
@@ -6542,7 +6573,7 @@ function startProtestMission() {
             for (let bath of bathZones) {
                 if (!isDead && character.position.distanceTo(bath.position) < 8) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent = `Baño: ${bath.userData.cost} aura para limpiar semen`;
-                    if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && semenStainLevel > 0) { playerAura -= bath.userData.cost; semenStainLevel = 0; updateSemenUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
+                    if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
             
@@ -6568,7 +6599,7 @@ function startProtestMission() {
                 const mf = document.getElementById('meteorRainFill'); const ml = document.getElementById('meteorRainLabel');
                 if (mf) mf.style.width = Math.max(0, asteroidRainTimer / METEOR_RAIN_DURATION * 100) + '%';
                 if (ml) { ml.textContent = ''; ml.style.display = 'none'; }
-                if (asteroidRainTimer % 22 === 0 && !isCinematic) { const angle = Math.random() * Math.PI * 2; const dist = 45 + Math.random() * 95; spawnAsteroidSemen(character.position.x + Math.cos(angle)*dist, character.position.z + Math.sin(angle)*dist); }
+                if (asteroidRainTimer % 22 === 0 && !isCinematic) { const angle = Math.random() * Math.PI * 2; const dist = 45 + Math.random() * 95; spawnMudMeteor(character.position.x + Math.cos(angle)*dist, character.position.z + Math.sin(angle)*dist); }
                 if (asteroidRainTimer <= 0) { const mr = document.getElementById('meteorRainBar'); const ml2 = document.getElementById('meteorRainLabel'); if (mr) mr.style.display = 'none'; if (ml2) ml2.style.display = 'none'; }
             }
 
@@ -6672,11 +6703,11 @@ function startProtestMission() {
                 }
             }
             
-            if (semenStainLevel > 0) { semenStainLevel = Math.max(0, semenStainLevel - 0.0416); updateSemenUI(); updateAvatarStainVisual(); }
+            if (mudStainLevel > 0) { mudStainLevel = Math.max(0, mudStainLevel - 0.0416); updateMudUI(); updateAvatarStainVisual(); }
             if (!window._semenTick) window._semenTick = 0; window._semenTick++;
             if (window._semenTick >= 60 && !isDead) {
                 window._semenTick = 0;
-                if (semenStainLevel > 70) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (semenStainLevel > 60) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (semenStainLevel < 30) { playerHealth = Math.min(playerMaxHealth, playerHealth + 1); updatePlayerHealth(); }
+                if (mudStainLevel > 70) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (mudStainLevel > 60) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (mudStainLevel < 30) { playerHealth = Math.min(playerMaxHealth, playerHealth + 1); updatePlayerHealth(); }
             }
             
             if(farmCityMode)drones.forEach(drone => {
@@ -6748,9 +6779,9 @@ function startProtestMission() {
                 boss.userData.attackCooldown--;
                 if (boss.userData.attackCooldown <= 0 && dist < 100 && !boss.userData.isCharging) {
                     if (isGiant) {
-                        if (Math.random() < 0.4) { spawnAsteroidSemen(character.position.x, character.position.z); boss.userData.attackCooldown = 180; boss.userData.head.rotation.x = -0.6; setTimeout(() => { if(boss && boss.userData) boss.userData.head.rotation.x = 0; }, 1000); }
-                        else { spawnSemenProjectile(boss.position, character.position, true); boss.userData.attackCooldown = 80; }
-                    } else { spawnSemenProjectile(boss.position, character.position, true); boss.userData.attackCooldown = 60 + Math.random() * 45; }
+                        if (Math.random() < 0.4) { spawnMudMeteor(character.position.x, character.position.z); boss.userData.attackCooldown = 180; boss.userData.head.rotation.x = -0.6; setTimeout(() => { if(boss && boss.userData) boss.userData.head.rotation.x = 0; }, 1000); }
+                        else { spawnMudProjectile(boss.position, character.position, true); boss.userData.attackCooldown = 80; }
+                    } else { spawnMudProjectile(boss.position, character.position, true); boss.userData.attackCooldown = 60 + Math.random() * 45; }
                 }
             }
 
@@ -6760,7 +6791,7 @@ function startProtestMission() {
                     mb.userData.ball1.position.y = 3 + sw * 0.9; mb.userData.ball2.position.y = 3 - sw * 0.9; mb.userData.ball1.position.x = -2 + sw * 0.4; mb.userData.ball2.position.x = 2 - sw * 0.4; mb.userData.shaft.rotation.z = sw * 0.08;
                     const dx = character.position.x - mb.position.x; const dz = character.position.z - mb.position.z; const dist = Math.sqrt(dx*dx + dz*dz); mb.rotation.y = Math.atan2(dx, dz);
                     if (dist > 8 && !mb.userData.isCharging) { const nx = dx/dist, nz = dz/dist; const chaseSpeed = 0.18; const nx2 = mb.position.x + nx * chaseSpeed; const nz2 = mb.position.z + nz * chaseSpeed; if (!checkCollision(nx2, nz2)) { mb.position.x = nx2; mb.position.z = nz2; } }
-                    mb.userData.attackCooldown--; if (mb.userData.attackCooldown <= 0 && dist < 50) { spawnSemenProjectile(mb.position, character.position, true); mb.userData.attackCooldown = 80 + Math.random() * 50; }
+                    mb.userData.attackCooldown--; if (mb.userData.attackCooldown <= 0 && dist < 50) { spawnMudProjectile(mb.position, character.position, true); mb.userData.attackCooldown = 80 + Math.random() * 50; }
                 }
             }
             
@@ -6812,7 +6843,7 @@ function startProtestMission() {
                 } else if (u.isTargetingPoster) {
                     for (let poster of posters) {
                         if (!poster.userData.isVandalized && p.position.distanceTo(new THREE.Vector3(poster.position.x, poster.position.y + 8, poster.position.z)) < 5) {
-                            poster.userData.health -= 15; u.hasHit = true; createSemenStain(p.position.x, p.position.z, 0.5);
+                            poster.userData.health -= 15; u.hasHit = true; createMudStain(p.position.x, p.position.z, 0.5);
                             const splash = new THREE.Mesh(new THREE.PlaneGeometry(1.5, 1.5), new THREE.MeshBasicMaterial({color: 0xddcc99, transparent: true, opacity: 0.8, depthWrite: false})); splash.position.set((Math.random()-0.5)*2.2, (Math.random()-0.5)*1.2, 0.02); poster.userData.boardMesh.add(splash);
                             if (poster.userData.health <= 0) { poster.userData.isVandalized = true; postersIntact--; updateMissionUI(); poster.userData.boardMesh.material.color.setHex(0xaaaa55); if (postersIntact <= 0) { missionActive = false; window.extraPenesPenalty = 10; document.getElementById('missionTitle').textContent = '¡MISIÓN FALLIDA! +10 PENES'; setTimeout(() => { document.getElementById('missionUI').style.display = 'none'; }, 3000); } }
                             break;
@@ -6821,13 +6852,13 @@ function startProtestMission() {
                 }
 
                 if (p.position.y <= getTerrainY(p.position.x, p.position.z, p.position.y) + 0.4 && !u.isAsteroid) {
-                    createSemenStain(p.position.x, p.position.z);
+                    createMudStain(p.position.x, p.position.z);
                     if (u.fromBoss) { createCrater(p.position.x, p.position.z, 5, 2.5); spawnDebris(p.position.x, p.position.z, 2, 2, 2, 0x5c4033); }
                     if (!u.hasHit && character.position.distanceTo(p.position) < 3.6) { takePlayerDamage(u.fromBoss ? 18 : 10); }
                     u.hasHit = true; scene.remove(p); projectiles.splice(i, 1); continue;
                 }
                 if (!u.hasHit && p.position.distanceTo(character.position) < 2.9 && !u.isAsteroid) {
-                    takePlayerDamage(u.fromBoss ? 18 : 10); u.hasHit = true; createSemenStain(p.position.x, p.position.z); scene.remove(p); projectiles.splice(i, 1); continue;
+                    takePlayerDamage(u.fromBoss ? 18 : 10); u.hasHit = true; createMudStain(p.position.x, p.position.z); scene.remove(p); projectiles.splice(i, 1); continue;
                 }
                 if (u.life <= 0) { scene.remove(p); projectiles.splice(i, 1); }
             }
@@ -6906,7 +6937,7 @@ function startProtestMission() {
             for (let i = fartParticles.length - 1; i >= 0; i--) { const sm = fartParticles[i]; sm.userData.life--; sm.position.add(sm.userData.velocity); sm.userData.velocity.y += 0.002; sm.scale.multiplyScalar(1.015); sm.material.opacity = Math.max(0, sm.userData.life / sm.userData.maxLife * 0.6); if (sm.userData.life <= 0) { scene.remove(sm); fartParticles.splice(i, 1); } }
             for (let i = window.greySmokeParticles.length - 1; i >= 0; i--) { const sm = window.greySmokeParticles[i]; sm.userData.life--; sm.position.add(sm.userData.velocity); sm.userData.velocity.y += 0.001; sm.scale.multiplyScalar(1.02); sm.material.opacity = Math.max(0, sm.userData.life / sm.userData.maxLife * 0.6); if (sm.userData.life <= 0) { scene.remove(sm); window.greySmokeParticles.splice(i, 1); } }
             for (let i = fireParticles.length - 1; i >= 0; i--) { const p = fireParticles[i]; p.userData.life--; p.position.add(p.userData.velocity); p.scale.multiplyScalar(0.96); p.material.opacity = Math.max(0, p.userData.life / p.userData.maxLife); if (p.userData.life <= 0) { scene.remove(p); fireParticles.splice(i, 1); } }
-            for (let i = semenStains.length - 1; i >= 0; i--) { const s = semenStains[i]; s.userData.life--; if (s.userData.life < 120) s.material.opacity = Math.max(0, s.userData.life/120 * 0.75); if (s.userData.life <= 0) { scene.remove(s); semenStains.splice(i, 1); } }
+            for (let i = mudStains.length - 1; i >= 0; i--) { const s = mudStains[i]; s.userData.life--; if (s.userData.life < 120) s.material.opacity = Math.max(0, s.userData.life/120 * 0.75); if (s.userData.life <= 0) { scene.remove(s); mudStains.splice(i, 1); } }
             
             if (!isCinematic) {
                 for (let i = smallPenes.length - 1; i >= 0; i--) {
@@ -6928,7 +6959,7 @@ function startProtestMission() {
                         if (nearestPoster) {
                             const dx = nearestPoster.position.x - p.position.x; const dz = nearestPoster.position.z - p.position.z; const dist = Math.sqrt(dx*dx + dz*dz); p.rotation.y = Math.atan2(dx, dz);
                             if (dist > 8) { const nx = dx/dist, nz = dz/dist; p.position.x += nx * p.userData.speed; p.position.z += nz * p.userData.speed; p.userData.walkCycle += 0.12; }
-                            else { p.userData.attackCooldown--; if (p.userData.attackCooldown <= 0) { spawnSemenProjectile(p.position, new THREE.Vector3(nearestPoster.position.x, nearestPoster.position.y + 8, nearestPoster.position.z), false, true); p.userData.attackCooldown = 30 + Math.random()*20; } }
+                            else { p.userData.attackCooldown--; if (p.userData.attackCooldown <= 0) { spawnMudProjectile(p.position, new THREE.Vector3(nearestPoster.position.x, nearestPoster.position.y + 8, nearestPoster.position.z), false, true); p.userData.attackCooldown = 30 + Math.random()*20; } }
                             const sw = Math.sin(p.userData.walkCycle); p.userData.ball1.position.y = 1.2 + sw * 0.3; p.userData.ball2.position.y = 1.2 - sw * 0.3; continue;
                         }
                     }
@@ -6961,7 +6992,7 @@ function startProtestMission() {
                             if (p.userData.leapTimer > 18) p.userData.leapPhase = 3;
                         } else if (p.userData.leapPhase === 3) { takePlayerDamage(22); p.userData.isLeaping = false; p.position.y = getTerrainY(p.position.x, p.position.z, p.position.y); p.rotation.x = 0; p.scale.setScalar(0.35 + Math.random() * 0.15); }
                     } else if (dist < 20 && p.userData.attackCooldown <= 0) {
-                        if (dist < 4.2) { takePlayerDamage(8); } else { spawnSemenProjectile(p.position, character.position, false); }
+                        if (dist < 4.2) { takePlayerDamage(8); } else { spawnMudProjectile(p.position, character.position, false); }
                         p.userData.attackCooldown = 48 + Math.random() * 40;
                     }
                 }
@@ -7037,9 +7068,9 @@ function startProtestMission() {
                         const spaceOverlayStart = document.getElementById('spaceTransitionOverlay'); if(spaceOverlayStart) spaceOverlayStart.style.opacity='0';
                         cinematicPhase = 11; cinematicTimer = 0;
                         createEpicSpaceStars();
-                        epicSemen = new THREE.Mesh(new THREE.SphereGeometry(8, 20, 20), new THREE.MeshStandardMaterial({color:0xffffee, emissive:0xffffff, emissiveIntensity:5}));
-                        epicSemen.position.copy(boss.position); epicSemen.position.y += 25; scene.add(epicSemen);
-                        const trailGeo = new THREE.BufferGeometry().setFromPoints([epicSemen.position.clone(), epicSemen.position.clone()]);
+                        epicMud = new THREE.Mesh(new THREE.SphereGeometry(8, 20, 20), new THREE.MeshStandardMaterial({color:0xffffee, emissive:0xffffff, emissiveIntensity:5}));
+                        epicMud.position.copy(boss.position); epicMud.position.y += 25; scene.add(epicMud);
+                        const trailGeo = new THREE.BufferGeometry().setFromPoints([epicMud.position.clone(), epicMud.position.clone()]);
                         epicTrail = new THREE.Line(trailGeo, new THREE.LineBasicMaterial({color:0xffffff, transparent:true, opacity:0.9})); scene.add(epicTrail);
                         playExplosionSound();
                         document.getElementById('statusText').style.display = 'none';
@@ -7047,14 +7078,14 @@ function startProtestMission() {
                 } else if (cinematicPhase === 11) {
                     // 3-9s: trayectoria claramente visible hasta el espacio.
                     const riseT = Math.min(1, cinematicTimer / 360);
-                    epicSemen.position.y += 4.2 + riseT * 3.0;
-                    epicSemen.position.x += Math.sin(cinematicTimer * 0.035) * 0.35;
-                    epicSemen.position.z += Math.cos(cinematicTimer * 0.03) * 0.25;
-                    epicSemen.rotation.x += 0.3; epicSemen.rotation.z += 0.22;
-                    if (epicTrail) { const a = epicTrail.geometry.attributes.position; a.setXYZ(0, epicSemen.position.x, Math.max(0, epicSemen.position.y - 150), epicSemen.position.z); a.setXYZ(1, epicSemen.position.x, epicSemen.position.y, epicSemen.position.z); a.needsUpdate = true; }
-                    spawnFireParticles(epicSemen.position, 9, 0xffffff); spawnGreySmoke(epicSemen.position, 2);
-                    const follow = new THREE.Vector3(epicSemen.position.x + 30, epicSemen.position.y - 25, epicSemen.position.z + 45);
-                    camera.position.lerp(follow, 0.075); camera.lookAt(epicSemen.position);
+                    epicMud.position.y += 4.2 + riseT * 3.0;
+                    epicMud.position.x += Math.sin(cinematicTimer * 0.035) * 0.35;
+                    epicMud.position.z += Math.cos(cinematicTimer * 0.03) * 0.25;
+                    epicMud.rotation.x += 0.3; epicMud.rotation.z += 0.22;
+                    if (epicTrail) { const a = epicTrail.geometry.attributes.position; a.setXYZ(0, epicMud.position.x, Math.max(0, epicMud.position.y - 150), epicMud.position.z); a.setXYZ(1, epicMud.position.x, epicMud.position.y, epicMud.position.z); a.needsUpdate = true; }
+                    spawnFireParticles(epicMud.position, 9, 0xffffff); spawnGreySmoke(epicMud.position, 2);
+                    const follow = new THREE.Vector3(epicMud.position.x + 30, epicMud.position.y - 25, epicMud.position.z + 45);
+                    camera.position.lerp(follow, 0.075); camera.lookAt(epicMud.position);
                     const rawSpace = Math.min(1, cinematicTimer / 210);
                     const spaceBlend = rawSpace * rawSpace * (3 - 2 * rawSpace);
                     const sky = new THREE.Color(0x6aa7d9).lerp(new THREE.Color(0x17233f), spaceBlend);
@@ -7065,8 +7096,8 @@ function startProtestMission() {
                     if (cinematicTimer > 250) {
                         cinematicPhase = 12; cinematicTimer = 0;
                         epicAsteroid = new THREE.Mesh(new THREE.SphereGeometry(48, 24, 24), new THREE.MeshStandardMaterial({color:0x4b4038, emissive:0xff3300, emissiveIntensity:0.9}));
-                        epicAsteroid.position.set(epicSemen.position.x + 230, epicSemen.position.y + 70, epicSemen.position.z - 100); scene.add(epicAsteroid);
-                        epicSpaceStart = epicSemen.position.clone();
+                        epicAsteroid.position.set(epicMud.position.x + 230, epicMud.position.y + 70, epicMud.position.z - 100); scene.add(epicAsteroid);
+                        epicSpaceStart = epicMud.position.clone();
                         document.getElementById('statusText').style.display = 'none';
                     }
                 } else if (cinematicPhase === 12) {
@@ -7074,20 +7105,20 @@ function startProtestMission() {
                     scene.background.set(0x080d24); scene.fog.color.set(0x080d24); scene.fog.near=250; scene.fog.far=1800; if (stylizedSky) stylizedSky.material.uniforms.night.value = 1.0;
                     const deepSpaceOverlay = document.getElementById('spaceTransitionOverlay'); if (deepSpaceOverlay) deepSpaceOverlay.style.opacity='0';
                     if (epicSpaceStars) { epicSpaceStars.material.opacity=1; epicSpaceStars.rotation.y += 0.0007; }
-                    const toAst = epicAsteroid.position.clone().sub(epicSemen.position);
+                    const toAst = epicAsteroid.position.clone().sub(epicMud.position);
                     const dist = toAst.length(); toAst.normalize();
                     const spaceT = Math.min(1, cinematicTimer / 240);
-                    if (epicSpaceStart) epicSemen.position.lerpVectors(epicSpaceStart, epicAsteroid.position, spaceT);
-                    epicSemen.rotation.x += 0.45; epicSemen.rotation.z += 0.35;
-                    if (epicTrail) { const a = epicTrail.geometry.attributes.position; a.setXYZ(0, epicSemen.position.x - toAst.x * 180, epicSemen.position.y - toAst.y * 180, epicSemen.position.z - toAst.z * 180); a.setXYZ(1, epicSemen.position.x, epicSemen.position.y, epicSemen.position.z); a.needsUpdate = true; }
-                    spawnFireParticles(epicSemen.position, 10, 0xffffff); spawnFireParticles(epicAsteroid.position, 15, 0xff4400);
+                    if (epicSpaceStart) epicMud.position.lerpVectors(epicSpaceStart, epicAsteroid.position, spaceT);
+                    epicMud.rotation.x += 0.45; epicMud.rotation.z += 0.35;
+                    if (epicTrail) { const a = epicTrail.geometry.attributes.position; a.setXYZ(0, epicMud.position.x - toAst.x * 180, epicMud.position.y - toAst.y * 180, epicMud.position.z - toAst.z * 180); a.setXYZ(1, epicMud.position.x, epicMud.position.y, epicMud.position.z); a.needsUpdate = true; }
+                    spawnFireParticles(epicMud.position, 10, 0xffffff); spawnFireParticles(epicAsteroid.position, 15, 0xff4400);
                     const highCam = new THREE.Vector3(epicAsteroid.position.x + 125, epicAsteroid.position.y + 48, epicAsteroid.position.z + 125);
-                    camera.position.lerp(highCam, 0.085); camera.lookAt(epicSemen.position.clone().lerp(epicAsteroid.position, 0.72));
+                    camera.position.lerp(highCam, 0.085); camera.lookAt(epicMud.position.clone().lerp(epicAsteroid.position, 0.72));
                     if (cinematicTimer >= 240) {
                         cinematicPhase = 13; cinematicTimer = 0;
                         if (epicTrail) { scene.remove(epicTrail); epicTrail = null; } epicSpaceStart = null;
                         spawnExplosion(epicAsteroid.position, 40); windowScreenShake = 0.35; playExplosionSound();
-                        scene.remove(epicSemen); epicSemen = null;
+                        scene.remove(epicMud); epicMud = null;
                         asteroidRainTimer = METEOR_RAIN_DURATION;
                         const mr = document.getElementById('meteorRainBar'), ml = document.getElementById('meteorRainLabel'), mf = document.getElementById('meteorRainFill');
                         if (mr) mr.style.display = 'block'; if (ml) ml.style.display = 'none'; if (mf) mf.style.width = '100%';
@@ -7238,7 +7269,8 @@ function startProtestMission() {
             if(farmCityMode&&streetLights.length&&performance.now()-farmCityLampUpdateAt>650){
                 farmCityLampUpdateAt=performance.now();
                 const near=streetLights.filter(entry=>entry&&entry.group&&entry.group.visible).sort((a,b)=>a.group.position.distanceToSquared(character.position)-b.group.position.distanceToSquared(character.position));
-                streetLights.forEach((entry,index)=>{if(entry.light)entry.light.color.setHex(lampInt>.45?0xffe6a8:0x5b6470);if(entry.point){entry.point.visible=lampInt>.35&&index<8;entry.point.intensity=entry.point.visible?(entry.maxIntensity||1)*lampInt*.26:0;}});
+                const lit=new Set(near.slice(0,IS_MOBILE_DEVICE?3:8));
+                streetLights.forEach(entry=>{if(entry.light)entry.light.color.setHex(lampInt>.45?0xffe6a8:0x5b6470);if(entry.point){entry.point.visible=lampInt>.45&&lit.has(entry);entry.point.intensity=entry.point.visible?(entry.maxIntensity||1)*lampInt*.26:0;}});
             }
         }
         
