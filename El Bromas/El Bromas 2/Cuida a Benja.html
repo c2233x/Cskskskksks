@@ -107,7 +107,7 @@
         #semenFill { width: 0%; height: 100%; background: linear-gradient(90deg, #fffbec, #ffe066); transition: width 0.3s; }
         #semenLabel { position: fixed; bottom: 93px; left: 15px; color: #fff399; font-size: 11px; font-weight: bold; z-index: 15; display: none; text-shadow: 0 0 6px #000; }
         
-        #peneCountInfo { position:fixed;bottom:200px;left:15px;color:#ffaa66;font-size:12px;font-weight:bold;z-index:15;display:none;text-shadow:0 0 6px #000; }
+        #peneCountInfo { position:fixed;bottom:204px;left:14px;width:min(225px,calc(100vw - 180px));box-sizing:border-box;padding:5px 8px;border:1px solid rgba(255,190,120,.4);border-radius:9px;background:rgba(4,12,18,.76);color:#ffd19b;font-size:10px;font-weight:900;line-height:1.25;white-space:pre-line;z-index:57;display:none;text-shadow:0 1px 3px #000; }
         
         #auraPopup {
             position: fixed; top: 42%; left: 50%; transform: translate(-50%, -50%);
@@ -331,7 +331,7 @@
 #startScreen.error #startupRetryButton{display:flex!important}
 #startScreen:not(.error) #startupDebugPanel{display:none!important}
 
-        #settingsBtn{position:fixed;left:15px;bottom:230px;transform:none;width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:rgba(10,15,30,.88);color:#fff;font-size:24px;z-index:80;display:none;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(0,0,0,.45);touch-action:manipulation}
+        #settingsBtn{position:fixed;left:auto;right:76px;top:12px;bottom:auto;transform:none;width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:rgba(10,15,30,.88);color:#fff;font-size:24px;z-index:80;display:none;align-items:center;justify-content:center;box-shadow:0 0 14px rgba(0,0,0,.45);touch-action:manipulation}
         #settingsPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);height:min(92vh,820px);max-height:92vh;overflow:hidden;background:rgba(8,12,25,.98);border:2px solid #3b8cff;border-radius:18px;padding:14px;color:#fff;z-index:120;display:none;box-shadow:0 15px 50px rgba(0,0,0,.65);touch-action:auto;overscroll-behavior:contain}
         #settingsPanel h2{margin:0 40px 10px;text-align:center;font-size:20px;flex:0 0 auto}.settingsSection{border-top:1px solid rgba(255,255,255,.12);margin-top:10px;padding-top:10px;flex:0 0 auto}.settingsSection button{width:100%;margin-top:7px}.settingsRow{display:flex;align-items:center;gap:10px;margin:10px 0;min-height:38px}.settingsRow label{flex:1;font-size:13px;font-weight:700;line-height:1.15}.settingsRow input[type=range]{flex:1;min-width:110px}.settingsVal{width:55px;text-align:right;font-size:12px;color:#8fc5ff}.settingsBtn{border:1px solid #477cff;background:#111b35;color:#fff;border-radius:9px;padding:9px 12px;font-weight:800;touch-action:manipulation}.settingsClose{position:absolute;right:10px;top:10px;border:0;background:#ff3d4f;color:#fff;border-radius:50%;width:32px;height:32px;font-size:18px;z-index:2}.graphicsPanel{display:none;height:calc(100% - 48px);max-height:none;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;padding:4px 8px 18px 2px;scrollbar-width:auto}.graphicsPanel::-webkit-scrollbar{width:12px}.graphicsPanel::-webkit-scrollbar-thumb{background:rgba(80,150,255,.75);border-radius:10px;border:2px solid rgba(8,12,25,.98)}.graphicsPanel::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:10px}.settingsBack{margin-bottom:8px!important;position:sticky;top:0;z-index:1}.settingsScrollHint{font-size:11px;text-align:center;color:#8fc5ff;opacity:.9;margin:2px 0 8px}.settingsMainScroll{height:calc(100% - 46px);overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;touch-action:pan-y;padding:0 4px 16px 2px}.settingsMainScroll::-webkit-scrollbar{width:12px}.settingsMainScroll::-webkit-scrollbar-thumb{background:rgba(80,150,255,.75);border-radius:10px;border:2px solid rgba(8,12,25,.98)}.settingsMainScroll::-webkit-scrollbar-track{background:rgba(255,255,255,.06);border-radius:10px}
         @media (max-height:520px) and (orientation:landscape){#settingsPanel{width:min(760px,92vw);height:94vh;padding:12px}.settingsRow{min-height:34px;margin:8px 0}.settingsSection{margin-top:7px;padding-top:7px}}
@@ -365,7 +365,7 @@
 .storyUpdateText{font-size:12px;color:#d9e5f5;line-height:1.5;margin-top:7px}
 </style>
 <style>
-#storyGuide{position:fixed;top:165px;left:50%;transform:translateX(-50%);z-index:53;display:none;align-items:center;gap:8px;padding:6px 12px;border:1px solid rgba(255,210,100,.72);border-radius:22px;background:rgba(4,12,24,.82);box-shadow:0 0 16px rgba(255,190,60,.2);pointer-events:none;color:#fff;font-size:11px;font-weight:900}
+#storyGuide{position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:53;display:none;align-items:center;gap:8px;padding:6px 12px;border:1px solid rgba(255,210,100,.72);border-radius:22px;background:rgba(4,12,24,.82);box-shadow:0 0 16px rgba(255,190,60,.2);pointer-events:none;color:#fff;font-size:11px;font-weight:900}
 #storyGuideArrow{font-size:27px;line-height:1;color:#ffd05c;transform-origin:50% 50%;filter:drop-shadow(0 0 7px rgba(255,190,60,.8))}
 #storyGuideText{max-width:65vw;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #cinematicLetterTop,#cinematicLetterBottom{position:fixed;left:0;right:0;height:0;z-index:1320;background:#000;pointer-events:none;transition:height .45s ease;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -396,7 +396,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmQuickActions button.shop{background:#865425}#farmQuickActions button.store{background:#36553c}#farmQuickActions button.jobs{background:#36517d}#farmQuickActions button.travel{background:#965024}
 #farmQuickActions button:active{transform:scale(.96)}
 /* HUD de Benja ordenado sobre el HUD de Cornatan */
-#farmBenjaHud{top:auto!important;left:14px!important;bottom:207px!important;transform:none!important;width:min(226px,calc(100vw - 185px));min-width:190px;display:none;flex-direction:column;align-items:stretch;gap:5px;padding:7px 9px;z-index:56}
+#farmBenjaHud{top:auto!important;left:14px!important;bottom:248px!important;transform:none!important;width:min(218px,calc(100vw - 180px));min-width:180px;display:none;flex-direction:column;align-items:stretch;gap:5px;padding:7px 9px;z-index:56}
 #farmBenjaHudTop{display:flex;align-items:center;justify-content:space-between;gap:7px;font-size:10px;font-weight:950}
 .farmBenjaStat{display:flex;align-items:center;gap:6px}
 .farmBenjaStat small{width:36px;flex:none;font-size:8px;font-weight:900;color:#f7d9ae}
@@ -449,7 +449,9 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #mapTravelTitle{font-size:clamp(23px,5vw,42px);font-weight:1000;letter-spacing:.08em;text-shadow:0 4px 20px #000}
 #mapTravelSubtitle{font-size:13px;color:#f3d9a6;font-weight:800}
 @keyframes mapTravelPulse{from{opacity:.78}to{opacity:1}}
-@media(max-width:600px){#farmBenjaHud{bottom:204px!important;width:190px;min-width:180px;padding:6px 7px}#farmTVPanel{top:3%;max-height:94dvh;padding:9px}#farmTVChannels{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){#farmBenjaHud{bottom:248px!important;width:184px;min-width:174px;padding:6px 7px}#peneCountInfo{bottom:204px;width:205px;font-size:9px}#settingsBtn{right:72px;top:9px}#storyGuide{top:72px}#farmTVPanel{top:3%;max-height:94dvh;padding:9px}#farmTVChannels{grid-template-columns:1fr 1fr}}
+html,body{width:100%!important;height:100%!important;min-height:100%!important;margin:0!important;padding:0!important;overflow:hidden!important;background:#000}
+body>canvas{position:fixed!important;left:0!important;top:0!important;width:100vw!important;height:100vh!important;height:100dvh!important;margin:0!important;border:0!important;border-radius:0!important;display:block!important;z-index:0!important}
 
 #farmSubtitles{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:1250;display:none;width:min(680px,88vw);padding:9px 14px;border-radius:12px;border:1px solid rgba(255,223,151,.7);background:rgba(4,10,17,.88);color:#fff;text-align:center;font-size:13px;line-height:1.45;font-weight:850;text-shadow:0 2px 2px #000;pointer-events:none;white-space:pre-line}
 #cityJobPanel{position:fixed;left:50%;top:8%;transform:translateX(-50%);z-index:1510;display:none;width:min(440px,92vw);max-height:82vh;max-height:82dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px;border:2px solid #79b8f2;border-radius:17px;background:rgba(7,16,30,.97);color:#fff;touch-action:pan-y}
@@ -769,7 +771,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.2"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.3"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -2335,6 +2337,10 @@ let farmTVScanToken=0,farmTVScanHls=null,farmTVScanVideo=null,farmTVScanCancelCu
             }
         }
         
+        function stopStoryBackgroundMusic(){
+            musicPlaybackToken++;musicStarting=false;normalMusicResumePending=false;normalMusicResumedAfterSupreme=false;
+            if(audioPlayer){try{audioPlayer.onended=null;audioPlayer.onerror=null;audioPlayer.pause();audioPlayer.currentTime=0;audioPlayer.removeAttribute('src');audioPlayer.load();}catch(_){}}
+        }
         async function playMusic(force = false) {
             if (carRadioEnabled) return false;
             if (storyModeActive && (!farmCityMode || isDriving)) return false;
@@ -3729,9 +3735,21 @@ function removeCarRadioStation(index, reason='Sin señal'){
             new THREE.TextureLoader().load(faceTextureUrl, (tex) => { tex.flipY = true; tex.wrapS = THREE.ClampToEdgeWrapping; tex.wrapT = THREE.ClampToEdgeWrapping; tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.encoding = THREE.sRGBEncoding; if (character.userData.face) { character.userData.face.material = new THREE.MeshBasicMaterial({ map: tex, transparent: true, opacity: 1.0, side: THREE.FrontSide }); } });
         }
         
+        function addFarmCollider(x,z,width,depth,rotation=0,owner='farm'){
+            const holder=new THREE.Group();
+            buildingColliders.push({x,z,width,depth,rotation,map:'farm',owner,group:holder});
+        }
+        function clearFarmColliders(owner=null){
+            for(let i=buildingColliders.length-1;i>=0;i--){const c=buildingColliders[i];if(c.map==='farm'&&(!owner||c.owner===owner))buildingColliders.splice(i,1);}
+        }
         function checkCollision(x, z) {
             const r = 1.6;
-            for (const c of buildingColliders) { if (Math.abs(x - c.x) < c.width/2 + r && Math.abs(z - c.z) < c.depth/2 + r) return true; }
+            for (const c of buildingColliders) {
+                if(c.map==='farm'&&farmCityMode)continue;
+                const dx=x-c.x,dz=z-c.z,a=Number(c.rotation)||0,ca=Math.cos(a),sa=Math.sin(a);
+                const localX=dx*ca-dz*sa,localZ=dx*sa+dz*ca;
+                if(Math.abs(localX)<c.width/2+r&&Math.abs(localZ)<c.depth/2+r)return true;
+            }
             if(!isDriving && Array.isArray(drivableCars)){
                 for(const car of drivableCars){
                     if(!car || !car.visible || car===drivenCar) continue;
@@ -4286,7 +4304,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
                 function updateFarmMoneyLabel(){
             const el=document.getElementById('peneCountInfo');
-            if(el)el.textContent='💰 $'+storyMoney+'   🐷 '+storyPigWeight+' kg   📦 '+farmTotalGoods(farmWarehouseStock)+' guardados';
+            if(el)el.textContent='💰 $'+storyMoney+'  ·  🐷 '+storyPigWeight+' kg\n📦 '+farmTotalGoods(farmWarehouseStock)+' guardados';
             farmUpdateBenjaHud();updateFarmCarryVisual();
         }
                 function farmGroundAt(x,z){return getTerrainY(x,z,null);}
@@ -4297,6 +4315,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),angle=Math.atan2(dz,dx),g=farmGroundAt((x1+x2)/2,(z1+z2)/2);
             for(const f of [.08,.5,.92]){const p=new THREE.Mesh(new THREE.BoxGeometry(.65,2.35,.65),mat);p.position.set(x1+dx*f,g+1.17,z1+dz*f);p.castShadow=true;parent.add(p);}
             for(const y of [.72,1.62]){const r=new THREE.Mesh(new THREE.BoxGeometry(len,.28,.34),mat);r.position.set((x1+x2)/2,g+y,(z1+z2)/2);r.rotation.y=-angle;r.castShadow=true;parent.add(r);}
+            if(parent===farmGroup)addFarmCollider((x1+x2)/2,(z1+z2)/2,len,.85,-angle,'farm-fence');
         }
         function createFarmSign(label,x,y,z){
             const g=new THREE.Group(),fm=new THREE.MeshStandardMaterial({color:0x523a25,roughness:.9});
@@ -4350,9 +4369,14 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const frame=new THREE.Mesh(new THREE.BoxGeometry(3.05*scale,2.58*scale,.18),trim);frame.position.set(side*4.7*scale,5.2*scale,d/2+.07);house.add(frame);
             }
             const chimney=new THREE.Mesh(new THREE.BoxGeometry(2*scale,5*scale,2*scale),wood);chimney.position.set(w*.28,h+2.5*scale,-d*.18);house.add(chimney);
+            const chimneyCap=new THREE.Mesh(new THREE.BoxGeometry(2.5*scale,.38*scale,2.5*scale),trim);chimneyCap.position.set(w*.28,h+5.05*scale,-d*.18);house.add(chimneyCap);
             const porch=new THREE.Mesh(new THREE.BoxGeometry(8*scale,.45*scale,3*scale),wood);porch.position.set(0,.42*scale,d/2+1.4*scale);house.add(porch);
-            house.position.set(x,y,z);farmGroup.add(house);
-            buildingColliders.push({x,z,width:w+2,depth:d+2,group:house});
+            for(const side of [-1,1]){const post=new THREE.Mesh(new THREE.BoxGeometry(.36*scale,3.1*scale,.36*scale),trim);post.position.set(side*3.55*scale,1.95*scale,d/2+2.45*scale);house.add(post);
+             const mullionV=new THREE.Mesh(new THREE.BoxGeometry(.13*scale,2.35*scale,.22*scale),trim);mullionV.position.set(side*4.7*scale,5.2*scale,d/2+.39*scale);house.add(mullionV);const mullionH=new THREE.Mesh(new THREE.BoxGeometry(2.8*scale,.13*scale,.22*scale),trim);mullionH.position.set(side*4.7*scale,5.2*scale,d/2+.39*scale);house.add(mullionH);}
+            const doorLintel=new THREE.Mesh(new THREE.BoxGeometry(3.05*scale,.32*scale,.22*scale),trim);doorLintel.position.set(0,6.05*scale,d/2+.42*scale);house.add(doorLintel);
+            const doorHandle=new THREE.Mesh(new THREE.SphereGeometry(.13*scale,8,8),new THREE.MeshStandardMaterial({color:0xd8c27d,metalness:.72,roughness:.3}));doorHandle.position.set(.85*scale,2.9*scale,d/2+.43*scale);house.add(doorHandle);
+            const ridgeCap=new THREE.Mesh(new THREE.BoxGeometry(1.15*scale,.48*scale,d+1.8*scale),wood);ridgeCap.position.set(0,h+1.55*scale,0);house.add(ridgeCap);
+            house.position.set(x,y,z);farmGroup.add(house);addFarmCollider(x,z,w+1.8*scale,d+1.8*scale,0,'farm-private-house');
             const fenceMat=new THREE.MeshLambertMaterial({color:0x805a36}),fx=12*scale,fz=11*scale,railY=y+1.05*scale;
             for(const side of [-1,1]){
                 const rail=new THREE.Mesh(new THREE.BoxGeometry(2*fx,.35*scale,.35*scale),fenceMat);rail.position.set(x,y+railY-y,z+side*fz);farmGroup.add(rail);
@@ -4472,6 +4496,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const post=new THREE.Mesh(new THREE.BoxGeometry(.8,13,.8),darkWood);post.position.set(x,6.5,16.8);storage.add(post);
             }
             storage.position.set(FARM_STORAGE_POS.x,storageY,FARM_STORAGE_POS.z);farmGroup.add(storage);
+            addFarmCollider(FARM_STORAGE_POS.x-23,FARM_STORAGE_POS.z,1.9,36,0,'storage-left');addFarmCollider(FARM_STORAGE_POS.x+23,FARM_STORAGE_POS.z,1.9,36,0,'storage-right');addFarmCollider(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z-17,46,1.9,0,'storage-back');addFarmCollider(FARM_STORAGE_POS.x-14,FARM_STORAGE_POS.z+17,20,1.9,0,'storage-front-left');addFarmCollider(FARM_STORAGE_POS.x+14,FARM_STORAGE_POS.z+17,20,1.9,0,'storage-front-right');
             farmGroup.add(createFarmSign('ALMACEN GRANDE',FARM_STORAGE_POS.x,storageY+19,FARM_STORAGE_POS.z-4));
             const itemGeometry={
                 maiz:new THREE.CylinderGeometry(.22,.34,1.35,7),
@@ -4531,7 +4556,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             makeFarmBox(coop,0,0,0,12,6,9,new THREE.MeshLambertMaterial({color:0xd1b38a}));
             const coopRoof=new THREE.Mesh(new THREE.ConeGeometry(8,3.5,4),roof);coopRoof.position.y=7.5;coopRoof.rotation.y=Math.PI/4;coop.add(coopRoof);
             const coopDoor=new THREE.Mesh(new THREE.BoxGeometry(3,4,.25),darkWood);coopDoor.position.set(0,2,4.6);coop.add(coopDoor);
-            coop.position.set(FARM_COOP_POS.x,coopY,FARM_COOP_POS.z);farmGroup.add(coop);farmGroup.add(createFarmSign('GALLINERO',FARM_COOP_POS.x,coopY+10,FARM_COOP_POS.z-7));
+            coop.position.set(FARM_COOP_POS.x,coopY,FARM_COOP_POS.z);farmGroup.add(coop);addFarmCollider(FARM_COOP_POS.x,FARM_COOP_POS.z,12.8,9.8,0,'farm-coop');farmGroup.add(createFarmSign('GALLINERO',FARM_COOP_POS.x,coopY+10,FARM_COOP_POS.z-7));
             const eggs=new THREE.InstancedMesh(new THREE.SphereGeometry(.38,9,7),new THREE.MeshLambertMaterial({color:0xf4e9d0}),8);
             for(let i=0;i<8;i++){dummy.position.set(FARM_COOP_POS.x-4+(i%4)*2.5,coopY+1.3,FARM_COOP_POS.z+7+Math.floor(i/4)*1.2);dummy.scale.set(1,.78,1);dummy.updateMatrix();eggs.setMatrixAt(i,dummy.matrix);}
             eggs.instanceMatrix.needsUpdate=true;eggs.frustumCulled=false;farmGroup.add(eggs);
@@ -4541,12 +4566,12 @@ function removeCarRadioStation(index, reason='Sin señal'){
             for(const side of [-1,1]){const post=new THREE.Mesh(new THREE.BoxGeometry(.55,8,.55),wood);post.position.set(side*4.8,4,0);well.add(post);}
             const beam=new THREE.Mesh(new THREE.BoxGeometry(10,.6,.7),wood);beam.position.y=8;well.add(beam);
             const wellRoof=new THREE.Mesh(new THREE.ConeGeometry(7,3.5,4),roof);wellRoof.position.y=10;wellRoof.rotation.y=Math.PI/4;well.add(wellRoof);
-            well.position.set(FARM_WELL_POS.x,wellY,FARM_WELL_POS.z);farmGroup.add(well);farmGroup.add(createFarmSign('POZO',FARM_WELL_POS.x,wellY+13,FARM_WELL_POS.z-5));
+            well.position.set(FARM_WELL_POS.x,wellY,FARM_WELL_POS.z);farmGroup.add(well);addFarmCollider(FARM_WELL_POS.x,FARM_WELL_POS.z,9.5,9.5,0,'farm-well');farmGroup.add(createFarmSign('POZO',FARM_WELL_POS.x,wellY+13,FARM_WELL_POS.z-5));
             const tractorY=farmGroundAt(FARM_TRACTOR_POS.x,FARM_TRACTOR_POS.z),tractor=new THREE.Group();
             const body=new THREE.Mesh(new THREE.BoxGeometry(7,2.7,10),new THREE.MeshLambertMaterial({color:0x3d8c48}));body.position.y=2.7;tractor.add(body);
             const cab=new THREE.Mesh(new THREE.BoxGeometry(4.5,4.3,4.5),new THREE.MeshLambertMaterial({color:0x8ec8d7}));cab.position.set(0,5.8,-1);tractor.add(cab);
             for(const side of [-1,1])for(const z of [-3.2,3.2]){const radius=z>0?2.2:1.45,wheel=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,1.15,10),new THREE.MeshLambertMaterial({color:0x222222}));wheel.rotation.z=Math.PI/2;wheel.position.set(side*3.7,z>0?2.2:1.55,z);tractor.add(wheel);}
-            tractor.position.set(FARM_TRACTOR_POS.x,tractorY,FARM_TRACTOR_POS.z);farmGroup.add(tractor);farmGroup.add(createFarmSign('TRACTOR',FARM_TRACTOR_POS.x,tractorY+10,FARM_TRACTOR_POS.z-7));
+            tractor.position.set(FARM_TRACTOR_POS.x,tractorY,FARM_TRACTOR_POS.z);farmGroup.add(tractor);addFarmCollider(FARM_TRACTOR_POS.x,FARM_TRACTOR_POS.z,8.6,11.5,0,'farm-tractor');farmGroup.add(createFarmSign('TRACTOR',FARM_TRACTOR_POS.x,tractorY+10,FARM_TRACTOR_POS.z-7));
             const deliveryY=farmGroundAt(FARM_DELIVERY_POS.x,FARM_DELIVERY_POS.z),delivery=new THREE.Group();
             const deliveryPost=new THREE.Mesh(new THREE.BoxGeometry(.45,5,.45),wood);deliveryPost.position.y=2.5;delivery.add(deliveryPost);
             const board=new THREE.Mesh(new THREE.BoxGeometry(9,2.7,.5),new THREE.MeshLambertMaterial({color:0xe0bd7a}));board.position.set(0,5.4,0);delivery.add(board);
@@ -4569,7 +4594,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             for(const side of [-1,1]){
                 const leg=new THREE.Mesh(new THREE.BoxGeometry(.8,1,.8),new THREE.MeshStandardMaterial({color:0x252525}));leg.position.set(side*2.8,2.1,1.3);tv.add(leg);
             }
-            tv.position.set(p.x,y,p.z);tv.rotation.y=-.25;tv.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(tv);farmTVProp=tv;
+            tv.position.set(p.x,y,p.z);tv.rotation.y=-.25;tv.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(tv);farmTVProp=tv;addFarmCollider(p.x,p.z,10.5,4.8,-.25,'farm-tv');
             farmGroup.add(createFarmSign('TELEVISION',p.x,y+10,p.z-2));updateFarmTVScreenVisual();
         }
         function createFarmRadio(){
@@ -4591,10 +4616,11 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
             const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.MeshStandardMaterial({color:0x9aa5a4,metalness:.7,roughness:.3}));
             antenna.position.set(2.8,5.8,-.2);antenna.rotation.z=-.22;radio.add(antenna);
-            radio.position.set(p.x,y,p.z);radio.rotation.y=-.18;radio.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(radio);farmRadioProp=radio;
+            radio.position.set(p.x,y,p.z);radio.rotation.y=-.18;radio.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(radio);farmRadioProp=radio;addFarmCollider(p.x,p.z,7.8,3.1,-.18,'farm-radio');
             farmGroup.add(createFarmSign('RADIO',p.x,y+5.8,p.z-2));
         }
         function createFarmDefensiveCorral(){
+            clearFarmColliders('farm-defense');
             if(farmDefenseGroup&&farmDefenseGroup.parent)farmDefenseGroup.parent.remove(farmDefenseGroup);
             farmDefenseGroup=null;if(farmDefenseLevel<=0||!farmGroup)return;
             farmDefenseGroup=new THREE.Group();farmGroup.add(farmDefenseGroup);
@@ -4608,7 +4634,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 for(let i=0;i<count;i++){
                     const along=gateStart+(i+.5)*usable/count,wx=x1+(dx/len)*along,wz=z1+(dz/len)*along,gy=farmGroundAt(wx,wz);
                     const block=new THREE.Mesh(new THREE.BoxGeometry(usable/count+.12,height,thickness),stone);
-                    block.position.set(wx,gy+height/2,wz);block.rotation.y=-angle;block.castShadow=true;block.receiveShadow=true;farmDefenseGroup.add(block);
+                    block.position.set(wx,gy+height/2,wz);block.rotation.y=-angle;block.castShadow=true;block.receiveShadow=true;farmDefenseGroup.add(block);addFarmCollider(wx,wz,usable/count+.2,thickness,-angle,'farm-defense');
                     const crown=new THREE.Mesh(new THREE.BoxGeometry(usable/count+.18,.5,thickness+.18),cap);
                     crown.position.set(wx,gy+height+.18,wz);crown.rotation.y=-angle;crown.castShadow=true;farmDefenseGroup.add(crown);
                 }
@@ -4618,7 +4644,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const towerH=height+2,towerW=4+level;
             for(const [tx,tz] of [[x1,z1],[x2,z1],[x1,z2],[x2,z2]]){
                 const tower=new THREE.Mesh(new THREE.BoxGeometry(towerW,towerH,towerW),cap);
-                tower.position.set(tx,farmGroundAt(tx,tz)+towerH/2,tz);tower.castShadow=true;farmDefenseGroup.add(tower);
+                tower.position.set(tx,farmGroundAt(tx,tz)+towerH/2,tz);tower.castShadow=true;farmDefenseGroup.add(tower);addFarmCollider(tx,tz,towerW+.5,towerW+.5,0,'farm-defense');
                 const top=new THREE.Mesh(new THREE.BoxGeometry(towerW+.7,.75,towerW+.7),stone);top.position.set(tx,tower.position.y+towerH/2,tz);farmDefenseGroup.add(top);
             }
         }
@@ -4626,7 +4652,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             Object.keys(farmStorageVisuals).forEach(type=>{const mesh=farmStorageVisuals[type];if(mesh){mesh.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));mesh.instanceMatrix.needsUpdate=true;mesh.frustumCulled=false;}});
         }
         function createFarmWorld(){
-            deformFarmTerrain();
+            deformFarmTerrain();clearFarmColliders();
             if(farmGroup&&farmGroup.parent)farmGroup.parent.remove(farmGroup);
             farmGroup=new THREE.Group();scene.add(farmGroup);
             const wood=new THREE.MeshLambertMaterial({color:0x69472a});
@@ -4639,7 +4665,16 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const roof1=new THREE.Mesh(new THREE.BoxGeometry(14,1.2,21),darkWood);roof1.position.set(-5,15,0);roof1.rotation.z=-.48;roof1.castShadow=true;
             const roof2=new THREE.Mesh(new THREE.BoxGeometry(14,1.2,21),darkWood);roof2.position.set(5,15,0);roof2.rotation.z=.48;roof2.castShadow=true;
             barn.add(roof1,roof2);const door=new THREE.Mesh(new THREE.BoxGeometry(5.6,9,.3),darkWood);door.position.set(0,4.5,9.7);barn.add(door);
-            barn.position.set(bx,by,bz);farmGroup.add(barn);
+            const barnTrim=new THREE.MeshStandardMaterial({color:0xd6b98d,roughness:.92}),barnIron=new THREE.MeshStandardMaterial({color:0x272a29,metalness:.48,roughness:.55});
+            for(const side of [-1,1]){const beam=new THREE.Mesh(new THREE.BoxGeometry(.65,14.3,.75),darkWood);beam.position.set(side*11.2,7.1,9.65);barn.add(beam);const hinge=new THREE.Mesh(new THREE.BoxGeometry(.18,7.5,.2),barnIron);hinge.position.set(side*2.55,4.4,9.92);barn.add(hinge);}
+            const barnLintel=new THREE.Mesh(new THREE.BoxGeometry(6.3,.7,.55),barnTrim);barnLintel.position.set(0,9.2,9.9);barn.add(barnLintel);
+            for(let i=0;i<5;i++){const plank=new THREE.Mesh(new THREE.BoxGeometry(.12,8.5,.12),barnTrim);plank.position.set(-2.25+i*1.12,4.5,9.92);barn.add(plank);}
+            const barnLoft=new THREE.Mesh(new THREE.BoxGeometry(3.2,2.1,.22),new THREE.MeshStandardMaterial({color:0x85b9c5,roughness:.7}));barnLoft.position.set(0,11.5,9.82);barn.add(barnLoft);
+            const loftCrossV=new THREE.Mesh(new THREE.BoxGeometry(.16,2.2,.28),barnTrim);loftCrossV.position.set(0,11.5,9.97);barn.add(loftCrossV);
+            const loftCrossH=new THREE.Mesh(new THREE.BoxGeometry(3.3,.16,.28),barnTrim);loftCrossH.position.set(0,11.5,9.97);barn.add(loftCrossH);
+            const ridge=new THREE.Mesh(new THREE.BoxGeometry(1.05,.65,21.7),darkWood);ridge.position.set(0,19.1,0);barn.add(ridge);
+            for(const z of [-9.4,9.4]){const eave=new THREE.Mesh(new THREE.BoxGeometry(26,.45,.65),barnTrim);eave.position.set(0,14.25,z);barn.add(eave);}
+            barn.position.set(bx,by,bz);farmGroup.add(barn);addFarmCollider(bx,bz,24,19,0,'farm-barn');
             const px=FARM_PIG_POS.x,pz=FARM_PIG_POS.z,py=farmGroundAt(px,pz);
             const mudRim=new THREE.Mesh(new THREE.TorusGeometry(22,1.25,7,56),new THREE.MeshLambertMaterial({color:0x8b684c}));
             mudRim.rotation.x=Math.PI/2;mudRim.position.set(px,py+.15,pz);farmGroup.add(mudRim);
@@ -4654,10 +4689,10 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
             const xL=px-23,xR=px+23,zT=pz-20,zB=pz+20;
             makeFarmFence(farmGroup,xL,zT,xR,zT,wood);makeFarmFence(farmGroup,xR,zT,xR,zB,wood);makeFarmFence(farmGroup,xR,zB,xL,zB,wood);makeFarmFence(farmGroup,xL,zB,xL,zT+7,wood);
-            const trough=new THREE.Mesh(new THREE.BoxGeometry(7,1.3,2.2),metal);trough.position.set(px+13,py+.68,pz+10);farmGroup.add(trough);
-            const wx=FARM_WORK_POS.x,wz=FARM_WORK_POS.z,wy=farmGroundAt(wx,wz);makeFarmBox(farmGroup,wx,wy,wz,8,2.2,5,wood);
+            const trough=new THREE.Mesh(new THREE.BoxGeometry(7,1.3,2.2),metal);trough.position.set(px+13,py+.68,pz+10);farmGroup.add(trough);addFarmCollider(px+13,pz+10,7.4,2.6,0,'farm-trough');
+            const wx=FARM_WORK_POS.x,wz=FARM_WORK_POS.z,wy=farmGroundAt(wx,wz);makeFarmBox(farmGroup,wx,wy,wz,8,2.2,5,wood);addFarmCollider(wx,wz,8.4,5.4,0,'farm-workbench');
             const crateMat=new THREE.MeshStandardMaterial({color:0xb27a37,roughness:.88});
-            for(let i=0;i<3;i++){const crate=makeFarmBox(farmGroup,wx-5+i*4,wy,wz-5,3,2.8,3,crateMat);crate.rotation.y=(i-1)*.2;
+            for(let i=0;i<3;i++){const crate=makeFarmBox(farmGroup,wx-5+i*4,wy,wz-5,3,2.8,3,crateMat);crate.rotation.y=(i-1)*.2;addFarmCollider(crate.position.x,crate.position.z,3.2,3.2,crate.rotation.y,'farm-order-crate');
                 const veg=new THREE.Mesh(new THREE.SphereGeometry(.72,8,7),new THREE.MeshStandardMaterial({color:[0x6aa341,0xd56d42,0xd7b34b][i],roughness:.9}));
                 veg.position.set(crate.position.x,wy+3.05,crate.position.z);farmGroup.add(veg);}
             farmGroup.add(createFarmSign('PEDIDOS',wx,wy+5,wz-7));
@@ -4665,7 +4700,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             makeFarmBox(stall,0,0,0,13,5,8,wood);
             const canopy=new THREE.Mesh(new THREE.BoxGeometry(15,1,10),new THREE.MeshStandardMaterial({color:0xb44f37,roughness:.88}));canopy.position.set(0,6,0);stall.add(canopy);
             const awning=new THREE.Mesh(new THREE.BoxGeometry(15,.4,2.4),cream);awning.position.set(0,4.8,4);stall.add(awning);
-            stall.position.set(sx,sy,sz);farmGroup.add(stall);farmGroup.add(createFarmSign('ALIMENTO',sx,sy+8,sz-5));
+            stall.position.set(sx,sy,sz);farmGroup.add(stall);addFarmCollider(sx,sz,13.5,8.5,0,'farm-shop');farmGroup.add(createFarmSign('ALIMENTO',sx,sy+8,sz-5));
             const sackMat=new THREE.MeshStandardMaterial({color:0xc7a66c,roughness:1});
             for(let i=0;i<3;i++){const sack=new THREE.Mesh(new THREE.SphereGeometry(1.25,10,8),sackMat);sack.scale.set(.85,1.1,.75);sack.position.set(sx-3+i*3,sy+1.5,sz+1);sack.castShadow=true;farmGroup.add(sack);}
             const hayMat=new THREE.MeshStandardMaterial({color:0xc9a34d,roughness:1});
@@ -4813,21 +4848,28 @@ function updateFarmThrownFood(){
 }
 
 function ensureFarmCicadaAudio(){
- if(!farmCicadaAudio){
-  farmCicadaAudio=new Audio('https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Sonidos/chicharras.mp3?v=1.6.2');
-  farmCicadaAudio.loop=true;farmCicadaAudio.preload='auto';farmCicadaAudio.setAttribute('playsinline','');
+ if(!farmAmbienceContext){const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;farmAmbienceContext=new Ctx();}
+ const ctx=farmAmbienceContext;
+ if(!farmCicadaMaster){
+  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=4550;filter.Q.value=.72;
+  farmCicadaMaster=ctx.createGain();farmCicadaMaster.gain.value=0;
+  farmCicadaGain=ctx.createGain();farmCicadaGain.gain.value=.16;
+  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=4380;
+  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=4890;
+  const secondGain=ctx.createGain();secondGain.gain.value=.26;
+  farmCicadaLfo=ctx.createOscillator();farmCicadaLfo.type='sine';farmCicadaLfo.frequency.value=18;
+  const lfoDepth=ctx.createGain();lfoDepth.gain.value=.095;farmCicadaLfo.connect(lfoDepth);lfoDepth.connect(farmCicadaGain.gain);
+  farmCicadaOscillatorA.connect(filter);farmCicadaOscillatorB.connect(secondGain);secondGain.connect(filter);
+  filter.connect(farmCicadaGain);farmCicadaGain.connect(farmCicadaMaster);farmCicadaMaster.connect(ctx.destination);
+  farmCicadaOscillatorA.start();farmCicadaOscillatorB.start();farmCicadaLfo.start();
  }
- return farmCicadaAudio;
+ return farmCicadaMaster;
 }
 function setFarmCicadas(active,strength=1){
- const audio=active?ensureFarmCicadaAudio():farmCicadaAudio;if(!audio)return;
- const level=Math.max(0,Math.min(1,Number(strength)||0));
- audio.volume=active?Math.min(.42,.42*level):0;
- if(active){
-  if(audioUnlocked&&audio.paused){const p=audio.play();if(p&&p.catch)p.catch(()=>{});}
- }else{
-  try{audio.pause();audio.currentTime=0;}catch(_){}
- }
+ const master=ensureFarmCicadaAudio();if(!master)return;
+ const ctx=farmAmbienceContext,level=Math.max(0,Math.min(1,Number(strength)||0));
+ if(ctx.state==='suspended'&&audioUnlocked)ctx.resume().catch(()=>{});
+ master.gain.setTargetAtTime((active&&audioUnlocked)?(.24*level):0,ctx.currentTime,.22);
 }
 function stopFarmAmbience(){
  farmAmbienceActiveZone='';farmAmbienceLevel=0;
@@ -4906,6 +4948,16 @@ const FARM_TV_CHANNELS=[
  {id:'une',name:'UNE TV',region:'HONDURAS',category:'NOTICIAS',url:'https://www.unetv.hn/',hls:'https://amixtv.com:8081/unetvhn/tracks-v1a1/mono.m3u8'},
  {id:'tvcentro',name:'TV Centro HD',region:'HONDURAS',category:'GENERAL',url:'https://cloud2.streaminglivehd.com/',hls:'https://cloud2.streaminglivehd.com:1936/8032/8032/playlist.m3u8'},
  {id:'tvcopan',name:'TV Copán',region:'HONDURAS',category:'GENERAL',url:'https://s.emisoras.tv/',hls:'https://s.emisoras.tv:8081/tvcopan/index.m3u8'},
+ {id:'campus',name:'Campus TV',region:'HONDURAS',category:'EDUCATIVO',url:'https://5e85d90130e77.streamlock.net/6052/6052/playlist.m3u8',hls:'https://5e85d90130e77.streamlock.net/6052/6052/playlist.m3u8'},
+ {id:'unahutv',name:'UNAH UTV',region:'HONDURAS',category:'EDUCATIVO',url:'https://live-utv.unah.edu.hn/web/salida.m3u8',hls:'https://live-utv.unah.edu.hn/web/salida.m3u8'},
+ {id:'tigosports',name:'Tigo Sports',region:'HONDURAS',category:'DEPORTES',url:'http://168.196.127.137:6001/play/a0ay/index.m3u8',hls:'http://168.196.127.137:6001/play/a0ay/index.m3u8'},
+ {id:'avivatv',name:'Aviva TV',region:'HONDURAS',category:'RELIGIOSO',url:'https://video.misistemareseller.com/atvhonduras/atvhonduras/playlist.m3u8',hls:'https://video.misistemareseller.com/atvhonduras/atvhonduras/playlist.m3u8'},
+ {id:'diostvekids',name:'Dios Te Ve Kids',region:'HONDURAS',category:'RELIGIOSO',url:'https://s.emisoras.tv:8081/diostevekids/index.m3u8',hls:'https://s.emisoras.tv:8081/diostevekids/index.m3u8'},
+ {id:'ebenezer',name:'Ebenezer TV',region:'HONDURAS',category:'RELIGIOSO',url:'https://5e85d90130e77.streamlock.net/6010/ngrp:6010_all/playlist.m3u8',hls:'https://5e85d90130e77.streamlock.net/6010/ngrp:6010_all/playlist.m3u8'},
+ {id:'canal32sto',name:'Canal 32 STO',region:'HONDURAS',category:'GENERAL',url:'https://s.emisoras.tv:8081/stocanal32hn/playlist.m3u8',hls:'https://s.emisoras.tv:8081/stocanal32hn/playlist.m3u8'},
+ {id:'suyapa',name:'Suyapa TV',region:'HONDURAS',category:'RELIGIOSO',url:'https://streamingcws30.com/suyapa2/videosuyapa2/playlist.m3u8',hls:'https://streamingcws30.com/suyapa2/videosuyapa2/playlist.m3u8'},
+ {id:'vtv',name:'VTV Honduras',region:'HONDURAS',category:'GENERAL',url:'https://d3q93l5bumjyoq.cloudfront.net/index.m3u8',hls:'https://d3q93l5bumjyoq.cloudfront.net/index.m3u8'},
+ {id:'tvc277',name:'TV Centro 27.2 HD',region:'HONDURAS',category:'GENERAL',url:'https://cloud2.streaminglivehd.com:1936/8004/8004/playlist.m3u8',hls:'https://cloud2.streaminglivehd.com:1936/8004/8004/playlist.m3u8'},
  {id:'aljazeera',name:'Al Jazeera English',region:'INTERNACIONAL',category:'NOTICIAS',url:'https://www.aljazeera.com/video/live/',hls:'https://live-hls-web-aje-gcp.thehlive.com/AJE/04.m3u8',backupHls:'https://live-hls-apps-aje-fa.getaj.net/AJE/index.m3u8'},
  {id:'france24',name:'France 24 English',region:'INTERNACIONAL',category:'NOTICIAS',url:'https://www.france24.com/en/live',hls:'https://live.france24.com/hls/live/2037218/F24_EN_HI_HLS/master_2300.m3u8'}
 ];
@@ -5262,7 +5314,7 @@ function attemptFarmRadioStream(token){
  if(farmRadioStreamTry>=streams.length){
   farmRadioPowerOn=false;farmRadioAudio.pause();showToast('No respondió '+station.name+'. Prueba otra emisora.');updateFarmRadioPanel();return;
  }
- const attemptNo=farmRadioStreamTry++,url=streams[attemptNo];
+ const attemptNo=++farmRadioStreamTry,url=streams[attemptNo-1];
  try{
   farmRadioAudio.pause();farmRadioAudio.onerror=null;farmRadioAudio.src=url;farmRadioAudio.volume=farmRadioVolume;
   const result=farmRadioAudio.play();
@@ -5359,7 +5411,7 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.2',
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.3',
    'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js'
   ];
   let lastError=null;
@@ -5481,7 +5533,7 @@ async function travelToFarm(){
  mapTravelInProgress=true;isCinematic=true;
  const panel=document.getElementById('cityJobPanel');if(panel)panel.style.display='none';
  showMapTravelOverlay('REGRESANDO A LA GRANJA','Los trabajos de ciudad se cancelarán al regresar…');
- await new Promise(resolve=>setTimeout(resolve,850));returnToFarmMap();
+ await new Promise(resolve=>setTimeout(resolve,850));stopStoryBackgroundMusic();returnToFarmMap();
  showMapTravelOverlay('DE VUELTA CON BENJA','La misión de la granja continúa.');
  await new Promise(resolve=>setTimeout(resolve,450));hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;
 }
@@ -5503,7 +5555,7 @@ async function enterCityMap(){
 function returnToFarmMap(){
  if(!farmCityMode)return;
  const exitCar=document.getElementById('carExitBtn');if(isDriving&&exitCar)exitCar.click();
- farmCityMode=false;waveActive=false;waitingNextWave=false;farmClearNPCs(true);
+ farmCityMode=false;stopStoryBackgroundMusic();waveActive=false;waitingNextWave=false;farmClearNPCs(true);
  unloadCityWorld();
  if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
  const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};
