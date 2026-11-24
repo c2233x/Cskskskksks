@@ -3513,9 +3513,11 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
 
         function createRoads() {
-            const chunkSize = 25;
-            for (let i = -2; i <= 2; i++) { for(let x = -375; x <= 375; x += chunkSize) buildSingleRoad(x, i * 95, chunkSize, 24); }
-            for (let i = -2; i <= 2; i++) { for(let z = -375; z <= 375; z += chunkSize) { if (Math.abs(z) % 95 < 12) continue; buildSingleRoad(i * 95, z, 24, chunkSize); } }
+            // En Android se dibujan tramos más largos para reducir llamadas de dibujo sin abrir huecos entre segmentos.
+            const chunkSize=IS_MOBILE_DEVICE?50:25;
+            const roadLimit=375;
+            for(let i=-2;i<=2;i++){for(let x=-roadLimit;x<=roadLimit;x+=chunkSize)buildSingleRoad(x,i*95,chunkSize,24);}
+            for(let i=-2;i<=2;i++){for(let z=-roadLimit;z<=roadLimit;z+=chunkSize){if(Math.abs(z)%95<12)continue;buildSingleRoad(i*95,z,24,chunkSize);}}
         }
         
         function buildSingleRoad(x, z, w=25, d=24) {
