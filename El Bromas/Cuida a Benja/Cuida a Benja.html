@@ -865,7 +865,7 @@ let farmWaterStorageGroup=null,farmPigstyGroup=null,farmPondWaterMeshes=[],farmP
 let farmBenjaFenceGroup=null;
 let farmWaterTankWater=null,farmWaterTankLabel=null,farmWaterTankLabelTexture=null;
 let farmPlacedBuildGroup=null,farmPlacedBuilds=[],farmBuildPreview=null,farmBuildType=null,farmBuildRotation=0,farmBuildPanelBound=false;
-let farmTorchLights=[],farmCityLampPool=[],farmCityLampUpdateAt=0,farmTVPointLight=null;
+let farmTorchLights=[],farmCityLampPool=[],farmCityLampUpdateAt=0,farmTorchUpdateAt=0,farmTVPointLight=null;
 let farmTVPhysicalButtons=[],farmTVPhysicalHitTargets=[],farmTVPhysicalControlsBound=false,farmClockLastUi=0;
 let farmTVShowNoSignal=false;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
@@ -3618,7 +3618,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const g = new THREE.Group(); const type = Math.random() > 0.8 ? 'big' : 'normal'; let poleHeight = type === 'big' ? 12 : 7.5; let headSize = type === 'big' ? 0.8 : 0.45; let lightY = type === 'big' ? 12.1 : 7.6;
             const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.25, poleHeight, 4), poleMat); pole.position.y = poleHeight/2; g.add(pole);
             const headMat = new THREE.MeshBasicMaterial({ color: 0xfffae0 }); const head = new THREE.Mesh(new THREE.SphereGeometry(headSize, 6, 6), headMat); head.position.y = lightY; g.add(head);
-            const point=IS_MOBILE_DEVICE?null:new THREE.PointLight(0xffcf91,0,type==='big'?48:32,2);if(point){point.position.set(0,lightY,0);g.add(point);}
+            const point=new THREE.PointLight(0xffcf91,0,type==='big'?48:32,2);if(point){point.position.set(0,lightY,0);g.add(point);}
             g.position.set(x, 0, z); scene.add(g); g.userData = { isLamp: true }; streetLights.push({ group: g, light: headMat, point, maxIntensity: type === 'big' ? 2.5 : 1.5 }); destructibleProps.push(g);
         }
         
@@ -7250,7 +7250,13 @@ function startProtestMission() {
             if (window.ambientLight) { window.ambientLight.intensity = 0.28+sunInt*.68; window.ambientLight.color.copy(ambCol); }
             if (window.hemiLight) { window.hemiLight.intensity = (sunInt * 0.48) + 0.12; }
             if (window.playerLight) { window.playerLight.intensity = 0; }
-            if(Array.isArray(farmTorchLights))farmTorchLights.forEach(light=>{light.intensity=(lampInt>.05?.25:0)+lampInt*1.6;light.visible=lampInt>.06;});
+            if(Array.isArray(farmTorchLights)&&performance.now()-farmTorchUpdateAt>650){
+                farmTorchUpdateAt=performance.now();
+                const origin=character?character.position:new THREE.Vector3();
+                const nearest=farmTorchLights.filter(light=>light&&light.parent).sort((a,b)=>{const pa=a.getWorldPosition(new THREE.Vector3()),pb=b.getWorldPosition(new THREE.Vector3());return pa.distanceToSquared(origin)-pb.distanceToSquared(origin);});
+                const litTorches=new Set(nearest.slice(0,IS_MOBILE_DEVICE?3:8));
+                farmTorchLights.forEach(light=>{const active=lampInt>.06&&litTorches.has(light);light.visible=active;light.intensity=active?.25+lampInt*1.6:0;});
+            }
             if (window.sunShadowTarget && character && window.sunLight) {
                 // El mapa de sombras se centra directamente en el jugador para que las sombras no queden atrás.
                 const target = window.sunShadowTarget.position;
