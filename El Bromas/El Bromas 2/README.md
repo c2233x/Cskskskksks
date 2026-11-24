@@ -15,8 +15,8 @@ El codigo es una pantalla de acceso visual, no autenticacion segura.
 ## Mapas separados
 Los mapas tienen archivos propios dentro de `Mapas/` y se cargan por separado:
 
-- `Mapas/Granja.js`: coordenadas, tiendas, almacen, corrales, ubicaciones de trabajo, misiones, Benja y reglas de invasiones.
-- `Mapas/Ciudad.js`: ubicaciones de la ciudad, tablero de trabajos, recompensas y oleadas.
+- `Mapas/Granja.js`: datos y constructor `buildWorld()` de la granja: coordenadas, tienda, almacén, corrales, cultivos, misiones, Benja y sonidos por zonas.
+- `Mapas/Ciudad.js`: datos y constructor `buildWorld()` de la ciudad: ubicaciones, tablero de trabajos, recompensas y oleadas.
 
 Los mapas comparten el motor 3D, controles, personaje, vehiculos, camara y guardado, pero los objetos de la ciudad solo se crean cuando el jugador viaja a ella. La ciudad no se renderiza mientras se juega en la granja.
 
