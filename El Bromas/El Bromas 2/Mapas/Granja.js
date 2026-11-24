@@ -6,6 +6,7 @@ window.CUIDA_BENJA_FARM_MAP = {
   center: { x: -330, z: -330 },
   flatRadius: 245,
   tv: { x: -414, z: -365 },
+  radio: { x: -390, z: -365 },
   ambientZones: [
     { id: "huerto", x: -220, z: -250, radius: 62, insects: true },
     { id: "arboleda", x: -266, z: -284, radius: 58, insects: true },
