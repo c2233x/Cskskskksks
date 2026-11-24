@@ -4238,7 +4238,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                         storyInteractAfter=now+1800;
                         if(storyFeedInventory>0){
                             storyFeedInventory--;storyPigWeight+=5;storyFeedingCount++;
-                            updateBenjaWeightVisual();playBenjaGrunt(true);
+                            updateBenjaWeightVisual();updateMissionUI();playBenjaGrunt(true);
                             showStoryDialog('OTRA RACION','ahi tienes benja. ya te estas poniendo fuerte. toca seguir trabajando para mantenerte bien alimentado.','🐷');
                             saveStoryProgress();
                         }else{
