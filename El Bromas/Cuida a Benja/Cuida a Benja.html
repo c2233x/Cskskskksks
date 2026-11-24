@@ -2950,7 +2950,7 @@ function createDrivableCars() {
             const hint=document.getElementById('carEnterHint'); if(hint) hint.classList.remove('active');
             updateCarRadioUI();
             startCarEngineSound();
-            carRadioEnabled=false;updateCarRadioUI();
+            startCarRadio(true);
             if (typeof forceHudVisible==='function') forceHudVisible();
         }
 
@@ -4792,8 +4792,9 @@ function removeCarRadioStation(index, reason='Sin señal'){
             if(level===2||level===3){
                 const gateMat=level===3?metal:woodLight,gx=px,gz=z2;
                 for(const side of [-1,1]){const hinge=new THREE.Mesh(new THREE.CylinderGeometry(.13,.13,3.4,7),gateMat);hinge.position.set(gx+side*6,1.7,gz);farmDefenseGroup.add(hinge);}
-                const gatePanel=new THREE.Mesh(new THREE.BoxGeometry(8,.22,.24),gateMat);gatePanel.position.set(gx,1.05,gz);farmDefenseGroup.add(gatePanel);
-                for(let i=0;i<6;i++){const slat=new THREE.Mesh(new THREE.BoxGeometry(.16,2.4,.22),wood);slat.position.set(gx-3.35+i*1.34,1.9,gz);farmDefenseGroup.add(slat);}
+                // La puerta queda abatida hacia el costado para no tapar la entrada de 12 m.
+                const gatePanel=new THREE.Mesh(new THREE.BoxGeometry(8,.22,.24),gateMat);gatePanel.position.set(gx-4.15,1.05,gz-4.0);gatePanel.rotation.y=Math.PI/2;farmDefenseGroup.add(gatePanel);
+                for(let i=0;i<6;i++){const slat=new THREE.Mesh(new THREE.BoxGeometry(.16,2.4,.22),wood);slat.position.set(gx-4.15,1.9,gz-3.3+i*1.22);slat.rotation.y=Math.PI/2;farmDefenseGroup.add(slat);}
             }
         }
                 function refreshFarmStorageVisuals(){
@@ -6572,7 +6573,7 @@ function startProtestMission() {
             
             for (let bath of bathZones) {
                 if (!isDead && character.position.distanceTo(bath.position) < 8) {
-                    interactionPrompt.style.display = 'block'; interactionPrompt.textContent = `Baño: ${bath.userData.cost} aura para limpiar semen`;
+                    interactionPrompt.style.display = 'block'; interactionPrompt.textContent = `Baño: ${bath.userData.cost} aura para limpiar mud`;
                     if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
@@ -6704,9 +6705,9 @@ function startProtestMission() {
             }
             
             if (mudStainLevel > 0) { mudStainLevel = Math.max(0, mudStainLevel - 0.0416); updateMudUI(); updateAvatarStainVisual(); }
-            if (!window._semenTick) window._semenTick = 0; window._semenTick++;
-            if (window._semenTick >= 60 && !isDead) {
-                window._semenTick = 0;
+            if (!window._mudTick) window._mudTick = 0; window._mudTick++;
+            if (window._mudTick >= 60 && !isDead) {
+                window._mudTick = 0;
                 if (mudStainLevel > 70) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (mudStainLevel > 60) { playerHealth = Math.max(0, playerHealth - 1); updatePlayerHealth(); } else if (mudStainLevel < 30) { playerHealth = Math.min(playerMaxHealth, playerHealth + 1); updatePlayerHealth(); }
             }
             
