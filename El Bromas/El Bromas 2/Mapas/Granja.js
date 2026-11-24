@@ -4,6 +4,13 @@ window.CUIDA_BENJA_FARM_MAP = {
   id: "granja",
   title: "La granja de Benja",
   center: { x: -330, z: -330 },
+  flatRadius: 245,
+  tv: { x: -414, z: -365 },
+  ambientZones: [
+    { id: "huerto", x: -220, z: -250, radius: 62, insects: true },
+    { id: "arboleda", x: -266, z: -284, radius: 58, insects: true },
+    { id: "pozo", x: -390, z: -440, radius: 48, insects: false }
+  ],
   pig: { x: -286, z: -354 },
   work: { x: -388, z: -302 },
   shop: { x: -258, z: -302 },
@@ -19,14 +26,14 @@ window.CUIDA_BENJA_FARM_MAP = {
   maxBenjaWeight: 100,
   saveWeightGoal: 52,
   goods: {
-    maiz: { label: "Maiz", price: 8, color: 0xe3b949, food: true },
-    trigo: { label: "Trigo", price: 7, color: 0xd8c27c, food: true },
-    zanahoria: { label: "Zanahorias", price: 10, color: 0xe77a37, food: true },
-    heno: { label: "Heno", price: 6, color: 0xc4a24c, food: true },
-    pienso: { label: "Pienso", price: 12, color: 0x8c7049, food: true },
-    huevos: { label: "Huevos", price: 5, color: 0xf2e8cb, food: false },
-    agua: { label: "Agua", price: 0, color: 0x5aa8d7, food: false },
-    madera: { label: "Madera", price: 0, color: 0x805536, food: false }
+    maiz: { label: "Maiz", price: 8, color: 0xe3b949, food: true, icon: "🌽" },
+    trigo: { label: "Trigo", price: 7, color: 0xd8c27c, food: true, icon: "🌾" },
+    zanahoria: { label: "Zanahorias", price: 10, color: 0xe77a37, food: true, icon: "🥕" },
+    heno: { label: "Heno", price: 6, color: 0xc4a24c, food: true, icon: "🌿" },
+    pienso: { label: "Pienso", price: 12, color: 0x8c7049, food: true, icon: "🫘" },
+    huevos: { label: "Huevos", price: 5, color: 0xf2e8cb, food: false, icon: "🥚" },
+    agua: { label: "Agua", price: 0, color: 0x5aa8d7, food: false, icon: "🛢️" },
+    madera: { label: "Madera", price: 0, color: 0x805536, food: false, icon: "🪵" }
   },
   missionOrder: ["harvest", "eggs", "delivery", "repair", "water", "tractor", "feed", "warehouse"],
   missions: {
