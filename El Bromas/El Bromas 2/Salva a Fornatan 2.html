@@ -2427,9 +2427,9 @@ const CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||{
             posterTextureObj = createPosterTexture(); createBillboards(); applyBillboardTextures(); stabilizeTexturedMaterials(); rebuildCarCollisionGrid();
             character = createCharacterWithSkeleton(); scene.add(character); character.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
             if (faceTextureUrl) applyFaceTexture();
-            createFarmWorld();
+            createFarmWorld();createCityJobBoard();updateFarmCarryVisual(true);
             
-            setupControls(); setupCarUI(); updatePlayerHealth(); updateAuraUI(); setupGraphicsUI(); setupHudEditor(); applyGraphicsSettings();
+            setupControls();setupFarmUiControls();setupCarUI(); updatePlayerHealth(); updateAuraUI(); setupGraphicsUI(); setupHudEditor(); applyGraphicsSettings();
             setInterval(() => { if (cartelTextures.length > 1) { currentCartelIndex = (currentCartelIndex + 1) % cartelTextures.length; updateBillboardsWithCurrentTexture(); } }, 5000);
             animate(); startStoryCampaign(false);
         }
@@ -3653,6 +3653,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             
             attackBtn.addEventListener('touchstart', (e) => {
                 e.preventDefault(); e.stopPropagation();
+                if(storyModeActive&&!farmCityMode&&benjaPig&&character&&character.position.distanceTo(benjaPig.position)<38&&Object.keys(FARM_GOODS).some(k=>FARM_GOODS[k].food&&(farmCarriedGoods[k]||0)>0)){if(farmThrowFood())return;}
                 if (!isAttacking && !isSpecialAttacking && !morteroActive && !isCinematic && !isDead && !isTuboActive && !isDriving) {
                     isAttacking = true; attackPhase = 1; playPumSound(); const bonusDamage = isBuffActive ? Math.floor(playerAura / 1000) * 10 : 0;
                     if (boss && boss.userData.health > 0 && character.position.distanceTo(boss.position) < (boss.userData.isGiant ? 25 : 12)) { boss.userData.health -= (13 + bonusDamage); updateBossHealth(); }
@@ -4093,22 +4094,24 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         
         function onPeneKilled(enemy=null) {
-            totalPenesKilled++; changeAura(10); updatePeneCountUI();
-            if(storyModeActive && enemy && enemy.userData && enemy.userData.farmRaider){
+            totalPenesKilled++;changeAura(10);
+            if(storyModeActive&&farmCityMode&&enemy&&enemy.userData&&!enemy.userData.farmRaider){
+                storyMoney+=Number(CITY_MAP_CONFIG.waves&&CITY_MAP_CONFIG.waves.rewardPerInvader)||1;
+                updateFarmMoneyLabel();saveStoryProgress();
+            }
+            if(storyModeActive&&enemy&&enemy.userData&&enemy.userData.farmRaider){
                 farmRaidKillsTotal++;farmRaidKillCarry++;
                 if(farmRaidKillCarry>=2){farmRaidKillCarry-=2;storyMoney+=5;updateFarmMoneyLabel();showToast('bonificacion de defensa: +$5');}
                 const remaining=smallPenes.some(p=>p&&p.userData&&p.userData.farmRaider);
                 if(farmRaidActive&&!remaining)farmFinishNightRaid();
                 saveStoryProgress();return;
             }
-            if(storyModeActive && storyStage===2 && storyDefenseActive && smallPenes.length===0){
-                storyAdvanceTo(3,'EL GUARDIÁN HA APARECIDO','El refugio está protegido, pero una máquina antigua controla la tormenta. Derrota al Guardián para encontrar la estación donde está Fornatan.','🛡️');
-                return;
-            }
-            if (!storyModeActive && waveActive && smallPenes.length === 0 && !waitingNextWave && bossDefeated) {
-                waitingNextWave = true;
-                if (missionActive && missionType === 'protest') { missionActive = false; document.getElementById('missionTitle').textContent = '¡MISIÓN COMPLETADA!'; setTimeout(() => { document.getElementById('missionUI').style.display = 'none'; }, 3000); }
-                playRisaSound(); setTimeout(() => { if (waveActive) spawnNextWave(); }, 2000);
+            updatePeneCountUI();
+            if(storyModeActive&&storyStage===2&&storyDefenseActive&&smallPenes.length===0){storyAdvanceTo(3,'EL GUARDIAN HA APARECIDO','el refugio esta protegido, pero una maquina antigua controla la tormenta.','🛡️');return;}
+            if((!storyModeActive||farmCityMode)&&waveActive&&smallPenes.length===0&&!waitingNextWave&&bossDefeated){
+                waitingNextWave=true;
+                if(missionActive&&missionType==='protest'){missionActive=false;document.getElementById('missionTitle').textContent='¡EVENTO COMPLETADO!';setTimeout(()=>{document.getElementById('missionUI').style.display='none';},3000);}
+                playRisaSound();setTimeout(()=>{if(waveActive)spawnNextWave();},2000);
             }
         }
                 function createPosterTexture() {
@@ -4167,13 +4170,22 @@ function removeCarRadioStation(index, reason='Sin señal'){
             try{a.pause();a.currentTime=0;a.volume=.66;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
         }
         function updateBenjaAnimation(){
-            if(!benjaPig)return;const t=performance.now()*.001;
+            if(!benjaPig)return;const now=performance.now(),t=now*.001;
+            if(storyModeActive&&!farmCityMode&&!storyCinematicPlaying){
+                if(!benjaWalkTarget||Math.hypot(benjaWalkTarget.x-benjaPig.position.x,benjaWalkTarget.z-benjaPig.position.z)<1.2||now-benjaWalkTargetAt>14000){
+                    benjaWalkTarget={x:FARM_PIG_POS.x+(Math.random()-.5)*14,z:FARM_PIG_POS.z+(Math.random()-.5)*14};benjaWalkTargetAt=now;
+                }
+                const dx=benjaWalkTarget.x-benjaPig.position.x,dz=benjaWalkTarget.z-benjaPig.position.z,dist=Math.hypot(dx,dz);
+                if(dist>1.1){const step=Math.min(.045,dist);benjaPig.position.x+=dx/dist*step;benjaPig.position.z+=dz/dist*step;benjaPig.rotation.y=Math.atan2(dx,dz);}
+                benjaPig.userData.groundY=farmGroundAt(benjaPig.position.x,benjaPig.position.z);
+                if(now-farmBenjaHungerLast>70000){farmBenjaHungerLast=now;farmBenjaHunger=Math.max(0,farmBenjaHunger-3);farmUpdateBenjaHud();if(farmBenjaHunger<=28&&!farmBenjaHungerLinePlayed){farmBenjaHungerLinePlayed=true;speakFarmLine('benja','ocupo pa la renta. ¿no traes algo de comer?');}}
+            }
             benjaPig.position.y=benjaPig.userData.groundY+Math.abs(Math.sin(t*2.1))*.16;
-            benjaPig.rotation.z=Math.sin(t*1.18)*.26;benjaPig.rotation.x=Math.sin(t*1.55)*.16;benjaPig.rotation.y=Math.sin(t*.62)*.12;
+            benjaPig.rotation.z=Math.sin(t*1.18)*.12;benjaPig.rotation.x=Math.sin(t*1.55)*.1;
             if(benjaPigBody)benjaPigBody.rotation.z=Math.sin(t*2.2)*.13;
-            if(storyModeActive&&!storyCinematicPlaying&&character&&character.position.distanceTo(benjaPig.position)<58&&t*1000>benjaSoundNextAt)playBenjaGrunt();
+            if(storyModeActive&&!farmCityMode&&!storyCinematicPlaying&&character&&character.position.distanceTo(benjaPig.position)<58&&t*1000>benjaSoundNextAt)playBenjaGrunt();
         }
-        function updateFarmMoneyLabel(){
+                function updateFarmMoneyLabel(){
             const el=document.getElementById('peneCountInfo');
             if(el)el.textContent='💰 $'+storyMoney+'   🐷 '+storyPigWeight+' kg   📦 '+farmTotalGoods(farmWarehouseStock)+' guardados';
             farmUpdateBenjaHud();updateFarmCarryVisual();
@@ -5695,6 +5707,7 @@ function setupFarmUiControls(){
             }
             updateStoryMode();
             updateBenjaAnimation();
+            updateFarmThrownFood();
             updateFarmGuide();
             updateFarmCinematic();
             if(graphicsSettings && graphicsSettings.worldOptimizer!==false && (worldCullFrameCounter%8===0))updateWorldChunkVisibility();
