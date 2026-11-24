@@ -4118,14 +4118,19 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
 
         function updateMissionUI() {
+            const title=document.getElementById('missionTitle'),progress=document.getElementById('missionProgress');
+            if(storyModeActive&&farmCityMode){
+                if(title)title.textContent=cityActiveJob?cityActiveJob.title:'CIUDAD PRINCIPAL';
+                if(progress)progress.textContent=cityActiveJob?cityActiveJob.detail+' · cobro $'+cityActiveJob.reward:'trabaja, usa los autos y supera las oleadas · $1 por enemigo';
+                return;
+            }
             if(storyModeActive){
                 const m=FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest;
-                const title=document.getElementById('missionTitle'),progress=document.getElementById('missionProgress');
                 if(title)title.textContent=m.title;
                 if(progress)progress.textContent=m.progress+' · '+m.icon;
-                updateFarmMoneyLabel();return;
+                return;
             }
-            document.getElementById('missionProgress').textContent='Carteles intactos: '+postersIntact+'/'+totalPosters;
+            if(progress)progress.textContent='Carteles intactos: '+postersIntact+'/'+totalPosters;
         }
                 function showStoryDialog(title,text,icon){
             const p=document.getElementById('storyDialog');if(!p)return;
@@ -4171,7 +4176,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function updateFarmMoneyLabel(){
             const el=document.getElementById('peneCountInfo');
             if(el)el.textContent='💰 $'+storyMoney+'   🐷 '+storyPigWeight+' kg   📦 '+farmTotalGoods(farmWarehouseStock)+' guardados';
-            farmUpdateBenjaHud();
+            farmUpdateBenjaHud();updateFarmCarryVisual();
         }
                 function farmGroundAt(x,z){return getTerrainY(x,z,null);}
         function makeFarmBox(parent,x,y,z,w,h,d,mat){
@@ -4387,11 +4392,31 @@ function removeCarRadioStation(index, reason='Sin señal'){
             if(farmDefenseGroup&&farmDefenseGroup.parent)farmDefenseGroup.parent.remove(farmDefenseGroup);
             farmDefenseGroup=null;if(farmDefenseLevel<=0||!farmGroup)return;
             farmDefenseGroup=new THREE.Group();farmGroup.add(farmDefenseGroup);
-            const px=FARM_PIG_POS.x,pz=FARM_PIG_POS.z,wood=new THREE.MeshLambertMaterial({color:0x8a6139});
-            for(let layer=0;layer<Math.min(3,farmDefenseLevel);layer++){const r=29+layer*5,x1=px-r,x2=px+r,z1=pz-r*.82,z2=pz+r*.82;
-                makeFarmFence(farmDefenseGroup,x1,z1,x2,z1,wood);makeFarmFence(farmDefenseGroup,x2,z1,x2,z2,wood);makeFarmFence(farmDefenseGroup,x2,z2,x1,z2,wood);makeFarmFence(farmDefenseGroup,x1,z2,x1,z1+7,wood);}
+            const px=FARM_PIG_POS.x,pz=FARM_PIG_POS.z,level=Math.max(1,Math.min(3,farmDefenseLevel));
+            const height=3.6+level*1.35,thickness=2.5+level*.7;
+            const stone=new THREE.MeshStandardMaterial({color:level>=2?0x858078:0x8b6038,roughness:.95});
+            const cap=new THREE.MeshStandardMaterial({color:level>=3?0xb3a990:0x6c4b30,roughness:.85});
+            function wallRun(x1,z1,x2,z2,gateStart=0,gateEnd=0){
+                const dx=x2-x1,dz=z2-z1,len=Math.hypot(dx,dz),angle=Math.atan2(dz,dx),usable=Math.max(0,len-gateStart-gateEnd);
+                const count=Math.max(1,Math.ceil(usable/7.8));
+                for(let i=0;i<count;i++){
+                    const along=gateStart+(i+.5)*usable/count,wx=x1+(dx/len)*along,wz=z1+(dz/len)*along,gy=farmGroundAt(wx,wz);
+                    const block=new THREE.Mesh(new THREE.BoxGeometry(usable/count+.12,height,thickness),stone);
+                    block.position.set(wx,gy+height/2,wz);block.rotation.y=-angle;block.castShadow=true;block.receiveShadow=true;farmDefenseGroup.add(block);
+                    const crown=new THREE.Mesh(new THREE.BoxGeometry(usable/count+.18,.5,thickness+.18),cap);
+                    crown.position.set(wx,gy+height+.18,wz);crown.rotation.y=-angle;crown.castShadow=true;farmDefenseGroup.add(crown);
+                }
+            }
+            const hx=22,hz=18,x1=px-hx,x2=px+hx,z1=pz-hz,z2=pz+hz;
+            wallRun(x1,z1,x2,z1);wallRun(x2,z1,x2,z2);wallRun(x2,z2,x1,z2,0,13);wallRun(x1,z2,x1,z1);
+            const towerH=height+2,towerW=4+level;
+            for(const [tx,tz] of [[x1,z1],[x2,z1],[x1,z2],[x2,z2]]){
+                const tower=new THREE.Mesh(new THREE.BoxGeometry(towerW,towerH,towerW),cap);
+                tower.position.set(tx,farmGroundAt(tx,tz)+towerH/2,tz);tower.castShadow=true;farmDefenseGroup.add(tower);
+                const top=new THREE.Mesh(new THREE.BoxGeometry(towerW+.7,.75,towerW+.7),stone);top.position.set(tx,tower.position.y+towerH/2,tz);farmDefenseGroup.add(top);
+            }
         }
-        function refreshFarmStorageVisuals(){
+                function refreshFarmStorageVisuals(){
             Object.keys(farmStorageVisuals).forEach(type=>{const mesh=farmStorageVisuals[type];if(mesh){mesh.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));mesh.instanceMatrix.needsUpdate=true;mesh.frustumCulled=false;}});
         }
         function createFarmWorld(){
@@ -4482,7 +4507,8 @@ function farmTakeItem(type,amount=1){
  let left=amount;const carried=Math.min(Number(farmCarriedGoods[type])||0,left);
  farmCarriedGoods[type]=(Number(farmCarriedGoods[type])||0)-carried;left-=carried;
  if(left>0){const stored=Math.min(Number(farmWarehouseStock[type])||0,left);farmWarehouseStock[type]=(Number(farmWarehouseStock[type])||0)-stored;left-=stored;}
- storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);refreshFarmStorageVisuals();return left===0;
+ storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+ refreshFarmStorageVisuals();updateFarmCarryVisual(true);return left===0;
 }
 
 function farmUpdateBenjaHud(){
@@ -4722,7 +4748,7 @@ function setupFarmUiControls(){
             storyInteractAfter=now+1200;saveStoryProgress();
         }
         function farmStartNightRaid(){
-            if(!storyModeActive||farmRaidActive||!scene)return;farmRaidActive=true;farmRaidSpawnedCount=IS_MOBILE_DEVICE?4:6;
+            if(!storyModeActive||farmCityMode||farmRaidActive||!scene)return;farmRaidActive=true;farmRaidSpawnedCount=IS_MOBILE_DEVICE?4:6;
             for(let i=0;i<farmRaidSpawnedCount;i++){
                 const angle=(i/farmRaidSpawnedCount)*Math.PI*2+(Math.random()-.5)*.4,dist=54+Math.random()*18;
                 const npc=createSmallPene(FARM_PIG_POS.x+Math.cos(angle)*dist,FARM_PIG_POS.z+Math.sin(angle)*dist);
@@ -4740,7 +4766,7 @@ function setupFarmUiControls(){
             showToast('BENJA ESTA A SALVO. BUEN TRABAJO.');saveStoryProgress();
         }
         function updateFarmNightRaid(){
-            if(!storyModeActive)return;const night=timeOfDay>=.76||timeOfDay<.23;
+            if(!storyModeActive||farmCityMode)return;const night=timeOfDay>=.76||timeOfDay<.23;
             if(night&&!farmRaidTriggered){farmRaidTriggered=true;farmStartNightRaid();}
             if(!night&&farmRaidTriggered){farmRaidTriggered=false;farmBenjaHealth=Math.min(100,farmBenjaHealth+18);farmUpdateBenjaHud();saveStoryProgress();}
             if(farmRaidActive&&farmBenjaHealth<=0){farmRaidActive=false;farmBenjaHealth=0;farmStopRaiders();showStoryDialog('BENJA SE ESCONDIO','los intrusos llegaron al corral. refuerza las barreras antes de la proxima noche.','🐷');}
@@ -4757,25 +4783,34 @@ function setupFarmUiControls(){
         }
         function updateStoryMode(){
             if(!storyModeActive||!character||!scene||storyCinematicPlaying)return;
-            const now=performance.now();let prompt='';
-            if(farmRaidActive){const n=smallPenes.filter(p=>p&&p.userData&&p.userData.farmRaider).length;prompt='DEFIENDE A BENJA · intrusos: '+n+' · $5 por cada 2';}
-            else{
-                const shopDist=Math.hypot(character.position.x-FARM_SHOP_POS.x,character.position.z-FARM_SHOP_POS.z),storeDist=Math.hypot(character.position.x-FARM_STORAGE_POS.x,character.position.z-FARM_STORAGE_POS.z);
-                if(shopDist<19){prompt='pulsa ATACAR para comprar comida y suministros';if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}}
-                if(storeDist<21){prompt='pulsa ATACAR para abrir el almacen';if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}}
+            const now=performance.now();if(farmCityMode){updateCityMapMode(now);return;}
+            let prompt='';
+            if(farmRaidActive){
+                const n=smallPenes.filter(p=>p&&p.userData&&p.userData.farmRaider).length;
+                prompt='DEFIENDE A BENJA · intrusos: '+n+' · $5 por cada 2';
+            }else{
+                const shopDist=Math.hypot(character.position.x-FARM_SHOP_POS.x,character.position.z-FARM_SHOP_POS.z);
+                const storeDist=Math.hypot(character.position.x-FARM_STORAGE_POS.x,character.position.z-FARM_STORAGE_POS.z);
+                if(shopDist<19&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
+                if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
                 const m=FARM_MISSION_DATA[farmMissionId];
-                if(m){const dist=Math.hypot(character.position.x-m.target.x,character.position.z-m.target.z);
-                    if(dist<(farmMissionId==='feed'?18:20)){
+                if(m){
+                    const dist=Math.hypot(character.position.x-m.target.x,character.position.z-m.target.z);
+                    if(dist<(farmMissionId==='feed'?22:20)){
                         if(farmMissionId==='warehouse')prompt='pulsa ATACAR para abrir el almacen y guardar la carga';
                         else if(farmMissionId==='delivery')prompt='pulsa ATACAR para entregar 2 verduras y 1 huevo';
-                        else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar las defensas del corral';
-                        else if(farmMissionId==='feed')prompt='pulsa ATACAR para darle comida a benja';
+                        else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar el corral';
+                        else if(farmMissionId==='feed')prompt='lanzale comida a benja cuando tenga hambre';
                         else prompt='pulsa ATACAR para completar: '+m.title.toLowerCase();
-                        if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse')farmHandleMissionAction();
+                        if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse'&&farmMissionId!=='feed')farmHandleMissionAction();
                         if(farmMissionId==='warehouse'&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
                     }
                 }
             }
+            const distanceFromFarm=Math.hypot(character.position.x-FARM_CENTER.x,character.position.z-FARM_CENTER.z);
+            const cityBtn=document.getElementById('farmGoCity');
+            if(cityBtn)cityBtn.style.display=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235)?'inline-flex':'none';
+            if(!farmRaidActive&&distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235))prompt='llegaste al limite de la granja. pulsa IR A CIUDAD para viajar.';
             if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}else if(interactionPrompt)interactionPrompt.style.display='none';
             updateFarmMoneyLabel();updateFarmGuide();if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
         }
