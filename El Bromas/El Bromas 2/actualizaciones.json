@@ -1,7 +1,7 @@
 {
   "game": "Salva a Fornatan 2",
   "edition": "El Bromas 2",
-  "version": "1.1",
+  "version": "1.2",
   "updates": [
     {
       "version": "1.0",
@@ -25,6 +25,21 @@
         "El peso de Benja aumenta con cada racion y puedes seguir alimentandolo despues del primer objetivo.",
         "Se agregaron los dos sonidos de cerdo enviados para Benja.",
         "Se corrigio la transicion entre misiones para mantener la rutina de granja y el guardado."
+      ]
+    },
+    {
+      "version": "1.2",
+      "title": "Benja y la granja mejorada",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "Se corrigieron los ojos de Benja para que queden visibles sobre la cara.",
+        "Se retiro la gran plataforma circular que hacia que el suelo de la granja se viera como una isla de otro color.",
+        "Se agregaron dos propiedades rurales privadas con casas, ventanas, techos, puertas y cercas.",
+        "Se amplio el paisaje con arboles frondosos, pinos y montanas lejanas usando mallas instanciadas para mantener bajo el numero de llamadas de dibujo.",
+        "Se redujeron las subdivisiones del terreno de 100 a 72 por lado para usar menos vertices.",
+        "Se agrego un perfil grafico inicial para Android: resolucion limitada, sombras ligeras apagadas por defecto, distancia de dibujo menor y resolucion dinamica.",
+        "Los ajustes graficos de esta entrega ahora se guardan separados de Salva a cornatan original.",
+        "Nueva portada con el personaje principal cuidando y alimentando a Benja."
       ]
     }
   ]
