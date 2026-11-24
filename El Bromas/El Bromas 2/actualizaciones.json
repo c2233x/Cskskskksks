@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "updates": [
     {
       "version": "1.0",
@@ -99,6 +99,17 @@
         "La radio del vehículo queda apagada al entrar y se enciende manualmente; no hay música de fondo en la granja.",
         "Se añadieron viento, pájaros y chicharras sintetizadas en zonas concretas de la granja.",
         "Se añadió un televisor interactivo con opciones de canales locales de Honduras e internacionales y enlaces a los sitios oficiales cuando el reproductor integrado no está disponible."
+      ]
+    },
+    {
+      "version": "1.5.1",
+      "title": "Descarga completa de ciudad y ajuste de radio",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "Cada archivo de Mapas contiene su propio constructor buildWorld(); Ciudad.js se descarga y construye solo al cruzar el límite de la granja.",
+        "Al volver a la granja se eliminan del motor las geometrías, materiales, texturas, vehículos, farolas y referencias de ciudad para liberar memoria.",
+        "La radio del carro ahora requiere encendido manual y queda apagada al entrar al vehículo.",
+        "Se ajustaron los identificadores de caché de los archivos de mapa para evitar cargar versiones antiguas."
       ]
     }
   ]
