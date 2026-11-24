@@ -752,8 +752,13 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},
     crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},
+    tv:{x:-414,z:-365},flatRadius:245,ambientZones:[
+        {id:'huerto',x:-220,z:-250,radius:62,insects:true},
+        {id:'arboleda',x:-266,z:-284,radius:58,insects:true},
+        {id:'pozo',x:-390,z:-440,radius:48,insects:false}
+    ],
     cityExitRadius:235,cityGate:{x:-135,z:-330},saveWeightGoal:52,
-    goods:{maiz:{label:'Maiz',price:8,color:0xe3b949,food:true},trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true},zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true},heno:{label:'Heno',price:6,color:0xc4a24c,food:true},pienso:{label:'Pienso',price:12,color:0x8c7049,food:true},huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false},agua:{label:'Agua',price:0,color:0x5aa8d7,food:false},madera:{label:'Madera',price:0,color:0x805536,food:false}},
+    goods:{maiz:{label:'Maiz',price:8,color:0xe3b949,food:true,icon:'🌽'},trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true,icon:'🌾'},zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true,icon:'🥕'},heno:{label:'Heno',price:6,color:0xc4a24c,food:true,icon:'🌿'},pienso:{label:'Pienso',price:12,color:0x8c7049,food:true,icon:'🫘'},huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false,icon:'🥚'},agua:{label:'Agua',price:0,color:0x5aa8d7,food:false,icon:'🛢️'},madera:{label:'Madera',price:0,color:0x805536,food:false,icon:'🪵'}},
     missionOrder:['harvest','eggs','delivery','repair','water','tractor','feed','warehouse']
 };
 const FARM_CENTER=FARM_MAP_CONFIG.center;
@@ -767,6 +772,8 @@ const FARM_DELIVERY_POS=FARM_MAP_CONFIG.delivery;
 const FARM_WELL_POS=FARM_MAP_CONFIG.well;
 const FARM_TRACTOR_POS=FARM_MAP_CONFIG.tractor;
 const FARM_REPAIR_POS=FARM_MAP_CONFIG.repair;
+const FARM_TV_POS=FARM_MAP_CONFIG.tv||{x:FARM_CENTER.x-84,z:FARM_CENTER.z-35};
+const FARM_AMBIENT_ZONES=FARM_MAP_CONFIG.ambientZones||[];
 const BENJA_SAVE_WEIGHT_GOAL=FARM_MAP_CONFIG.saveWeightGoal||52;
 const FARM_GOODS=FARM_MAP_CONFIG.goods;
 const FARM_MISSION_ORDER=FARM_MAP_CONFIG.missionOrder;
@@ -782,23 +789,13 @@ const FARM_MISSION_DATA=FARM_MAP_CONFIG.missions?
         feed:{title:'CUIDA A BENJA',target:FARM_PIG_POS,label:'vuelve con benja',progress:'lanzale comida a benja cuando tenga hambre',icon:'🐷'},
         warehouse:{title:'ORDENA EL ALMACEN',target:FARM_STORAGE_POS,label:'ve al almacen',progress:'guarda en el almacen todo lo que llevas',icon:'🏠'}
     };
-const CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||{
-    spawn:{x:0,z:0},jobBoard:{x:38,z:-22},returnGate:{x:-132,z:-330},
-    jobs:[
-        {id:'delivery',title:'REPARTIDOR',detail:'lleva un paquete al barrio norte',target:{x:125,z:-65},reward:24,icon:'📦'},
-        {id:'taxi',title:'SERVICIO DE TAXI',detail:'recoge al cliente en la avenida',target:{x:-105,z:72},reward:30,icon:'🚕'},
-        {id:'mechanic',title:'AYUDANTE DE TALLER',detail:'entrega herramientas al taller',target:{x:155,z:95},reward:28,icon:'🔧'},
-        {id:'park',title:'MANTENIMIENTO DEL PARQUE',detail:'lleva bolsas al parque',target:{x:-155,z:-115},reward:18,icon:'🌳'},
-        {id:'market',title:'ENCARGO DEL MERCADO',detail:'recoge suministros en el mercado',target:{x:90,z:165},reward:22,icon:'🛒'},
-        {id:'lights',title:'REPARAR ALUMBRADO',detail:'revisa las farolas de la avenida',target:{x:-35,z:-175},reward:26,icon:'💡'},
-        {id:'courier',title:'MENSAJERO',detail:'entrega documentos en la oficina',target:{x:-190,z:35},reward:32,icon:'✉️'},
-        {id:'clean',title:'LIMPIEZA DE CALLES',detail:'lleva el equipo a la plaza',target:{x:195,z:-150},reward:20,icon:'🧹'}
-    ],
-    waves:{max:18,initialCount:5,addPerWave:2,rewardPerInvader:1}
-};
+let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
 
-        let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null;
+        let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null,farmTVProp=null;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
+        let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
+        let farmTVPanelBound=false,farmTVCurrentChannel=null;
+        let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceInsectAudio=null,farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0;
         let farmBenjaHunger=100,farmBenjaHungerLast=0,farmBenjaHungerLinePlayed=false,benjaWalkTarget=null,benjaWalkTargetAt=0;
         let farmThrownFood=[],farmCarryVisualHash='',farmCarryVisualGroup=null,farmLastSubtitleAt=0;
         let farmMissionHintWasVisible=false;
@@ -880,7 +877,8 @@ const CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||{
                 return chosen;
             } catch (_) { return null; }
         }
-        let musicTracks = []; let musicPlaybackToken = 0; let musicStarting = false; let musicTrackFailures = 0; let supremeEffectAudio = null; let supremeEffectActive = false; let normalMusicResumedAfterSupreme = false; let normalMusicResumePending = false; let bossMusicStarted = false; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null, supremeAttackSoundUrl = null;
+        let musicTracks = []; let musicPlaybackToken = 0; let musicStarting = false; let musicTrackFailures = 0;
+        const FARM_CHICHARRA_URL='https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Sonidos/Ambiente/chicharra-japonesa.mp3?v=1.5.0'; let supremeEffectAudio = null; let supremeEffectActive = false; let normalMusicResumedAfterSupreme = false; let normalMusicResumePending = false; let bossMusicStarted = false; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null, supremeAttackSoundUrl = null;
         let taradoSoundUrl = null, pedoSoundUrl = null, risaSoundUrl = null, fueraSoundUrl = null;
         let explosionSoundUrl = null, rolonSoundUrl = null, pumSoundUrl = null;
         let faceTextureUrl = null; let texCespedUrl = null, texTierraUrl = null, texPiedraUrl = null;
