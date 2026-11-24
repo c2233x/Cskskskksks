@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#071421">
+<title>Salva a Fornatan 2 · El Bromas 2</title>
+<link rel="icon" type="image/svg+xml" href="icono.svg">
+<style>
+:root{color-scheme:dark;--ink:#edf7ff;--muted:#9db1c8;--gold:#ffcb62;--cyan:#63e7e7;--panel:rgba(7,19,31,.88);--line:rgba(137,220,236,.25)}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#06111c;color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;overscroll-behavior:none}
+button,input{font:inherit}
+button{color:inherit;cursor:pointer;touch-action:manipulation}
+.hide{display:none!important}
+.screen{position:fixed;inset:0;overflow:hidden}
+#accessScreen{z-index:100;background:radial-gradient(ellipse at 50% 35%,#163a51 0%,#091a2b 48%,#030a12 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+#accessScreen h1{margin:0 0 24px;font-size:clamp(27px,7vw,42px);font-weight:900;letter-spacing:.1em;color:#f6fcff;text-shadow:0 0 28px rgba(70,219,244,.48)}
+#accessCode{width:min(340px,84vw);height:58px;border:1px solid rgba(101,220,241,.62);border-radius:15px;background:rgba(2,12,21,.86);color:#fff;text-align:center;font-size:18px;letter-spacing:.12em;outline:none;box-shadow:0 0 35px rgba(31,174,208,.15)}
+#accessCode:focus{border-color:#a0f6ff;box-shadow:0 0 0 3px rgba(75,222,239,.15),0 0 34px rgba(31,174,208,.3)}
+#accessCode.shake{animation:shake .25s}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+#menuScreen{z-index:20;display:flex;align-items:center;justify-content:center;padding:22px;background:radial-gradient(ellipse at 50% 18%,#174763 0%,#0b2538 36%,#06111f 78%,#030810 100%)}
+.menu-wrap{width:min(520px,100%);text-align:center}
+.brand-mark{width:106px;height:106px;margin:0 auto 15px;border-radius:31px;background:linear-gradient(145deg,#ffcf70,#eb7135 52%,#2f9cba);border:2px solid rgba(255,255,255,.65);box-shadow:0 16px 48px rgba(0,0,0,.38),0 0 34px rgba(70,220,230,.22);display:grid;place-items:center;font-size:55px}
+.game-title{font-size:clamp(28px,7.5vw,46px);font-weight:1000;line-height:1.02;letter-spacing:.025em;text-shadow:0 5px 25px rgba(0,0,0,.5)}
+.game-title span{display:block;color:var(--gold);font-size:.62em;letter-spacing:.18em;margin-top:10px}
+.version{display:inline-flex;align-items:center;gap:7px;margin:15px 0 27px;padding:6px 13px;border:1px solid rgba(255,211,121,.34);border-radius:99px;background:rgba(255,201,95,.09);color:#ffe2a6;font-size:12px;font-weight:800;letter-spacing:.08em}
+.menu-actions{display:grid;gap:12px;width:min(340px,100%);margin:0 auto}
+.menu-btn{min-height:55px;border-radius:16px;border:1px solid rgba(255,255,255,.13);background:linear-gradient(135deg,#167e9d,#15506e);font-size:15px;font-weight:850;box-shadow:0 9px 20px rgba(0,0,0,.22);transition:transform .12s,filter .12s}
+.menu-btn:active{transform:scale(.97);filter:brightness(1.15)}
+.menu-btn.primary{background:linear-gradient(135deg,#ffb94f,#e76b38);color:#24150b;border-color:rgba(255,228,173,.7)}
+.menu-btn.secondary{background:linear-gradient(135deg,#203b55,#15283c)}
+.menu-foot{margin-top:24px;color:#91aabe;font-size:11px;letter-spacing:.1em}
+#gameScreen{z-index:10;background:#142c25}
+#worldCanvas{position:absolute;inset:68px 0 116px;width:100%;height:calc(100% - 184px);display:block;touch-action:none}
+.hud-top{position:absolute;top:0;left:0;right:0;height:68px;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:linear-gradient(180deg,rgba(4,12,19,.96),rgba(4,12,19,.7));border-bottom:1px solid rgba(142,221,225,.22);z-index:3}
+.hud-brand{display:flex;align-items:center;gap:9px;min-width:0}
+.hud-emblem{width:39px;height:39px;border-radius:12px;background:linear-gradient(145deg,#f7c45f,#df743a);display:grid;place-items:center;font-size:21px;flex:none}
+.hud-name{font-size:12px;font-weight:900;letter-spacing:.06em;white-space:nowrap}
+.hud-sub{font-size:10px;color:#a7c1d0;margin-top:3px}
+.hud-right{display:flex;align-items:center;gap:8px}
+.hud-chip{padding:7px 9px;border-radius:10px;background:rgba(31,66,79,.62);border:1px solid rgba(130,219,222,.22);font-size:11px;font-weight:800;white-space:nowrap}
+.icon-btn{width:39px;height:39px;border-radius:12px;border:1px solid rgba(135,221,229,.3);background:rgba(20,48,62,.9);font-size:19px}
+.quest-bar{position:absolute;top:77px;left:50%;transform:translateX(-50%);width:min(500px,calc(100% - 24px));z-index:2;padding:10px 14px;border:1px solid rgba(255,207,113,.32);border-radius:14px;background:rgba(5,18,27,.77);backdrop-filter:blur(7px);pointer-events:none}
+.quest-kicker{font-size:9px;color:#ffd78f;text-transform:uppercase;letter-spacing:.18em;font-weight:900}
+.quest-title{font-size:13px;font-weight:900;margin-top:3px}
+.quest-progress{font-size:10px;color:#b6c9d5;margin-top:3px}
+.bottom-controls{position:absolute;bottom:0;left:0;right:0;height:116px;background:linear-gradient(0deg,rgba(4,12,18,.97),rgba(4,12,18,.78));border-top:1px solid rgba(142,221,225,.2);display:flex;align-items:center;justify-content:space-between;padding:8px 18px calc(8px + env(safe-area-inset-bottom));z-index:4}
+.dpad{display:grid;grid-template-columns:42px 42px 42px;grid-template-rows:38px 38px 38px;gap:3px;align-items:center;justify-items:center}
+.pad-btn{width:39px;height:36px;border-radius:11px;border:1px solid rgba(203,236,241,.28);background:linear-gradient(145deg,rgba(69,110,128,.9),rgba(22,47,64,.95));font-size:17px;font-weight:900;box-shadow:0 4px 10px rgba(0,0,0,.28);touch-action:none;user-select:none}
+.pad-btn:active,.pad-btn.pressed{background:#25849b;transform:scale(.94)}
+#upBtn{grid-column:2;grid-row:1}#leftBtn{grid-column:1;grid-row:2}#downBtn{grid-column:2;grid-row:2}#rightBtn{grid-column:3;grid-row:2}
+.control-hint{font-size:9px;color:#829cae;text-align:center;margin-top:2px;white-space:nowrap}
+.interact-btn{width:76px;height:76px;border-radius:50%;border:3px solid #ffe0a0;background:radial-gradient(circle at 35% 25%,#ffdb87,#d77938 72%,#884522);color:#291609;font-size:26px;font-weight:1000;box-shadow:0 0 22px rgba(255,174,76,.25),0 6px 15px rgba(0,0,0,.35)}
+.interact-btn small{display:block;font-size:9px;letter-spacing:.08em;margin-top:1px}
+#toast{position:absolute;left:50%;bottom:132px;transform:translate(-50%,12px);z-index:8;max-width:calc(100% - 36px);padding:10px 15px;border:1px solid rgba(122,229,218,.38);border-radius:12px;background:rgba(4,18,27,.95);box-shadow:0 8px 26px rgba(0,0,0,.3);font-size:12px;font-weight:800;text-align:center;opacity:0;pointer-events:none;transition:.18s}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+.overlay{position:absolute;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;padding:18px;background:rgba(1,8,14,.83);backdrop-filter:blur(8px)}
+.modal-card{width:min(480px,100%);max-height:min(84vh,700px);overflow:auto;padding:23px;border-radius:22px;border:1px solid rgba(124,218,230,.31);background:linear-gradient(150deg,#102c3d,#091723 75%);box-shadow:0 25px 90px rgba(0,0,0,.55)}
+.modal-icon{font-size:33px;margin-bottom:8px}
+.modal-title{font-size:22px;font-weight:950;color:#ffe0a1;letter-spacing:.03em}
+.modal-copy{font-size:13px;line-height:1.65;color:#d1e0e7;margin:11px 0 20px}
+.modal-actions{display:flex;gap:10px}
+.modal-actions .menu-btn{flex:1;min-height:47px;font-size:13px}
+.settings-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+.settings-head h2{font-size:21px;margin:0}
+.close-btn{width:38px;height:38px;border-radius:11px;background:#193b50;border:1px solid rgba(156,224,231,.3);font-size:19px}
+.setting-section{padding:14px 0;border-top:1px solid rgba(133,205,216,.16)}
+.setting-section h3{margin:0 0 8px;font-size:13px;color:#ffd58a}
+.setting-section p,.setting-section li{font-size:12px;line-height:1.55;color:#c2d5df}
+.setting-section ul{margin:7px 0 0;padding-left:19px}
+.update-card{padding:12px;border:1px solid rgba(134,218,226,.2);border-radius:13px;background:rgba(31,73,88,.24);margin-top:9px}
+.update-version{font-size:13px;font-weight:900;color:#8ce8e8}
+.update-date{font-size:10px;color:#91a9b9;margin-top:3px}
+.update-body{font-size:12px;line-height:1.5;color:#d1e0e7;margin-top:8px}
+.mission-list{display:grid;gap:7px;margin-top:9px}
+.mission-row{display:flex;gap:9px;align-items:flex-start;padding:9px 10px;border-radius:10px;background:rgba(29,61,73,.45);font-size:11px;color:#c5d7df}
+.mission-row b{color:#ffe0a1}
+@media(min-width:760px){.bottom-controls{height:100px;padding-left:max(28px,calc((100vw - 620px)/2));padding-right:max(28px,calc((100vw - 620px)/2))}.dpad{transform:scale(.92);transform-origin:left center}.interact-btn{width:82px;height:82px}.quest-bar{top:82px}.control-hint{font-size:10px}}
+@media(max-height:590px){.bottom-controls{height:96px}.dpad{transform:scale(.84);transform-origin:left center}.interact-btn{width:66px;height:66px}.quest-bar{top:72px;padding:7px 12px}.quest-title{font-size:12px}#worldCanvas{bottom:96px;height:calc(100% - 164px)}}
+</style>
+</head>
+<body>
+<section id="accessScreen" class="screen">
+  <h1>Codis</h1>
+  <input id="accessCode" type="password" placeholder="aqui escribo el codigo" autocomplete="off" autocapitalize="off" spellcheck="false" aria-label="Código">
+</section>
+
+<section id="menuScreen" class="screen hide">
+  <div class="menu-wrap">
+    <div class="brand-mark">🧭</div>
+    <div class="game-title">SALVA A FORNATAN 2<span>EL BROMAS 2</span></div>
+    <div class="version">✦ VERSIÓN 1.0</div>
+    <div class="menu-actions">
+      <button class="menu-btn primary" id="newGameBtn">▶ NUEVA PARTIDA</button>
+      <button class="menu-btn" id="continueBtn">↻ CONTINUAR</button>
+      <button class="menu-btn secondary" id="settingsBtn">⚙ AJUSTES</button>
+    </div>
+    <div class="menu-foot">AVENTURA · MODO HISTORIA</div>
+  </div>
+</section>
+
+<section id="gameScreen" class="screen hide">
+  <div class="hud-top">
+    <div class="hud-brand">
+      <div class="hud-emblem">🧭</div>
+      <div><div class="hud-name">SALVA A FORNATAN 2</div><div class="hud-sub">EL BROMAS · v1.0</div></div>
+    </div>
+    <div class="hud-right">
+      <div class="hud-chip" id="itemChip">💠 0/3</div>
+      <button class="icon-btn" id="gameSettingsBtn" aria-label="Ajustes">⚙</button>
+    </div>
+  </div>
+  <div class="quest-bar">
+    <div class="quest-kicker">MISIÓN ACTUAL</div>
+    <div class="quest-title" id="questTitle">Busca los recuerdos</div>
+    <div class="quest-progress" id="questProgress">Fragmentos 0/3</div>
+  </div>
+  <canvas id="worldCanvas" aria-label="Mundo del juego"></canvas>
+  <div id="toast"></div>
+  <div class="bottom-controls">
+    <div>
+      <div class="dpad">
+        <button class="pad-btn" id="upBtn" data-dir="up" aria-label="Arriba">▲</button>
+        <button class="pad-btn" id="leftBtn" data-dir="left" aria-label="Izquierda">◀</button>
+        <button class="pad-btn" id="downBtn" data-dir="down" aria-label="Abajo">▼</button>
+        <button class="pad-btn" id="rightBtn" data-dir="right" aria-label="Derecha">▶</button>
+      </div>
+      <div class="control-hint">WASD · FLECHAS</div>
+    </div>
+    <button class="interact-btn" id="interactBtn" aria-label="Interactuar">✦<small>USAR</small></button>
+  </div>
+</section>
+
+<div id="storyOverlay" class="overlay hide">
+  <div class="modal-card">
+    <div class="modal-icon" id="storyIcon">📜</div>
+    <div class="modal-title" id="storyTitle">La señal perdida</div>
+    <div class="modal-copy" id="storyText"></div>
+    <div class="modal-actions"><button class="menu-btn primary" id="storyContinue">CONTINUAR</button></div>
+  </div>
+</div>
+
+<div id="settingsOverlay" class="overlay hide">
+  <div class="modal-card">
+    <div class="settings-head"><h2>⚙ AJUSTES</h2><button class="close-btn" id="closeSettings" aria-label="Cerrar">×</button></div>
+    <div class="setting-section">
+      <h3>📦 INFORMACIÓN DE ACTUALIZACIÓN</h3>
+      <div id="updatesList"><div class="update-card"><div class="update-version">v1.0 · Lanzamiento</div><div class="update-body">Nuevo modo historia, exploración, acertijos y guardado de progreso.</div></div></div>
+    </div>
+    <div class="setting-section">
+      <h3>📖 HISTORIA</h3>
+      <p>Una tormenta apagó las señales del Valle del Eco. Fornatan quedó aislado detrás de una antigua puerta. Sigue las pistas, reconstruye la red de antenas y descubre qué ocurrió con el valle.</p>
+    </div>
+    <div class="setting-section">
+      <h3>🗺 MISIONES DE LA VERSIÓN 1.0</h3>
+      <div class="mission-list">
+        <div class="mission-row">💠 <span><b>1. Recuerdos dispersos</b><br>Encuentra los tres fragmentos de memoria.</span></div>
+        <div class="mission-row">🔋 <span><b>2. Energía para el valle</b><br>Recupera dos celdas de energía.</span></div>
+        <div class="mission-row">📡 <span><b>3. Señales de esperanza</b><br>Reactiva las dos antenas.</span></div>
+        <div class="mission-row">🧰 <span><b>4. El cofre de las ruinas</b><br>Resuelve el camino hasta el cofre antiguo.</span></div>
+        <div class="mission-row">🚪 <span><b>5. La puerta del este</b><br>Abre el paso hacia la zona aislada.</span></div>
+        <div class="mission-row">🧑 <span><b>6. Salva a Fornatan</b><br>Encuéntralo y completa el capítulo.</span></div>
+      </div>
+    </div>
+    <div class="setting-section">
+      <h3>🛠 CORRECCIONES Y MEJORAS</h3>
+      <ul><li>Controles táctiles y de teclado adaptados.</li><li>Colisiones y cámara de seguimiento ajustadas.</li><li>Guardado local de la partida y misiones.</li><li>Interfaz adaptable a móvil y escritorio.</li></ul>
+    </div>
+    <div class="setting-section"><p id="saveInfo">El progreso se guarda en este dispositivo.</p></div>
+  </div>
+</div>
+
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id);
+const SAVE_KEY="elBromas2SalvaFornatan2_v1";
+const TILE=48;
+const WORLD={cols:38,rows:25,width:38*TILE,height:25*TILE};
+const obstacles=[
+  {x:10,y:8,w:4,h:6,type:"water"},
+  {x:18,y:5,w:4,h:7,type:"house"},
+  {x:23,y:3,w:5,h:4,type:"ruins"},
+  {x:24,y:18,w:3,h:3,type:"rock"}
+];
+const decorTrees=[[3,3],[5,8],[7,15],[8,22],[15,2],[16,10],[17,21],[21,3],[22,14],[29,4],[29,9],[30,20],[18,16],[5,21],[12,19],[34,5],[35,22],[3,18],[9,4],[14,22],[20,22],[27,22],[36,7]];
+const fragmentPlaces=[[6,5],[16,16],[25,14]];
+const cellPlaces=[[7,19],[21,20]];
+const antennaPlaces=[[15,4],[28,19]];
+const chestPlace=[28,6];
+const gatePlace=[31,12];
+const fornatanPlace=[35,12];
+let player={x:3.5*TILE,y:12.5*TILE};
+let progress=freshProgress();
+let keys={};
+let touch={up:false,down:false,left:false,right:false};
+let lastTime=0;
+let raf=0;
+let gameVisible=false;
+let toastTimer=0;
+let updatesLoaded=false;
+
+function freshProgress(){
+  return {fragments:[],cells:[],antennas:[],chest:false,gate:false,rescued:false,x:3.5*TILE,y:12.5*TILE,chapter:1};
+}
+function hasSave(){try{return !!localStorage.getItem(SAVE_KEY)}catch(e){return false}}
+function saveGame(){
+  try{progress.x=player.x;progress.y=player.y;localStorage.setItem(SAVE_KEY,JSON.stringify(progress));}catch(e){}
+  updateContinueButton();
+}
+function loadGame(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(SAVE_KEY)||"null");
+    if(!saved)return false;
+    progress=Object.assign(freshProgress(),saved);
+    player.x=Number(progress.x)||3.5*TILE;
+    player.y=Number(progress.y)||12.5*TILE;
+    return true;
+  }catch(e){return false}
+}
+function updateContinueButton(){
+  $("continueBtn").disabled=!hasSave();
+  $("continueBtn").style.opacity=hasSave()?"1":".45";
+}
+function hideScreen(id){$(id).classList.add("hide")}
+function showScreen(id){$(id).classList.remove("hide")}
+function openMenu(){gameVisible=false;cancelAnimationFrame(raf);hideScreen("gameScreen");showScreen("menuScreen");hideScreen("storyOverlay");hideScreen("settingsOverlay");updateContinueButton()}
+function showStory(title,text,icon,callback){
+  $("storyTitle").textContent=title;
+  $("storyText").textContent=text;
+  $("storyIcon").textContent=icon||"📜";
+  $("storyContinue").onclick=function(){hideScreen("storyOverlay");if(callback)callback()};
+  showScreen("storyOverlay");
+}
+function startNewGame(){
+  progress=freshProgress();player={x:3.5*TILE,y:12.5*TILE};saveGame();
+  hideScreen("menuScreen");showScreen("gameScreen");gameVisible=true;resizeCanvas();updateHUD();
+  showStory("LA SEÑAL PERDIDA","El Valle del Eco quedó en silencio después de la tormenta. La última señal indica que Fornatan sigue al otro lado de la puerta del este. Reúne los recuerdos, devuelve la energía a las antenas y encuentra el camino para llegar hasta él.","🌩",function(){lastTime=0;loop(performance.now())});
+}
+function continueGame(){
+  if(!loadGame())return startNewGame();
+  hideScreen("menuScreen");showScreen("gameScreen");gameVisible=true;resizeCanvas();updateHUD();
+  if(progress.rescued){showStory("EL VALLE TE ESPERA","La misión principal ya está completada. Puedes seguir recorriendo el valle y revisar el historial en Ajustes.","🏅",function(){lastTime=0;loop(performance.now())});}
+  else{showStory("PARTIDA RECUPERADA","Tu aventura continúa desde el último lugar guardado. La señal de Fornatan sigue esperando.","🧭",function(){lastTime=0;loop(performance.now())});}
+}
+function openSettings(){showScreen("settingsOverlay");loadUpdates()}
+function closeSettings(){hideScreen("settingsOverlay")}
+function stage(){
+  if(progress.fragments.length<3)return 0;
+  if(progress.cells.length<2)return 1;
+  if(progress.antennas.length<2)return 2;
+  if(!progress.chest)return 3;
+  if(!progress.gate)return 4;
+  if(!progress.rescued)return 5;
+  return 6;
+}
+function updateHUD(){
+  const s=stage();
+  const labels=[
+    ["Recoge los recuerdos","Fragmentos de memoria: "+progress.fragments.length+"/3"],
+    ["Recupera energía","Celdas de energía: "+progress.cells.length+"/2"],
+    ["Reactiva las antenas","Antenas activadas: "+progress.antennas.length+"/2"],
+    ["Busca el cofre de las ruinas","Cofre antiguo: pendiente"],
+    ["Abre la puerta del este","Puerta antigua: pendiente"],
+    ["Encuentra a Fornatan","La zona aislada ya está abierta"],
+    ["Capítulo 1 completado","Fornatan está a salvo · Puedes explorar"]
+  ];
+  $("questTitle").textContent=labels[s][0];
+  $("questProgress").textContent=labels[s][1];
+  $("itemChip").textContent="💠 "+progress.fragments.length+"/3";
+}
+function showToast(message){
+  $("toast").textContent=message;$("toast").classList.add("show");
+  clearTimeout(toastTimer);toastTimer=setTimeout(()=>$("toast").classList.remove("show"),1900);
+}
+function worldPoint(p){return {x:(p[0]+.5)*TILE,y:(p[1]+.5)*TILE}}
+function nearbyTargets(){
+  const out=[];
+  fragmentPlaces.forEach((p,i)=>{if(!progress.fragments.includes(i))out.push({kind:"fragment",id:i,pos:worldPoint(p),icon:"💠"})});
+  cellPlaces.forEach((p,i)=>{if(!progress.cells.includes(i))out.push({kind:"cell",id:i,pos:worldPoint(p),icon:"🔋"})});
+  antennaPlaces.forEach((p,i)=>{if(!progress.antennas.includes(i))out.push({kind:"antenna",id:i,pos:worldPoint(p),icon:"📡"})});
+  if(!progress.chest)out.push({kind:"chest",pos:worldPoint(chestPlace),icon:"🧰"});
+  if(!progress.gate)out.push({kind:"gate",pos:worldPoint(gatePlace),icon:"🚪"});
+  if(!progress.rescued)out.push({kind:"fornatan",pos:worldPoint(fornatanPlace),icon:"🧑"});
+  return out;
+}
+function interact(){
+  if(!gameVisible||!$("storyOverlay").classList.contains("hide")===false)return;
+  const targets=nearbyTargets();
+  let target=null,best=Infinity;
+  targets.forEach(t=>{const d=Math.hypot(t.pos.x-player.x,t.pos.y-player.y);if(d<best){best=d;target=t}});
+  if(!target||best>76){showToast("Acércate a un objeto para interactuar");return}
+  if(target.kind==="fragment"){
+    progress.fragments.push(target.id);showToast("💠 Recuerdo recuperado · "+progress.fragments.length+"/3");
+  }else if(target.kind==="cell"){
+    progress.cells.push(target.id);showToast("🔋 Celda de energía recuperada · "+progress.cells.length+"/2");
+  }else if(target.kind==="antenna"){
+    if(progress.cells.length<=progress.antennas.length){showToast("Necesitas una celda de energía");return}
+    progress.antennas.push(target.id);showToast("📡 Antena reactivada · "+progress.antennas.length+"/2");
+  }else if(target.kind==="chest"){
+    if(progress.fragments.length<3||progress.antennas.length<2){showToast("El cofre necesita los 3 recuerdos y las 2 antenas");return}
+    progress.chest=true;showToast("🧰 Encontraste la llave de la puerta");
+    setTimeout(()=>showStory("EL MAPA OCULTO","Dentro del cofre aparece un mapa antiguo. La puerta del este conduce a la estación donde Fornatan envió su última señal.","🗺"),200);
+  }else if(target.kind==="gate"){
+    if(!progress.chest){showToast("La puerta está cerrada: busca el cofre de las ruinas");return}
+    progress.gate=true;showToast("🚪 La puerta del este se ha abierto");
+    setTimeout(()=>showStory("AL OTRO LADO","La puerta se abre. Una luz parpadea en la estación abandonada. La señal de Fornatan está muy cerca.","✨"),200);
+  }else if(target.kind==="fornatan"){
+    if(!progress.gate){showToast("La puerta del este sigue cerrada");return}
+    progress.rescued=true;
+    setTimeout(()=>showStory("¡FORNATAN ESTÁ A SALVO!","Has seguido las pistas, reactivado el valle y encontrado a Fornatan. El capítulo 1 termina aquí; la historia podrá continuar en futuras versiones.","🏆"),100);
+    showToast("🏆 Misión completada");
+  }
+  saveGame();updateHUD();
+}
+function isBlocked(x,y){
+  const r=13;
+  if(x-r<0||y-r<0||x+r>WORLD.width||y+r>WORLD.height)return true;
+  if(!progress.gate&&x>31*TILE)return true;
+  for(const o of obstacles){
+    const left=o.x*TILE,top=o.y*TILE,right=(o.x+o.w)*TILE,bottom=(o.y+o.h)*TILE;
+    if(x+r>left&&x-r<right&&y+r>top&&y-r<bottom)return true;
+  }
+  return false;
+}
+function updatePlayer(dt){
+  let dx=(keys.ArrowRight||keys.d||touch.right?1:0)-(keys.ArrowLeft||keys.a||touch.left?1:0);
+  let dy=(keys.ArrowDown||keys.s||touch.down?1:0)-(keys.ArrowUp||keys.w||touch.up?1:0);
+  if(dx||dy){
+    const length=Math.hypot(dx,dy)||1;dx/=length;dy/=length;
+    const speed=190*dt;
+    const nx=player.x+dx*speed,ny=player.y+dy*speed;
+    if(!isBlocked(nx,player.y))player.x=nx;
+    if(!isBlocked(player.x,ny))player.y=ny;
+  }
+}
+const canvas=$("worldCanvas");
+const ctx=canvas.getContext("2d");
+let viewW=innerWidth,viewH=innerHeight-184,dpr=1;
+function resizeCanvas(){
+  const rect=canvas.getBoundingClientRect();
+  viewW=Math.max(1,rect.width);viewH=Math.max(1,rect.height);dpr=Math.min(devicePixelRatio||1,2);
+  canvas.width=Math.round(viewW*dpr);canvas.height=Math.round(viewH*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+}
+function roundedRect(c,x,y,w,h,r){
+  c.beginPath();c.moveTo(x+r,y);c.arcTo(x+w,y,x+w,y+h,r);c.arcTo(x+w,y+h,x,y+h,r);c.arcTo(x,y+h,x,y,r);c.arcTo(x,y,x+w,y,r);c.closePath();
+}
+function drawWorld(){
+  const camX=Math.max(0,Math.min(WORLD.width-viewW,player.x-viewW/2));
+  const camY=Math.max(0,Math.min(WORLD.height-viewH,player.y-viewH/2));
+  ctx.clearRect(0,0,viewW,viewH);ctx.save();ctx.translate(-camX,-camY);
+  ctx.fillStyle="#315d43";ctx.fillRect(0,0,WORLD.width,WORLD.height);
+  const startX=Math.floor(camX/TILE),endX=Math.ceil((camX+viewW)/TILE);
+  const startY=Math.floor(camY/TILE),endY=Math.ceil((camY+viewH)/TILE);
+  for(let y=startY;y<=endY;y++)for(let x=startX;x<=endX;x++){
+    const v=(x*17+y*31)%7;
+    ctx.fillStyle=v===0?"#376c4a":v===1?"#356445":v===2?"#3a704c":"#356b48";
+    ctx.fillRect(x*TILE,y*TILE,TILE,TILE);
+    ctx.fillStyle="rgba(210,235,166,.10)";
+    for(let k=0;k<2;k++){const px=x*TILE+((x*13+y*7+k*19)%39)+4,py=y*TILE+((y*11+x*5+k*17)%39)+4;ctx.fillRect(px,py,2,2)}
+  }
+  ctx.strokeStyle="#aa9568";ctx.lineWidth=24;ctx.lineCap="round";ctx.beginPath();ctx.moveTo(0,12.5*TILE);ctx.lineTo(31.5*TILE,12.5*TILE);ctx.stroke();
+  ctx.strokeStyle="#c4aa75";ctx.lineWidth=13;ctx.beginPath();ctx.moveTo(6.5*TILE,12.5*TILE);ctx.lineTo(6.5*TILE,5.5*TILE);ctx.moveTo(16.5*TILE,12.5*TILE);ctx.lineTo(16.5*TILE,16.5*TILE);ctx.moveTo(25.5*TILE,12.5*TILE);ctx.lineTo(25.5*TILE,19.5*TILE);ctx.moveTo(28.5*TILE,12.5*TILE);ctx.lineTo(28.5*TILE,6.5*TILE);ctx.stroke();
+  obstacles.forEach(o=>{
+    const x=o.x*TILE,y=o.y*TILE,w=o.w*TILE,h=o.h*TILE;
+    if(o.type==="water"){
+      roundedRect(ctx,x,y,w,h,22);ctx.fillStyle="#267a93";ctx.fill();ctx.strokeStyle="#6bd5d0";ctx.lineWidth=4;ctx.stroke();
+      ctx.strokeStyle="rgba(185,245,235,.42)";ctx.lineWidth=2;
+      for(let j=0;j<4;j++){ctx.beginPath();ctx.moveTo(x+18,y+25+j*57);ctx.lineTo(x+w-18,y+25+j*57);ctx.stroke()}
+      ctx.font="25px serif";ctx.fillText("🌿",x+12,y+35);ctx.fillText("🪷",x+w-45,y+h-15);
+    }else if(o.type==="house"){
+      roundedRect(ctx,x,y,w,h,12);ctx.fillStyle="#795a43";ctx.fill();ctx.strokeStyle="#d0a777";ctx.lineWidth=4;ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x-8,y+18);ctx.lineTo(x+w/2,y-25);ctx.lineTo(x+w+8,y+18);ctx.closePath();ctx.fillStyle="#a84e3a";ctx.fill();ctx.strokeStyle="#e69b65";ctx.stroke();
+      ctx.fillStyle="#f3d18c";ctx.fillRect(x+w/2-17,y+h-57,34,57);ctx.fillStyle="#273947";ctx.fillRect(x+19,y+48,35,30);ctx.fillRect(x+w-54,y+48,35,30);
+    }else if(o.type==="ruins"){
+      roundedRect(ctx,x,y,w,h,8);ctx.fillStyle="#777d70";ctx.fill();ctx.strokeStyle="#c5c7a6";ctx.lineWidth=4;ctx.stroke();
+      ctx.fillStyle="#505b53";ctx.fillRect(x+17,y+18,w-34,h-30);ctx.font="36px serif";ctx.fillText("🏛️",x+w/2-19,y+h/2+14);
+    }else{
+      roundedRect(ctx,x,y,w,h,15);ctx.fillStyle="#74796d";ctx.fill();ctx.strokeStyle="#b9c2a9";ctx.lineWidth=3;ctx.stroke();
+      ctx.font="31px serif";ctx.fillText("🪨",x+18,y+45);
+    }
+  });
+  decorTrees.forEach(p=>{
+    const x=(p[0]+.5)*TILE,y=(p[1]+.5)*TILE;
+    ctx.fillStyle="rgba(0,0,0,.18)";ctx.beginPath();ctx.ellipse(x+4,y+17,19,8,0,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#684b34";ctx.fillRect(x-4,y-2,8,22);
+    ctx.fillStyle="#1b5135";ctx.beginPath();ctx.arc(x,y-10,19,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#35794a";ctx.beginPath();ctx.arc(x-7,y-17,10,0,Math.PI*2);ctx.fill();
+  });
+  fragmentPlaces.forEach((p,i)=>{if(!progress.fragments.includes(i))drawItem(p,"💠","#60e9ef")});
+  cellPlaces.forEach((p,i)=>{if(!progress.cells.includes(i))drawItem(p,"🔋","#9aff83")});
+  antennaPlaces.forEach((p,i)=>{if(!progress.antennas.includes(i))drawItem(p,"📡","#ffda79")});
+  if(!progress.chest)drawItem(chestPlace,"🧰","#ffc46c");
+  drawItem(gatePlace,progress.gate?"🌉":"🚪","#eacb8c");
+  if(!progress.rescued)drawItem(fornatanPlace,"🧑","#8ce6ff");
+  drawPlayer();
+  ctx.restore();
+}
+function drawItem(p,emoji,glow){
+  const x=(p[0]+.5)*TILE,y=(p[1]+.5)*TILE;
+  ctx.save();ctx.shadowColor=glow;ctx.shadowBlur=19;ctx.fillStyle="rgba(5,20,25,.65)";ctx.beginPath();ctx.arc(x,y,19,0,Math.PI*2);ctx.fill();
+  ctx.shadowBlur=0;ctx.font="27px 'Apple Color Emoji','Segoe UI Emoji',sans-serif";ctx.textAlign="center";ctx.textBaseline="middle";ctx.fillText(emoji,x,y+1);ctx.restore();
+}
+function drawPlayer(){
+  ctx.save();ctx.translate(player.x,player.y);
+  ctx.fillStyle="rgba(0,0,0,.28)";ctx.beginPath();ctx.ellipse(1,16,16,7,0,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#f0b65a";ctx.beginPath();ctx.arc(0,0,14,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#2c4550";roundedRect(ctx,-12,3,24,19,7);ctx.fill();
+  ctx.fillStyle="#f3c49b";ctx.beginPath();ctx.arc(0,-7,9,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#513c2f";ctx.beginPath();ctx.arc(0,-12,10,Math.PI,Math.PI*2);ctx.fill();
+  ctx.fillStyle="#13222a";ctx.beginPath();ctx.arc(-3,-7,1.5,0,Math.PI*2);ctx.arc(4,-7,1.5,0,Math.PI*2);ctx.fill();
+  ctx.strokeStyle="#ffe2a3";ctx.lineWidth=2;ctx.beginPath();ctx.arc(0,1,18,0,Math.PI*2);ctx.stroke();
+  ctx.restore();
+}
+function loop(time){
+  if(!gameVisible)return;
+  const dt=Math.min((time-(lastTime||time))/1000,.05);lastTime=time;
+  updatePlayer(dt);drawWorld();
+  if(Math.floor(time/3000)!==Math.floor((time-dt*1000)/3000))saveGame();
+  raf=requestAnimationFrame(loop);
+}
+function loadUpdates(){
+  if(updatesLoaded)return;updatesLoaded=true;
+  fetch("actualizaciones.json?v=1.0").then(r=>{if(!r.ok)throw new Error("no updates");return r.json()}).then(data=>{
+    if(!Array.isArray(data.updates))return;
+    $("updatesList").innerHTML=data.updates.map(u=>'<div class="update-card"><div class="update-version">v'+escapeHtml(u.version)+' · '+escapeHtml(u.title)+'</div><div class="update-date">'+escapeHtml(u.date)+'</div><div class="update-body">'+(u.changes||[]).map(x=>'<div>• '+escapeHtml(x)+'</div>').join("")+'</div></div>').join("");
+  }).catch(()=>{});
+}
+function escapeHtml(s){return String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+
+$("accessCode").addEventListener("keydown",e=>{
+  if(e.key!=="Enter")return;
+  e.preventDefault();
+  if($("accessCode").value.trim().toLowerCase()==="pepa"){
+    hideScreen("accessScreen");showScreen("menuScreen");updateContinueButton();$("accessCode").value="";
+  }else{
+    $("accessCode").classList.remove("shake");void $("accessCode").offsetWidth;$("accessCode").classList.add("shake");$("accessCode").value="";
+  }
+});
+$("newGameBtn").addEventListener("click",startNewGame);
+$("continueBtn").addEventListener("click",continueGame);
+$("settingsBtn").addEventListener("click",openSettings);
+$("gameSettingsBtn").addEventListener("click",openSettings);
+$("closeSettings").addEventListener("click",closeSettings);
+$("interactBtn").addEventListener("pointerdown",e=>{e.preventDefault();interact()});
+document.querySelectorAll("[data-dir]").forEach(btn=>{
+  const dir=btn.dataset.dir;
+  const down=e=>{e.preventDefault();touch[dir]=true;btn.classList.add("pressed");try{btn.setPointerCapture(e.pointerId)}catch(err){}};
+  const up=e=>{e.preventDefault();touch[dir]=false;btn.classList.remove("pressed")};
+  btn.addEventListener("pointerdown",down);btn.addEventListener("pointerup",up);btn.addEventListener("pointercancel",up);btn.addEventListener("lostpointercapture",up);
+});
+window.addEventListener("keydown",e=>{
+  if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"," "].includes(e.key))e.preventDefault();
+  keys[e.key]=true;keys[e.key.toLowerCase()]=true;
+  if((e.key==="e"||e.key==="E"||e.key===" "||e.key==="Enter")&&!e.repeat)interact();
+  if(e.key==="Escape"){if(!$("settingsOverlay").classList.contains("hide"))closeSettings();else if(gameVisible)openMenu()}
+},{passive:false});
+window.addEventListener("keyup",e=>{keys[e.key]=false;keys[e.key.toLowerCase()]=false});
+window.addEventListener("blur",()=>{keys={};touch={up:false,down:false,left:false,right:false}});
+window.addEventListener("resize",()=>{if(gameVisible){resizeCanvas();drawWorld()}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden)saveGame()});
+updateContinueButton();
+resizeCanvas();
+})();
+</script>
+</body>
+</html>
