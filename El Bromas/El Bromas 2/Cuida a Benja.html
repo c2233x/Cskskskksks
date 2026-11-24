@@ -4722,7 +4722,100 @@ function updateFarmThrownFood(){
   }
  }
 }
+
+function stopFarmAmbience(){
+ farmAmbienceActiveZone='';
+ if(farmAmbienceBirdTimer){clearTimeout(farmAmbienceBirdTimer);farmAmbienceBirdTimer=0;}
+ if(farmAmbienceInsectAudio){try{farmAmbienceInsectAudio.pause();farmAmbienceInsectAudio.currentTime=0;}catch(_){}}
+ if(farmAmbienceGain&&farmAmbienceContext){try{farmAmbienceGain.gain.setTargetAtTime(0,farmAmbienceContext.currentTime,.25);}catch(_){}}
+}
+function playFarmBirdChirp(){
+ if(!farmAmbienceContext||!farmAmbienceActiveZone)return;
+ try{
+  const ctx=farmAmbienceContext,osc=ctx.createOscillator(),gain=ctx.createGain(),now=ctx.currentTime;
+  osc.type='sine';osc.frequency.setValueAtTime(2450+Math.random()*800,now);
+  osc.frequency.exponentialRampToValueAtTime(3300+Math.random()*600,now+.12);
+  osc.frequency.exponentialRampToValueAtTime(2050+Math.random()*500,now+.31);
+  gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(.018,now+.05);
+  gain.gain.exponentialRampToValueAtTime(.0001,now+.34);osc.connect(gain);gain.connect(ctx.destination);
+  osc.start(now);osc.stop(now+.36);
+ }catch(_){}
+ if(farmAmbienceActiveZone)farmAmbienceBirdTimer=setTimeout(playFarmBirdChirp,2600+Math.random()*3900);
+}
+function startFarmAmbience(zone){
+ if(!zone)return;
+ const changed=farmAmbienceActiveZone!==zone.id;
+ farmAmbienceActiveZone=zone.id;
+ try{
+  const Ctx=window.AudioContext||window.webkitAudioContext;
+  if(Ctx&&!farmAmbienceContext){
+   farmAmbienceContext=new Ctx();
+   const length=farmAmbienceContext.sampleRate*2,buffer=farmAmbienceContext.createBuffer(1,length,farmAmbienceContext.sampleRate),data=buffer.getChannelData(0);
+   let last=0;for(let i=0;i<length;i++){const white=Math.random()*2-1;last=(last+.025*white)/1.025;data[i]=last*3.2;}
+   farmAmbienceNoiseSource=farmAmbienceContext.createBufferSource();farmAmbienceNoiseSource.buffer=buffer;farmAmbienceNoiseSource.loop=true;
+   const filter=farmAmbienceContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=620;filter.Q.value=.65;
+   farmAmbienceGain=farmAmbienceContext.createGain();farmAmbienceGain.gain.value=.055;
+   farmAmbienceNoiseSource.connect(filter);filter.connect(farmAmbienceGain);farmAmbienceGain.connect(farmAmbienceContext.destination);farmAmbienceNoiseSource.start();
+  }
+  if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
+  if(!farmAmbienceInsectAudio){
+   farmAmbienceInsectAudio=new Audio(FARM_CHICHARRA_URL);farmAmbienceInsectAudio.loop=true;farmAmbienceInsectAudio.preload='none';farmAmbienceInsectAudio.volume=.17;farmAmbienceInsectAudio.setAttribute('playsinline','');
+  }
+  if(zone.insects){
+   if(farmAmbienceInsectAudio.paused){const play=farmAmbienceInsectAudio.play();if(play&&play.catch)play.catch(()=>{});}
+  }else if(farmAmbienceInsectAudio&&!farmAmbienceInsectAudio.paused){farmAmbienceInsectAudio.pause();farmAmbienceInsectAudio.currentTime=0;}
+  if(changed){if(farmAmbienceBirdTimer)clearTimeout(farmAmbienceBirdTimer);playFarmBirdChirp();}
+ }catch(_){}
+}
+function updateFarmAmbience(){
+ if(!storyModeActive||farmCityMode||!character||isDriving||isCinematic){stopFarmAmbience();return;}
+ const now=Date.now();if(now-farmAmbienceLastCheck<650)return;farmAmbienceLastCheck=now;
+ const zone=FARM_AMBIENT_ZONES.find(z=>Math.hypot(character.position.x-z.x,character.position.z-z.z)<z.radius);
+ if(zone)startFarmAmbience(zone);else if(farmAmbienceActiveZone)stopFarmAmbience();
+}
+
 function farmClearNPCs(includeRaiders=true){for(let i=smallPenes.length-1;i>=0;i--){const p=smallPenes[i];if(!p||!p.userData||includeRaiders||!p.userData.farmRaider){if(p&&p.parent)p.parent.remove(p);smallPenes.splice(i,1);}}if(includeRaiders)farmRaidActive=false;if(typeof updatePeneCountUI==='function')updatePeneCountUI();}
+
+const FARM_TV_CHANNELS=[
+ {id:'hch',name:'HCH Honduras',region:'HONDURAS',url:'https://hch.tv/',embed:'https://www.youtube-nocookie.com/embed/live_stream?channel=UCppc3_tXl_5542nU3wFki4w&autoplay=1'},
+ {id:'tvc',name:'Canal 5 / TSi / Telecadena',region:'HONDURAS',url:'https://www.televicentro.com/',embed:'https://www.televicentro.com/'},
+ {id:'aljazeera',name:'Al Jazeera English',region:'INTERNACIONAL',url:'https://www.aljazeera.com/video/live/',embed:'https://www.aljazeera.com/video/live/'},
+ {id:'france24',name:'France 24',region:'INTERNACIONAL',url:'https://www.france24.com/en/live',embed:'https://www.france24.com/en/live'}
+];
+function selectFarmTVChannel(id){
+ const channel=FARM_TV_CHANNELS.find(x=>x.id===id);if(!channel)return;
+ farmTVCurrentChannel=channel;
+ const frame=document.getElementById('farmTVFrame'),link=document.getElementById('farmTVOpenOfficial'),hint=document.getElementById('farmTVHint');
+ if(frame&&frame.src!==channel.embed)frame.src=channel.embed;
+ if(link){link.textContent='ABRIR '+channel.name.toUpperCase()+' EN SU SITIO OFICIAL';link.dataset.url=channel.url;}
+ if(hint)hint.textContent=channel.name+' · '+channel.region+'. Si el reproductor no aparece dentro del juego, abre el sitio oficial.';
+ const list=document.getElementById('farmTVChannels');
+ if(list)list.querySelectorAll('button[data-tv-channel]').forEach(b=>b.classList.toggle('active',b.dataset.tvChannel===id));
+}
+function openFarmTV(){
+ const panel=document.getElementById('farmTVPanel');if(!panel)return;
+ const inventory=document.getElementById('farmInventoryPanel');if(inventory)inventory.style.display='none';
+ panel.style.display='flex';
+ const list=document.getElementById('farmTVChannels');
+ if(list&&!list.dataset.ready){
+  list.innerHTML=FARM_TV_CHANNELS.map(c=>'<button type="button" data-tv-channel="'+c.id+'">📺 '+c.name+'<br><small>'+c.region+'</small></button>').join('');
+  list.dataset.ready='1';
+ }
+ selectFarmTVChannel(farmTVCurrentChannel?farmTVCurrentChannel.id:'hch');
+}
+function closeFarmTV(){
+ const panel=document.getElementById('farmTVPanel');if(panel)panel.style.display='none';
+ const frame=document.getElementById('farmTVFrame');if(frame)frame.src='about:blank';
+}
+function setupFarmTVControls(){
+ if(farmTVPanelBound)return;
+ const panel=document.getElementById('farmTVPanel'),close=document.getElementById('farmTVClose'),list=document.getElementById('farmTVChannels'),open=document.getElementById('farmTVOpenOfficial');
+ if(close)close.addEventListener('click',closeFarmTV);
+ if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-tv-channel]');if(b)selectFarmTVChannel(b.dataset.tvChannel);});
+ if(open)open.addEventListener('click',()=>{const url=open.dataset.url;if(url)window.open(url,'_blank','noopener');});
+ farmTVPanelBound=true;
+}
+
 function createCityJobBoard(){
  if(cityJobBoard&&cityJobBoard.parent)return;const p=CITY_MAP_CONFIG.jobBoard||{x:38,z:-22},y=farmGroundAt(p.x,p.z);cityJobBoard=new THREE.Group();
  const wood=new THREE.MeshLambertMaterial({color:0x654329}),paper=new THREE.MeshLambertMaterial({color:0xf1dda9});
