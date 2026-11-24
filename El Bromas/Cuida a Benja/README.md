@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.6.7**
+**Version actual: 1.6.9**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -18,7 +18,7 @@ Los mapas tienen archivos propios dentro de `Mapas/` y se cargan por separado:
 Los mapas comparten el motor 3D, controles, personaje, vehiculos, camara y guardado, pero los objetos de la ciudad solo se crean cuando el jugador viaja a ella. La ciudad no se renderiza mientras se juega en la granja.
 
 ## La granja
-La granja no tiene NPC trabajadores ni bots constructores. No hay construcción automática. Benja camina por el corral, se ensucia en el barro y tiene un indicador de salud y hambre. Cuando tiene hambre puede decir "ocupo pa la renta".
+La granja no tiene NPC trabajadores ni bots constructores. La construcción es manual: compra muros, puertas, ventanas, techos y antorchas; activa el modo de colocar, mueve al personaje para elegir el punto, gira la pieza y confirma. Las piezas colocadas y sus colisiones se guardan en el dispositivo. Benja camina por el corral, se ensucia en el barro y tiene un indicador de salud y hambre. Cuando tiene hambre puede decir "ocupo pa la renta".
 
 La tienda y el almacén se usan acercándose físicamente a cada edificio y pulsando ATACAR. El almacén es una caja grande abierta con montones visuales por tipo de producto. La comida se compra en la tienda, se saca del almacén y se carga en una caja visible en la espalda del personaje. Cerca de Benja, usa ATACAR para lanzarle una porcion. Al comer, se reproduce uno de los sonidos de cerdo enviados para el juego.
 
@@ -104,3 +104,20 @@ La TV incluye botones físicos 3D para canal anterior y siguiente debajo de la p
 
 Audio original adjunto: la chicharra japonesa(MP3_160K).mp3.
 Ruta de publicación: El Bromas/Sonidos/Effectos/la chicharra japonesa(MP3_160K).mp3.
+## Actualización 1.6.8 · Suministros y construcción
+- Se amplía el catálogo de Suministros con balde reutilizable, antorchas, muros de madera y ladrillo, puertas, ventanas y paneles de tejado.
+- Se añaden modelos 3D de las piezas y un modo de construcción: vista previa semitransparente, ajuste a cuadrícula de 2 m, giro de 90 grados, confirmación y cancelación.
+- Las piezas colocadas se guardan localmente, se reconstruyen al volver a cargar la granja y añaden colisiones.
+- El balde se puede rellenar en el pozo con cinco litros; para bañar a Benja se necesitan tres litros y un balde.
+- La construcción se cancela al viajar a la ciudad para no dejar vistas previas fuera del mapa.
+- Se actualizan los productos del almacén para que los nuevos suministros puedan acumularse y retirarse.
+
+## Actualización 1.6.9 · Ciudad, corral y optimización
+- Se elimina la llamada a los drones de reconstrucción tanto en el mapa de ciudad externo como en el respaldo interno. Evita que edificios y props se creen fuera del grupo de ciudad y queden acumulados en la granja.
+- Se corrigen las rutas de carga de Granja.js y Ciudad.js para la carpeta El Bromas/Cuida a Benja.
+- El corral reforzado presenta tres diseños distintos: valla alta de madera, mampostería con franja de ladrillo y muro fortificado con almenas y torres. Cada refuerzo sustituye la cerca anterior y mantiene libre el acceso.
+- La radio del coche vuelve a encenderse al entrar, como en Salva a Cornatan. El modelo de coche, sus diseños y la física de conducción se mantienen sin cambios.
+- El indicador de suciedad se normaliza como Barro, con manchas y proyectiles marrones; conserva el medidor y el efecto de juego sin terminología sexual.
+- La TV aporta una luz azul suave; las antorchas iluminan por la noche y las farolas de ciudad activan luces cálidas cercanas.
+- En Android se reducen los segmentos del terreno, la resolución dinámica, los árboles de ciudad y el número de tramos de carretera dibujados.
+- Los enemigos del modo de Benja conservan un diseño de guardianes robóticos de estilo low-poly, separado del diseño anatómico del juego anterior.
