@@ -4851,11 +4851,11 @@ function ensureFarmCicadaAudio(){
  if(!farmAmbienceContext){const Ctx=window.AudioContext||window.webkitAudioContext;if(!Ctx)return null;farmAmbienceContext=new Ctx();}
  const ctx=farmAmbienceContext;
  if(!farmCicadaMaster){
-  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=4550;filter.Q.value=.72;
+  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=3650;filter.Q.value=.82;
   farmCicadaMaster=ctx.createGain();farmCicadaMaster.gain.value=0;
   farmCicadaGain=ctx.createGain();farmCicadaGain.gain.value=.16;
-  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=4380;
-  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=4890;
+  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=3200;
+  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=3710;
   const secondGain=ctx.createGain();secondGain.gain.value=.26;
   farmCicadaLfo=ctx.createOscillator();farmCicadaLfo.type='sine';farmCicadaLfo.frequency.value=18;
   const lfoDepth=ctx.createGain();lfoDepth.gain.value=.095;farmCicadaLfo.connect(lfoDepth);lfoDepth.connect(farmCicadaGain.gain);
@@ -4866,10 +4866,11 @@ function ensureFarmCicadaAudio(){
  return farmCicadaMaster;
 }
 function setFarmCicadas(active,strength=1){
+ if(!active&&!farmCicadaMaster)return;
  const master=ensureFarmCicadaAudio();if(!master)return;
  const ctx=farmAmbienceContext,level=Math.max(0,Math.min(1,Number(strength)||0));
  if(ctx.state==='suspended'&&audioUnlocked)ctx.resume().catch(()=>{});
- master.gain.setTargetAtTime((active&&audioUnlocked)?(.24*level):0,ctx.currentTime,.22);
+ master.gain.setTargetAtTime((active&&audioUnlocked)?(.34*level):0,ctx.currentTime,.22);
 }
 function stopFarmAmbience(){
  farmAmbienceActiveZone='';farmAmbienceLevel=0;
@@ -4884,7 +4885,7 @@ function playFarmBirdChirp(){
   osc.type='sine';osc.frequency.setValueAtTime(2450+Math.random()*800,now);
   osc.frequency.exponentialRampToValueAtTime(3300+Math.random()*600,now+.12);
   osc.frequency.exponentialRampToValueAtTime(2050+Math.random()*500,now+.31);
-  const peak=.052*farmAmbienceLevel;
+  const peak=.082*farmAmbienceLevel;
   gain.gain.setValueAtTime(.0001,now);gain.gain.linearRampToValueAtTime(peak,now+.05);
   gain.gain.exponentialRampToValueAtTime(.0001,now+.38);osc.connect(gain);gain.connect(ctx.destination);
   osc.start(now);osc.stop(now+.4);
@@ -4902,12 +4903,12 @@ function startFarmAmbience(zone,attenuation=1){
    const length=farmAmbienceContext.sampleRate*2,buffer=farmAmbienceContext.createBuffer(1,length,farmAmbienceContext.sampleRate),data=buffer.getChannelData(0);
    let last=0;for(let i=0;i<length;i++){const white=Math.random()*2-1;last=(last+.025*white)/1.025;data[i]=last*3.2;}
    farmAmbienceNoiseSource=farmAmbienceContext.createBufferSource();farmAmbienceNoiseSource.buffer=buffer;farmAmbienceNoiseSource.loop=true;
-   const filter=farmAmbienceContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=720;filter.Q.value=.65;
+   const filter=farmAmbienceContext.createBiquadFilter();filter.type='lowpass';filter.frequency.value=980;filter.Q.value=.65;
    farmAmbienceGain=farmAmbienceContext.createGain();farmAmbienceGain.gain.value=0;
    farmAmbienceNoiseSource.connect(filter);filter.connect(farmAmbienceGain);farmAmbienceGain.connect(farmAmbienceContext.destination);farmAmbienceNoiseSource.start();
   }
   if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
-  if(farmAmbienceGain&&farmAmbienceContext)farmAmbienceGain.gain.setTargetAtTime(.13*farmAmbienceLevel,farmAmbienceContext.currentTime,.35);
+  if(farmAmbienceGain&&farmAmbienceContext)farmAmbienceGain.gain.setTargetAtTime(.22*farmAmbienceLevel,farmAmbienceContext.currentTime,.35);
   setFarmCicadas(!!zone.insects,farmAmbienceLevel);
   if(changed){if(farmAmbienceBirdTimer)clearTimeout(farmAmbienceBirdTimer);playFarmBirdChirp();}
  }catch(_){}
