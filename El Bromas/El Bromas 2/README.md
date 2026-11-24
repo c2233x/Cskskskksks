@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.5.1**
+**Version actual: 1.6.0**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -45,8 +45,12 @@ Hay ocho trabajos disponibles en el tablero:
 
 Al salir del límite de la ciudad vuelves automáticamente a la granja; se cancela cualquier trabajo de ciudad que estuviera activo. Al aproximarse la noche, Benja avisa que conviene regresar.
 
-## Televisión y ambiente
-En la granja hay un televisor interactivo con opciones de canales hondureños e internacionales. Si el canal bloquea la reproducción integrada, puedes abrir su sitio oficial desde el panel. La radio del carro se enciende manualmente; en la granja no hay música de fondo. En algunas zonas se oyen viento, pájaros y chicharras.
+## Televisión y radio de la granja
+El televisor tiene una pantalla física que permanece en el mundo y reproduce señales HLS mediante un reproductor HTML5; el panel permite encender, apagar, seleccionar canal y regular el volumen. El audio se atenúa según la distancia al televisor. Al cerrar el panel, la emisión sigue reproduciéndose; apagarlo deja la pantalla negra. Si una señal no está disponible o el navegador bloquea el flujo, se intenta el reproductor oficial alternativo.
+
+Canales: HCH, TSi, Canal 5, Al Jazeera English y France 24 English.
+
+La radio física está junto al televisor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo; en algunas zonas se oyen viento, pájaros y chicharras.
 
 ## HUD y desplazamiento
 El nombre del jugador es Cornatan. La salud y el hambre de Benja aparecen en barras separadas encima del HUD del jugador. Los paneles de tienda, almacén, televisión y trabajos permiten desplazamiento táctil.
