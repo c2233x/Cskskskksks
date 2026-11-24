@@ -644,6 +644,8 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.4.0"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.4.0"></script>
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
 window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason, msg=(r&&r.message?String(r.message):String(r||'')); if(/play\(\) request was interrupted|The play\(\) request was interrupted|AbortError/i.test(msg)) { e.preventDefault(); return; } var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error de inicio: '+msg; } } catch(_){} });
@@ -672,39 +674,54 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const STORY_ANTENNA_SPOTS = [{x:145,z:80},{x:-145,z:-80}];
         const WORLD_TERRAIN_SEGMENTS=88;
         const IS_MOBILE_DEVICE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'') || ((navigator.maxTouchPoints||0)>1 && Math.min(window.innerWidth||0,window.innerHeight||0)<=900);
-        const FARM_CENTER={x:-330,z:-330};
-        const FARM_PIG_POS={x:-286,z:-354};
-        const FARM_WORK_POS={x:-388,z:-302};
-        const FARM_SHOP_POS={x:-258,z:-302};
-        const FARM_STORAGE_POS={x:-362,z:-220};
-        const FARM_CROP_POS={x:-220,z:-250};
-        const FARM_COOP_POS={x:-240,z:-340};
-        const FARM_DELIVERY_POS={x:-218,z:-435};
-        const FARM_WELL_POS={x:-390,z:-440};
-        const FARM_TRACTOR_POS={x:-448,z:-286};
-        const FARM_REPAIR_POS={x:-286,z:-354};
-        const BENJA_SAVE_WEIGHT_GOAL=52;
-        const FARM_GOODS={
-            maiz:{label:'Maiz',price:8,color:0xe3b949,food:true},
-            trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true},
-            zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true},
-            heno:{label:'Heno',price:6,color:0xc4a24c,food:true},
-            pienso:{label:'Pienso',price:12,color:0x8c7049,food:true},
-            huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false},
-            agua:{label:'Agua',price:0,color:0x5aa8d7,food:false},
-            madera:{label:'Madera',price:0,color:0x805536,food:false}
-        };
-        const FARM_MISSION_ORDER=['harvest','eggs','delivery','repair','water','tractor','feed','warehouse'];
-        const FARM_MISSION_DATA={
-            harvest:{title:'COSECHA EL CAMPO',target:FARM_CROP_POS,label:'ve al cultivo',progress:'recoge verduras para el pedido',icon:'🥕'},
-            eggs:{title:'RECOGE LOS HUEVOS',target:FARM_COOP_POS,label:'ve al gallinero',progress:'revisa los nidos y recoge los huevos',icon:'🥚'},
-            delivery:{title:'ENTREGA A LA CASA VECINA',target:FARM_DELIVERY_POS,label:'lleva el pedido a la casa',progress:'entrega 2 verduras y 1 huevo',icon:'📦'},
-            repair:{title:'REFUERZA EL CORRAL',target:FARM_REPAIR_POS,label:'ve al corral',progress:'usa 2 maderas para reforzar la defensa',icon:'🪵'},
-            water:{title:'LLENA EL BEBEDERO',target:FARM_WELL_POS,label:'ve al pozo',progress:'recoge agua limpia para la granja',icon:'💧'},
-            tractor:{title:'PON EL TRACTOR A PUNTO',target:FARM_TRACTOR_POS,label:'ve al tractor',progress:'revisa el tractor y prepara heno',icon:'🚜'},
-            feed:{title:'CUIDA A BENJA',target:FARM_PIG_POS,label:'vuelve con benja',progress:'dale una racion de comida que tengas guardada',icon:'🐷'},
-            warehouse:{title:'ORDENA EL ALMACEN',target:FARM_STORAGE_POS,label:'ve al almacen',progress:'guarda en el almacen todo lo que llevas',icon:'🏠'}
-        };
+        const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
+    center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},
+    crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},
+    cityExitRadius:235,cityGate:{x:-135,z:-330},saveWeightGoal:52,
+    goods:{maiz:{label:'Maiz',price:8,color:0xe3b949,food:true},trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true},zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true},heno:{label:'Heno',price:6,color:0xc4a24c,food:true},pienso:{label:'Pienso',price:12,color:0x8c7049,food:true},huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false},agua:{label:'Agua',price:0,color:0x5aa8d7,food:false},madera:{label:'Madera',price:0,color:0x805536,food:false}},
+    missionOrder:['harvest','eggs','delivery','repair','water','tractor','feed','warehouse']
+};
+const FARM_CENTER=FARM_MAP_CONFIG.center;
+const FARM_PIG_POS=FARM_MAP_CONFIG.pig;
+const FARM_WORK_POS=FARM_MAP_CONFIG.work;
+const FARM_SHOP_POS=FARM_MAP_CONFIG.shop;
+const FARM_STORAGE_POS=FARM_MAP_CONFIG.warehouse;
+const FARM_CROP_POS=FARM_MAP_CONFIG.crops;
+const FARM_COOP_POS=FARM_MAP_CONFIG.coop;
+const FARM_DELIVERY_POS=FARM_MAP_CONFIG.delivery;
+const FARM_WELL_POS=FARM_MAP_CONFIG.well;
+const FARM_TRACTOR_POS=FARM_MAP_CONFIG.tractor;
+const FARM_REPAIR_POS=FARM_MAP_CONFIG.repair;
+const BENJA_SAVE_WEIGHT_GOAL=FARM_MAP_CONFIG.saveWeightGoal||52;
+const FARM_GOODS=FARM_MAP_CONFIG.goods;
+const FARM_MISSION_ORDER=FARM_MAP_CONFIG.missionOrder;
+const FARM_MISSION_DATA=FARM_MAP_CONFIG.missions?
+    Object.fromEntries(Object.entries(FARM_MAP_CONFIG.missions).map(([id,m])=>[id,{...m,target:FARM_MAP_CONFIG[m.target]}])):
+    {
+        harvest:{title:'COSECHA EL CAMPO',target:FARM_CROP_POS,label:'ve al cultivo',progress:'recoge verduras para el pedido',icon:'🥕'},
+        eggs:{title:'RECOGE LOS HUEVOS',target:FARM_COOP_POS,label:'ve al gallinero',progress:'revisa los nidos y recoge los huevos',icon:'🥚'},
+        delivery:{title:'ENTREGA A LA CASA VECINA',target:FARM_DELIVERY_POS,label:'lleva el pedido a la casa',progress:'entrega 2 verduras y 1 huevo',icon:'📦'},
+        repair:{title:'REFUERZA EL CORRAL',target:FARM_REPAIR_POS,label:'ve al corral',progress:'usa 2 maderas para reforzar la defensa',icon:'🪵'},
+        water:{title:'LLENA EL BEBEDERO',target:FARM_WELL_POS,label:'ve al pozo',progress:'recoge agua limpia para la granja',icon:'💧'},
+        tractor:{title:'PON EL TRACTOR A PUNTO',target:FARM_TRACTOR_POS,label:'ve al tractor',progress:'revisa el tractor y prepara heno',icon:'🚜'},
+        feed:{title:'CUIDA A BENJA',target:FARM_PIG_POS,label:'vuelve con benja',progress:'lanzale comida a benja cuando tenga hambre',icon:'🐷'},
+        warehouse:{title:'ORDENA EL ALMACEN',target:FARM_STORAGE_POS,label:'ve al almacen',progress:'guarda en el almacen todo lo que llevas',icon:'🏠'}
+    };
+const CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||{
+    spawn:{x:0,z:0},jobBoard:{x:38,z:-22},returnGate:{x:-132,z:-330},
+    jobs:[
+        {id:'delivery',title:'REPARTIDOR',detail:'lleva un paquete al barrio norte',target:{x:125,z:-65},reward:24,icon:'📦'},
+        {id:'taxi',title:'SERVICIO DE TAXI',detail:'recoge al cliente en la avenida',target:{x:-105,z:72},reward:30,icon:'🚕'},
+        {id:'mechanic',title:'AYUDANTE DE TALLER',detail:'entrega herramientas al taller',target:{x:155,z:95},reward:28,icon:'🔧'},
+        {id:'park',title:'MANTENIMIENTO DEL PARQUE',detail:'lleva bolsas al parque',target:{x:-155,z:-115},reward:18,icon:'🌳'},
+        {id:'market',title:'ENCARGO DEL MERCADO',detail:'recoge suministros en el mercado',target:{x:90,z:165},reward:22,icon:'🛒'},
+        {id:'lights',title:'REPARAR ALUMBRADO',detail:'revisa las farolas de la avenida',target:{x:-35,z:-175},reward:26,icon:'💡'},
+        {id:'courier',title:'MENSAJERO',detail:'entrega documentos en la oficina',target:{x:-190,z:35},reward:32,icon:'✉️'},
+        {id:'clean',title:'LIMPIEZA DE CALLES',detail:'lleva el equipo a la plaza',target:{x:195,z:-150},reward:20,icon:'🧹'}
+    ],
+    waves:{max:18,initialCount:5,addPerWave:2,rewardPerInvader:1}
+};
+
         let farmGroup=null,benjaPig=null,benjaPigBody=null,farmDefenseGroup=null;
         let farmStorageVisuals={},farmStorageBins={},farmMissionDecor=[];
         let farmMissionOrder=FARM_MISSION_ORDER.slice(),farmMissionIndex=0,farmMissionCycle=0,farmMissionId='harvest';
