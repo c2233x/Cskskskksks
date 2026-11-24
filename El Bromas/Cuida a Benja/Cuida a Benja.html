@@ -785,7 +785,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Granja.js?v=1.6.9"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/Cuida%20a%20Benja/Mapas/Granja.js?v=1.6.9"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -1342,7 +1342,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         const GITHUB_OWNER = 'c2233x';
         const GITHUB_REPO = 'Cskskskksks';
         const GITHUB_BRANCH = 'main';
-        const GITHUB_FOLDER = 'El Bromas';
+        const GITHUB_FOLDER = 'Cuida a Benja';
         const GITHUB_CONTENTS_URL = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/`;
 
         let currentLoadProgress = 0;
@@ -1705,7 +1705,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         async function fetchVersionDirect() {
             const candidates = [
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/El%20Bromas/Cuida%20a%20Benja/Version.txt`
+                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Cuida%20a%20Benja/Version.txt`
             ];
             for (const url of candidates) {
                 try {
@@ -5317,9 +5317,9 @@ function updateFarmThrownFood(){
 function ensureFarmCicadaAudio(){
  if(farmCicadaAudio)return farmCicadaAudio;
  // Se reproduce el MP3 original tal cual: sin osciladores, cambio de tono ni filtros.
- const audio=new Audio("../Sonidos/Effectos/la chicharra japonesa(MP3_160K).mp3");
+ const audio=new Audio("./Sonidos/ambiente/chicharra_original.mp3");
  audio.loop=true;audio.preload='auto';audio.volume=0;audio.setAttribute('playsinline','');
- audio.addEventListener('error',()=>{const status=document.getElementById('farmAmbienceStatus');if(status)status.textContent='Falta el MP3 original de chicharras en El Bromas/Sonidos/Effectos.';});
+ audio.addEventListener('error',()=>{const status=document.getElementById('farmAmbienceStatus');if(status)status.textContent='No se pudo cargar Cuida a Benja/Sonidos/ambiente/chicharra_original.mp3.';});
  farmCicadaAudio=audio;return audio;
 }
 function setFarmCicadas(active,strength=1){
@@ -5946,8 +5946,8 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.6.9',
-   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.6.9'
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.6.9',
+   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.6.9'
   ];
   let lastError=null;
   for(const url of urls){
