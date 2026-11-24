@@ -532,7 +532,9 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #carRadioTitle span{display:inline-block;white-space:nowrap}
 #carRadioTitle.marquee span{animation:carRadioScroll 8s linear infinite alternate}
 #carRadioNow,#carRadioNext{display:none}
-#carRadioControls{display:grid;grid-template-columns:27px 27px 23px 23px 23px 23px;gap:2px;margin-top:3px}
+#carRadioControls{display:grid;grid-template-columns:repeat(7,minmax(21px,1fr));gap:2px;margin-top:3px}
+#carRadioPower{background:linear-gradient(145deg,#3d3420,#1c1a12);border-color:#c6a64d;color:#ffdb7d}
+#carRadioPower.on{background:linear-gradient(145deg,#146d41,#0b3423);border-color:#71ffb2;color:#b8ffd7}
 .carRadioBtn{min-width:23px;height:28px;border-radius:7px;border:1px solid #36506f;background:rgba(15,26,46,.96);color:#fff;font-weight:1000;display:flex;align-items:center;justify-content:center;transition:.15s transform,.15s background,.15s border-color;padding:0;touch-action:manipulation}
 .carRadioBtn:active{transform:scale(.94)}
 #carRadioStationBadge{display:none}
@@ -587,6 +589,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
         <button id="carRadioVolDown" class="carRadioBtn" aria-label="Bajar volumen">−</button>
         <button id="carRadioMute" class="carRadioBtn" aria-label="Silenciar radio">🔊</button>
         <button id="carRadioVolUp" class="carRadioBtn" aria-label="Subir volumen">+</button>
+        <button id="carRadioPower" class="carRadioBtn" aria-label="Encender radio" title="Encender radio">⏻</button>
         <button id="carRadioRefresh" class="carRadioBtn" aria-label="Sincronizar radios" title="Sincronizar radios">↻</button>
     </div>
     <div id="carRadioVolumeLabel">92.9 FM · 100%</div>
@@ -795,7 +798,7 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
         let farmTVPanelBound=false,farmTVCurrentChannel=null;
-        let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceInsectAudio=null,farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0;
+        let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0;
         let farmBenjaHunger=100,farmBenjaHungerLast=0,farmBenjaHungerLinePlayed=false,benjaWalkTarget=null,benjaWalkTargetAt=0;
         let farmThrownFood=[],farmCarryVisualHash='',farmCarryVisualGroup=null,farmLastSubtitleAt=0;
         let farmMissionHintWasVisible=false;
@@ -878,7 +881,7 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
             } catch (_) { return null; }
         }
         let musicTracks = []; let musicPlaybackToken = 0; let musicStarting = false; let musicTrackFailures = 0;
-        const FARM_CHICHARRA_URL='https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Sonidos/Ambiente/chicharra-japonesa.mp3?v=1.5.0'; let supremeEffectAudio = null; let supremeEffectActive = false; let normalMusicResumedAfterSupreme = false; let normalMusicResumePending = false; let bossMusicStarted = false; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null, supremeAttackSoundUrl = null;
+        let farmCicadaOscillatorA=null,farmCicadaOscillatorB=null,farmCicadaLfo=null,farmCicadaGain=null,farmCicadaMaster=null; let supremeEffectAudio = null; let supremeEffectActive = false; let normalMusicResumedAfterSupreme = false; let normalMusicResumePending = false; let bossMusicStarted = false; let attackSoundUrl = null, jumpSoundUrl = null, damageSoundUrl = null, auraPuraSoundUrl = null, supremeAttackSoundUrl = null;
         let taradoSoundUrl = null, pedoSoundUrl = null, risaSoundUrl = null, fueraSoundUrl = null;
         let explosionSoundUrl = null, rolonSoundUrl = null, pumSoundUrl = null;
         let faceTextureUrl = null; let texCespedUrl = null, texTierraUrl = null, texPiedraUrl = null;
@@ -2858,7 +2861,7 @@ function createDrivableCars() {
             const hint=document.getElementById('carEnterHint'); if(hint) hint.classList.remove('active');
             updateCarRadioUI();
             startCarEngineSound();
-            startCarRadio(true);
+            carRadioEnabled=false;updateCarRadioUI();
             if (typeof forceHudVisible==='function') forceHudVisible();
         }
 
@@ -2945,6 +2948,8 @@ function createDrivableCars() {
             if(badge) badge.textContent=safeName;
             const mute=document.getElementById('carRadioMute');
             if(mute) mute.textContent=carRadioMuted?'🔇':'🔊';
+            const power=document.getElementById('carRadioPower');
+            if(power){power.classList.toggle('on',!!carRadioEnabled);power.title=carRadioEnabled?'Apagar radio':'Encender radio';power.setAttribute('aria-label',power.title);}
             const pct=Math.round(Math.max(0,Math.min(1,carRadioVolume))*100);
             if(volLabel) volLabel.textContent=(station.freq||'Online')+' · '+pct+'%'+(carRadioMuted?' · SILENCIADA':'');
             const volUp=document.getElementById('carRadioVolUp'), volDown=document.getElementById('carRadioVolDown');
@@ -3146,6 +3151,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
 
             const prev=document.getElementById('carRadioPrev');
             const next=document.getElementById('carRadioNextBtn');
+            const power=document.getElementById('carRadioPower');
             const mute=document.getElementById('carRadioMute');
             const refresh=document.getElementById('carRadioRefresh');
             const volDown=document.getElementById('carRadioVolDown');
@@ -3156,6 +3162,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             if(hint) hint.addEventListener('click',enter);
             if(prev) prev.addEventListener('click',()=>cycleCarRadio(-1));
             if(next) next.addEventListener('click',()=>cycleCarRadio(1));
+            if(power) power.addEventListener('click',()=>{if(!drivenCar)return;if(carRadioEnabled)stopCarRadio(false);else startCarRadio(false);updateCarRadioUI();});
             if(mute) mute.addEventListener('click',()=>{ carRadioMuted=!carRadioMuted; carRadioAudio.muted=carRadioMuted; updateCarRadioUI(); });
             if(refresh) refresh.addEventListener('click',()=>refreshCarRadioStations());
             if(volDown) volDown.addEventListener('click',()=>setCarRadioVolume(carRadioVolume-.1));
@@ -4723,10 +4730,32 @@ function updateFarmThrownFood(){
  }
 }
 
+function setFarmCicadas(active){
+ if(!farmAmbienceContext)return;
+ const ctx=farmAmbienceContext;
+ if(active&&!farmCicadaMaster){
+  const filter=ctx.createBiquadFilter();filter.type='bandpass';filter.frequency.value=3900;filter.Q.value=.85;
+  farmCicadaMaster=ctx.createGain();farmCicadaMaster.gain.value=0;
+  const gainA=ctx.createGain();gainA.gain.value=.42;
+  const gainB=ctx.createGain();gainB.gain.value=.20;
+  farmCicadaOscillatorA=ctx.createOscillator();farmCicadaOscillatorA.type='sawtooth';farmCicadaOscillatorA.frequency.value=3720;
+  farmCicadaOscillatorB=ctx.createOscillator();farmCicadaOscillatorB.type='triangle';farmCicadaOscillatorB.frequency.value=4180;
+  farmCicadaLfo=ctx.createOscillator();farmCicadaLfo.type='sine';farmCicadaLfo.frequency.value=13.5;
+  const lfoDepth=ctx.createGain();lfoDepth.gain.value=.34;
+  farmCicadaLfo.connect(lfoDepth);lfoDepth.connect(gainA.gain);
+  farmCicadaOscillatorA.connect(gainA);farmCicadaOscillatorB.connect(gainB);
+  gainA.connect(filter);gainB.connect(filter);filter.connect(farmCicadaMaster);farmCicadaMaster.connect(ctx.destination);
+  farmCicadaOscillatorA.start();farmCicadaOscillatorB.start();farmCicadaLfo.start();
+ }
+ if(farmCicadaMaster){
+  const target=active?.009:0;
+  farmCicadaMaster.gain.setTargetAtTime(target,ctx.currentTime,.35);
+ }
+}
 function stopFarmAmbience(){
  farmAmbienceActiveZone='';
  if(farmAmbienceBirdTimer){clearTimeout(farmAmbienceBirdTimer);farmAmbienceBirdTimer=0;}
- if(farmAmbienceInsectAudio){try{farmAmbienceInsectAudio.pause();farmAmbienceInsectAudio.currentTime=0;}catch(_){}}
+ setFarmCicadas(false);
  if(farmAmbienceGain&&farmAmbienceContext){try{farmAmbienceGain.gain.setTargetAtTime(0,farmAmbienceContext.currentTime,.25);}catch(_){}}
 }
 function playFarmBirdChirp(){
@@ -4758,12 +4787,8 @@ function startFarmAmbience(zone){
    farmAmbienceNoiseSource.connect(filter);filter.connect(farmAmbienceGain);farmAmbienceGain.connect(farmAmbienceContext.destination);farmAmbienceNoiseSource.start();
   }
   if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
-  if(!farmAmbienceInsectAudio){
-   farmAmbienceInsectAudio=new Audio(FARM_CHICHARRA_URL);farmAmbienceInsectAudio.loop=true;farmAmbienceInsectAudio.preload='none';farmAmbienceInsectAudio.volume=.17;farmAmbienceInsectAudio.setAttribute('playsinline','');
-  }
-  if(zone.insects){
-   if(farmAmbienceInsectAudio.paused){const play=farmAmbienceInsectAudio.play();if(play&&play.catch)play.catch(()=>{});}
-  }else if(farmAmbienceInsectAudio&&!farmAmbienceInsectAudio.paused){farmAmbienceInsectAudio.pause();farmAmbienceInsectAudio.currentTime=0;}
+  if(farmAmbienceGain&&farmAmbienceContext)farmAmbienceGain.gain.setTargetAtTime(.055,farmAmbienceContext.currentTime,.4);
+  setFarmCicadas(!!zone.insects);
   if(changed){if(farmAmbienceBirdTimer)clearTimeout(farmAmbienceBirdTimer);playFarmBirdChirp();}
  }catch(_){}
 }
