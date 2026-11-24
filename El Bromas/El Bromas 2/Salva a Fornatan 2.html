@@ -4375,25 +4375,101 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const text=document.getElementById('storyGuideText');if(text)text.textContent=farmGuideLabel+' · '+Math.round(Math.hypot(dx,dz))+' m';
             if(farmGuideMarker){farmGuideMarker.position.y=farmGroundAt(farmGuideTarget.x,farmGuideTarget.z)+Math.sin(performance.now()*.002)*.35;farmGuideMarker.rotation.y+=.012;}
         }
-        function getStoryMissionName(){return ['ve a ver a benja','haz pedidos en el granero','compra comida','dale de comer a benja','benja ya crecio'][Math.max(0,Math.min(4,storyStage))];}
-        function getStoryMissionProgress(){
-            if(storyStage===0)return 'benja esta en el corral';
-            if(storyStage===1)return 'pedido '+storyWorkCount+' · cobro $18';
-            if(storyStage===2)return 'dinero $'+storyMoney+' · saco $12';
-            if(storyStage===3)return 'peso '+storyPigWeight+' / '+BENJA_SAVE_WEIGHT_GOAL+' kg';
-            return 'benja: '+storyPigWeight+' kg · raciones '+storyFeedingCount;
+        function farmDefaultGoods(){return {maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0};}
+        function farmTotalGoods(obj){return Object.values(obj||{}).reduce((sum,n)=>sum+(Number(n)||0),0);}
+        function farmTotalFood(obj){return Object.keys(FARM_GOODS).reduce((sum,key)=>sum+(FARM_GOODS[key].food?(Number(obj&&obj[key])||0):0),0);}
+        function farmTakeItem(type,amount=1){
+            let left=amount,take=Math.min(Number(farmCarriedGoods[type])||0,left);
+            farmCarriedGoods[type]=(Number(farmCarriedGoods[type])||0)-take;left-=take;
+            if(left>0){const stored=Math.min(Number(farmWarehouseStock[type])||0,left);farmWarehouseStock[type]=(Number(farmWarehouseStock[type])||0)-stored;left-=stored;}
+            storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);refreshFarmStorageVisuals();return left===0;
         }
+        function farmUpdateBenjaHud(){
+            const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText');
+            if(hud)hud.style.display=storyModeActive?'flex':'none';
+            if(fill){fill.style.width=Math.max(0,Math.min(100,farmBenjaHealth))+'%';fill.style.background=farmBenjaHealth<35?'linear-gradient(90deg,#a92121,#ff6868)':'linear-gradient(90deg,#54c953,#bcf46b)';}
+            if(label)label.textContent=Math.round(farmBenjaHealth)+'%';
+        }
+        function farmUpdateInventoryPanel(){
+            const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
+            const mode=farmInventoryPanelMode,buttons=document.getElementById('farmInventoryButtons');
+            const carried=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmCarriedGoods[k]||0)).join(' · ');
+            const stored=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmWarehouseStock[k]||0)).join(' · ');
+            const money=document.getElementById('farmInventoryMoney'),summary=document.getElementById('farmInventorySummary'),title=document.getElementById('farmInventoryTitle');
+            if(money)money.textContent='Dinero disponible: $'+storyMoney;
+            if(summary)summary.textContent='EN TU CARGA\n'+carried+'\n\nGUARDADO EN EL ALMACEN\n'+stored;
+            if(title)title.textContent=mode==='shop'?'PUESTO DE SUMINISTROS':'ALMACEN DE LA GRANJA';
+            if(!buttons)return;let html='';
+            if(mode==='shop'){
+                ['maiz','trigo','zanahoria','heno','pienso','madera'].forEach(type=>{const g=FARM_GOODS[type],price=type==='madera'?9:g.price;html+='<button type="button" data-farm-action="buy" data-good="'+type+'">Comprar '+g.label+' · $'+price+'</button>';});
+                html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
+            }else{
+                html+='<button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button>';
+                Object.keys(FARM_GOODS).forEach(type=>{const g=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">Sacar 1 '+g.label+' ('+(farmWarehouseStock[type]||0)+')</button>';});
+                html+='<button type="button" class="primary" data-farm-action="close">CERRAR ALMACEN</button>';
+            }
+            buttons.innerHTML=html;
+            if(!farmInventoryPanelBound){
+                panel.addEventListener('click',event=>{
+                    const button=event.target.closest('button[data-farm-action]');if(!button)return;
+                    const action=button.dataset.farmAction,type=button.dataset.good;
+                    if(action==='close'){panel.style.display='none';return;}
+                    if(action==='buy'){
+                        const g=FARM_GOODS[type],price=type==='madera'?9:g&&g.price;
+                        if(!g||storyMoney<price){showToast('no tienes suficiente dinero');return;}
+                        storyMoney-=price;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
+                        storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+                        updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('compraste '+g.label+'. puedes guardarlo en el almacen.');
+                    }else if(action==='store'){
+                        const moved=farmTotalGoods(farmCarriedGoods);if(!moved){showToast('no llevas nada para guardar');return;}
+                        Object.keys(FARM_GOODS).forEach(k=>{farmWarehouseStock[k]=(farmWarehouseStock[k]||0)+(farmCarriedGoods[k]||0);farmCarriedGoods[k]=0;});
+                        storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+                        refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+                        showToast('guardaste '+moved+' productos. el stock se acumulo.');
+                        if(farmMissionId==='warehouse')farmCompleteMission('ALMACEN ORGANIZADO','todo quedo guardado. ahora ya tenemos existencias para los siguientes encargos.','🏠');
+                    }else if(action==='withdraw'){
+                        if(!type||!(farmWarehouseStock[type]>0)){showToast('no hay unidades de ese producto');return;}
+                        farmWarehouseStock[type]--;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
+                        storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+                        refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+                    }
+                });farmInventoryPanelBound=true;
+            }
+        }
+        function openFarmInventoryPanel(mode){
+            const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
+            farmInventoryPanelMode=mode||'warehouse';farmUpdateInventoryPanel();panel.style.display='block';
+        }
+        function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
+        function getStoryMissionProgress(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).progress;}
         function saveStoryProgress(){
             if(!storyModeActive||!character)return;
-            try{localStorage.setItem(STORY_SAVE_KEY,JSON.stringify({stage:storyStage,money:storyMoney,pigWeight:storyPigWeight,feed:storyFeedInventory,workCount:storyWorkCount,feedings:storyFeedingCount,x:character.position.x,y:character.position.y,z:character.position.z,savedAt:Date.now()}));}catch(e){}
+            try{localStorage.setItem(STORY_SAVE_KEY,JSON.stringify({
+                stage:storyStage,money:storyMoney,pigWeight:storyPigWeight,feed:storyFeedInventory,workCount:storyWorkCount,feedings:storyFeedingCount,
+                carried:farmCarriedGoods,warehouse:farmWarehouseStock,missionOrder:farmMissionOrder,missionIndex:farmMissionIndex,missionCycle:farmMissionCycle,missionId:farmMissionId,
+                defenseLevel:farmDefenseLevel,benjaHealth:farmBenjaHealth,raidKillCarry:farmRaidKillCarry,raidKillsTotal:farmRaidKillsTotal,raidTriggered:farmRaidTriggered,
+                x:character.position.x,y:character.position.y,z:character.position.z,savedAt:Date.now()
+            }));}catch(e){}
         }
         function loadStoryProgress(){
-            try{const d=JSON.parse(localStorage.getItem(STORY_SAVE_KEY)||'null');if(!d)return false;
-                storyStage=Math.max(0,Math.min(4,Number(d.stage)||0));storyMoney=Math.max(0,Number(d.money)||0);
-                storyPigWeight=Math.max(32,Number(d.pigWeight)||32);storyFeedInventory=Math.max(0,Number(d.feed)||0);
-                storyWorkCount=Math.max(0,Number(d.workCount)||0);storyFeedingCount=Math.max(0,Number(d.feedings)||0);
+            try{
+                const d=JSON.parse(localStorage.getItem(STORY_SAVE_KEY)||'null');if(!d)return false;
+                storyMoney=Math.max(0,Number(d.money)||0);storyPigWeight=Math.max(32,Number(d.pigWeight)||32);
+                storyFeedInventory=Math.max(0,Number(d.feed)||0);storyWorkCount=Math.max(0,Number(d.workCount)||0);storyFeedingCount=Math.max(0,Number(d.feedings)||0);
+                farmCarriedGoods=Object.assign(farmDefaultGoods(),d.carried||{});
+                farmWarehouseStock=Object.assign(farmDefaultGoods(),d.warehouse||{});
+                if(!d.warehouse&&storyFeedInventory>0)farmCarriedGoods.pienso=storyFeedInventory;
+                if(!d.warehouse)farmWarehouseStock.madera=Math.max(6,Number(farmWarehouseStock.madera)||0);
+                farmMissionOrder=Array.isArray(d.missionOrder)&&d.missionOrder.length?d.missionOrder.filter(id=>FARM_MISSION_DATA[id]):FARM_MISSION_ORDER.slice();
+                if(farmMissionOrder.length!==FARM_MISSION_ORDER.length)farmMissionOrder=FARM_MISSION_ORDER.slice();
+                farmMissionIndex=Math.max(0,Math.min(farmMissionOrder.length-1,Number(d.missionIndex)||0));
+                farmMissionCycle=Math.max(0,Number(d.missionCycle)||0);farmMissionId=FARM_MISSION_DATA[d.missionId]?d.missionId:(farmMissionOrder[farmMissionIndex]||'harvest');
+                farmDefenseLevel=Math.max(0,Math.min(3,Number(d.defenseLevel)||0));
+                farmBenjaHealth=Math.max(0,Math.min(100,Number(d.benjaHealth)||100));
+                farmRaidKillCarry=Math.max(0,Number(d.raidKillCarry)||0);farmRaidKillsTotal=Math.max(0,Number(d.raidKillsTotal)||0);
+                farmRaidTriggered=!!d.raidTriggered;farmRaidActive=false;storyStage=4;
                 if(character&&Number.isFinite(d.x)&&Number.isFinite(d.z))character.position.set(Number(d.x),farmGroundAt(Number(d.x),Number(d.z)),Number(d.z));
-                return true;
+                storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);refreshFarmStorageVisuals();return true;
             }catch(e){return false;}
         }
         function startFarmIntroCinematic(){
@@ -4401,86 +4477,129 @@ function removeCarRadioStation(index, reason='Sin señal'){
             isCinematic=true;cameraTheta=0;cameraPhi=Math.PI/3;cameraDistance=25;document.body.classList.add('farmCinematic');
             showStoryDialog('LA GRANJA','bueno, por fin llegue. hacia rato que no venia por aca.','🌾');playBenjaGrunt(true);
         }
+        function farmStartMission(id){
+            farmMissionId=FARM_MISSION_DATA[id]?id:'harvest';storyStage=4;
+            const m=FARM_MISSION_DATA[farmMissionId];setFarmGuideTarget(m.target.x,m.target.z,m.label);
+            updateMissionUI();updateFarmMoneyLabel();saveStoryProgress();
+        }
+        function farmShuffleMissionDeck(){
+            const previous=farmMissionOrder[farmMissionOrder.length-1];farmMissionOrder=FARM_MISSION_ORDER.slice();
+            for(let i=farmMissionOrder.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[farmMissionOrder[i],farmMissionOrder[j]]=[farmMissionOrder[j],farmMissionOrder[i]];}
+            if(farmMissionOrder[0]===previous){const swap=farmMissionOrder.findIndex((id,i)=>i>0&&id!==previous);if(swap>0)[farmMissionOrder[0],farmMissionOrder[swap]]=[farmMissionOrder[swap],farmMissionOrder[0]];}
+            farmMissionIndex=0;farmMissionCycle++;
+        }
+        function farmCompleteMission(title,dialog,icon){
+            farmMissionIndex++;if(farmMissionIndex>=farmMissionOrder.length)farmShuffleMissionDeck();
+            farmMissionId=farmMissionOrder[farmMissionIndex]||'harvest';const m=FARM_MISSION_DATA[farmMissionId];
+            setFarmGuideTarget(m.target.x,m.target.z,m.label);updateMissionUI();updateFarmMoneyLabel();saveStoryProgress();
+            if(title)showStoryDialog(title,dialog||'listo, vamos con el siguiente encargo.',icon||'✅');
+        }
         function startStoryCampaign(reset){
             storyModeActive=true;waveActive=false;waitingNextWave=false;waveNumber=0;missionActive=true;missionType='story';
             let restored=false;
             if(reset){try{localStorage.removeItem(STORY_SAVE_KEY);}catch(e){}
                 storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;
-            }else{restored=loadStoryProgress();if(!restored){storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;}}
+                farmCarriedGoods=farmDefaultGoods();farmWarehouseStock=farmDefaultGoods();farmWarehouseStock.madera=6;
+                farmMissionOrder=FARM_MISSION_ORDER.slice();farmMissionIndex=0;farmMissionCycle=0;farmMissionId='harvest';
+                farmDefenseLevel=0;farmBenjaHealth=100;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
+            }else{restored=loadStoryProgress();if(!restored){
+                storyStage=0;storyMoney=0;storyPigWeight=32;storyFeedInventory=0;storyWorkCount=0;storyFeedingCount=0;
+                farmCarriedGoods=farmDefaultGoods();farmWarehouseStock=farmDefaultGoods();farmWarehouseStock.madera=6;
+                farmMissionOrder=FARM_MISSION_ORDER.slice();farmMissionIndex=0;farmMissionCycle=0;farmMissionId='harvest';
+                farmDefenseLevel=0;farmBenjaHealth=100;farmRaidKillCarry=0;farmRaidKillsTotal=0;farmRaidTriggered=false;farmRaidActive=false;
+            }}
             if(reset||!restored){character.position.set(FARM_CENTER.x-24,farmGroundAt(FARM_CENTER.x-24,FARM_CENTER.z+8),FARM_CENTER.z+8);character.rotation.set(0,0,0);}
-            updateBenjaWeightVisual();document.getElementById('missionUI').style.display='block';updateMissionUI();updateFarmMoneyLabel();
-            if(storyStage===0&&!restored){setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'ve con benja');startFarmIntroCinematic();}
-            else if(storyStage<4){
-                isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');
-                const t=storyStage===0?FARM_PIG_POS:storyStage===1?FARM_WORK_POS:storyStage===2?FARM_SHOP_POS:FARM_PIG_POS;
-                const lab=storyStage===0?'ve con benja':storyStage===1?'ve al granero':storyStage===2?'ve al puesto':'vuelve con benja';
-                setFarmGuideTarget(t.x,t.z,lab);showStoryDialog('YA ESTAMOS DE VUELTA','benja sigue en el corral. vamos a continuar donde lo dejamos.','🐷');
-            }else{isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'sigue cuidando a benja');showStoryDialog('BENJA ESTA CONTENTO','mira como ha crecido. todavia queda historia por delante.','🐷');}
+            updateBenjaWeightVisual();createFarmDefensiveCorral();refreshFarmStorageVisuals();farmUpdateBenjaHud();
+            document.getElementById('missionUI').style.display='block';updateMissionUI();updateFarmMoneyLabel();
+            if(!restored||reset){setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'ve a conocer a benja');startFarmIntroCinematic();}
+            else{isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');farmStartMission(farmMissionId);showStoryDialog('LA GRANJA SIGUE EN MARCHA','hay nuevos encargos, un almacen para organizar y que estar pendientes de benja por las noches.','🌾');}
             saveStoryProgress();
         }
         function storyAdvanceTo(next,title,text,icon){
             storyStage=next;updateMissionUI();updateFarmMoneyLabel();
-            const t=next===0?FARM_PIG_POS:next===1?FARM_WORK_POS:next===2?FARM_SHOP_POS:(next===3||next===4)?FARM_PIG_POS:null;
-            const lab=next===0?'ve con benja':next===1?'ve al granero':next===2?'ve al puesto':next===3?'vuelve con benja':next===4?'sigue cuidando a benja':'';
-            if(t)setFarmGuideTarget(t.x,t.z,lab);else{removeFarmGuideMarker();farmGuideTarget=null;const ui=document.getElementById('storyGuide');if(ui)ui.style.display='none';}
+            const target=next===0?FARM_PIG_POS:next===1?FARM_WORK_POS:next===2?FARM_SHOP_POS:next===3||next===4?FARM_PIG_POS:null;
+            if(target)setFarmGuideTarget(target.x,target.z,'objetivo');
             saveStoryProgress();if(title)showStoryDialog(title,text,icon);
+        }
+        function farmHandleMissionAction(){
+            const id=farmMissionId,now=performance.now();
+            if(id==='harvest'){farmCarriedGoods.zanahoria+=3;farmCarriedGoods.maiz+=2;storyMoney+=18;storyWorkCount++;updateFarmMoneyLabel();farmCompleteMission('COSECHA LISTA','ya salieron las verduras. las voy a guardar para el pedido de la casa vecina.','🥕');}
+            else if(id==='eggs'){farmCarriedGoods.huevos+=4;storyMoney+=20;updateFarmMoneyLabel();farmCompleteMission('HUEVOS RECOGIDOS','los nidos estaban llenos. con esto podemos completar una entrega.','🥚');}
+            else if(id==='delivery'){
+                const veg=(farmCarriedGoods.zanahoria||0)+(farmWarehouseStock.zanahoria||0),egg=(farmCarriedGoods.huevos||0)+(farmWarehouseStock.huevos||0);
+                if(veg<2||egg<1){showToast('te faltan 2 verduras y 1 huevo. recoge la cosecha o revisa el almacen');setFarmGuideTarget(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z,'revisa las existencias');return;}
+                farmTakeItem('zanahoria',2);farmTakeItem('huevos',1);storyMoney+=34;updateFarmMoneyLabel();farmCompleteMission('PEDIDO ENTREGADO','la vecina recibio todo. el dinero de la entrega ya esta en tu bolsillo.','📦');
+            }else if(id==='repair'){
+                if((farmCarriedGoods.madera||0)+(farmWarehouseStock.madera||0)<2){showToast('necesitas 2 maderas. compra mas o revisa el almacen');setFarmGuideTarget(FARM_SHOP_POS.x,FARM_SHOP_POS.z,'compra madera');return;}
+                farmTakeItem('madera',2);farmDefenseLevel=Math.min(3,farmDefenseLevel+1);createFarmDefensiveCorral();storyMoney+=16;updateFarmMoneyLabel();farmCompleteMission('CORRAL REFORZADO','ya puse otra barrera. a los intrusos les costara mas llegar hasta benja.','🪵');
+            }else if(id==='water'){farmCarriedGoods.agua+=4;storyMoney+=10;updateFarmMoneyLabel();farmCompleteMission('BEBEDERO LLENO','ya tenemos agua para los animales.','💧');}
+            else if(id==='tractor'){farmCarriedGoods.heno+=3;storyMoney+=26;updateFarmMoneyLabel();farmCompleteMission('TRACTOR LISTO','arranco otra vez. tambien recupere varios fardos de heno.','🚜');}
+            else if(id==='feed'){
+                const type=['maiz','trigo','zanahoria','heno','pienso'].find(k=>(farmCarriedGoods[k]||0)+(farmWarehouseStock[k]||0)>0);
+                if(!type){showToast('no queda comida. compra algo en el puesto o retira comida del almacen');setFarmGuideTarget(FARM_SHOP_POS.x,FARM_SHOP_POS.z,'ve al puesto por comida');return;}
+                farmTakeItem(type,1);storyPigWeight=Math.min(100,storyPigWeight+3);storyFeedingCount++;updateBenjaWeightVisual();playBenjaGrunt(true);updateFarmMoneyLabel();farmCompleteMission('BENJA YA COMIO','ahi tienes, benja. ahora toca seguir con las otras cosas de la granja.','🐷');
+            }else if(id==='warehouse')openFarmInventoryPanel('warehouse');
+            storyInteractAfter=now+1200;saveStoryProgress();
+        }
+        function farmStartNightRaid(){
+            if(!storyModeActive||farmRaidActive||!scene)return;farmRaidActive=true;farmRaidSpawnedCount=IS_MOBILE_DEVICE?4:6;
+            for(let i=0;i<farmRaidSpawnedCount;i++){
+                const angle=(i/farmRaidSpawnedCount)*Math.PI*2+(Math.random()-.5)*.4,dist=54+Math.random()*18;
+                const npc=createSmallPene(FARM_PIG_POS.x+Math.cos(angle)*dist,FARM_PIG_POS.z+Math.sin(angle)*dist);
+                npc.userData.farmRaider=true;npc.userData.health=48;npc.userData.maxHealth=48;npc.userData.speed=.10+Math.random()*.035;npc.userData.attackCooldown=55+Math.random()*55;
+                if(npc.userData.shaft&&npc.userData.shaft.material&&npc.userData.shaft.material.color)npc.userData.shaft.material.color.setHex(0x8b3939);
+                if(npc.userData.head&&npc.userData.head.material&&npc.userData.head.material.color)npc.userData.head.material.color.setHex(0xe2b99a);
+                scene.add(npc);smallPenes.push(npc);
+            }
+            setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'DEFIENDE A BENJA · '+farmRaidSpawnedCount+' intrusos');showToast('NOCHE EN LA GRANJA: ¡PROTEGE A BENJA!');farmUpdateBenjaHud();saveStoryProgress();
+        }
+        function farmStopRaiders(){for(let i=smallPenes.length-1;i>=0;i--){const e=smallPenes[i];if(e&&e.userData&&e.userData.farmRaider){scene.remove(e);smallPenes.splice(i,1);}}}
+        function farmFinishNightRaid(){
+            if(!farmRaidActive)return;farmRaidActive=false;farmRaidSpawnedCount=0;
+            const m=FARM_MISSION_DATA[farmMissionId];if(m)setFarmGuideTarget(m.target.x,m.target.z,m.label);
+            showToast('BENJA ESTA A SALVO. BUEN TRABAJO.');saveStoryProgress();
+        }
+        function updateFarmNightRaid(){
+            if(!storyModeActive)return;const night=timeOfDay>=.76||timeOfDay<.23;
+            if(night&&!farmRaidTriggered){farmRaidTriggered=true;farmStartNightRaid();}
+            if(!night&&farmRaidTriggered){farmRaidTriggered=false;farmBenjaHealth=Math.min(100,farmBenjaHealth+18);farmUpdateBenjaHud();saveStoryProgress();}
+            if(farmRaidActive&&farmBenjaHealth<=0){farmRaidActive=false;farmBenjaHealth=0;farmStopRaiders();showStoryDialog('BENJA SE ESCONDIO','los intrusos llegaron al corral. refuerza las barreras antes de la proxima noche.','🐷');}
+            farmUpdateBenjaHud();
+        }
+        function updateFarmRaider(npc,groundY){
+            if(!npc||!npc.userData||!npc.userData.farmRaider||!farmRaidActive||!benjaPig)return false;
+            const dx=benjaPig.position.x-npc.position.x,dz=benjaPig.position.z-npc.position.z,dist=Math.hypot(dx,dz);
+            npc.position.y+=(groundY-npc.position.y)*.24;npc.rotation.y=Math.atan2(dx,dz);npc.userData.walkCycle+=.12;
+            const sw=Math.sin(npc.userData.walkCycle);npc.userData.ball1.position.y=1.2+sw*.25;npc.userData.ball2.position.y=1.2-sw*.25;
+            if(dist>4.8){const nx=dx/(dist||1),nz=dz/(dist||1),step=npc.userData.speed,x=npc.position.x+nx*step,z=npc.position.z+nz*step;if(!checkCollision(x,z)){npc.position.x=x;npc.position.z=z;}}
+            else{npc.userData.attackCooldown--;if(npc.userData.attackCooldown<=0){farmBenjaHealth=Math.max(0,farmBenjaHealth-Math.max(2,Math.round(6*(1-Math.min(.72,farmDefenseLevel*.18)))));npc.userData.attackCooldown=62+Math.random()*28;farmUpdateBenjaHud();}}
+            return true;
         }
         function updateStoryMode(){
             if(!storyModeActive||!character||!scene||storyCinematicPlaying)return;
             const now=performance.now();let prompt='';
-            if(storyStage===0){
-                if(character.position.distanceTo(benjaPig.position)<16){
-                    prompt='pulsa ATACAR para hablar con benja';
-                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;playBenjaGrunt(true);storyAdvanceTo(1,'A VER QUE HACEMOS','benja necesita comida. hay unas cajas junto al granero; si preparo el pedido me dan unas monedas.','📦');}
-                }
-            }else if(storyStage===1){
-                const pos=new THREE.Vector3(FARM_WORK_POS.x,farmGroundAt(FARM_WORK_POS.x,FARM_WORK_POS.z),FARM_WORK_POS.z);
-                if(character.position.distanceTo(pos)<17){
-                    prompt='pulsa ATACAR para preparar el pedido';
-                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1500;storyMoney+=18;storyWorkCount++;updateFarmMoneyLabel();storyAdvanceTo(2,'PEDIDO ENTREGADO','ya quedo. por este pedido me pagaron 18 monedas. ahora voy al puesto por comida para benja.','💰');}
-                }
-            }else if(storyStage===2){
-                const pos=new THREE.Vector3(FARM_SHOP_POS.x,farmGroundAt(FARM_SHOP_POS.x,FARM_SHOP_POS.z),FARM_SHOP_POS.z);
-                if(character.position.distanceTo(pos)<18){
-                    prompt='pulsa ATACAR para comprar un saco · $12';
-                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1500;
-                        if(storyMoney>=12){storyMoney-=12;storyFeedInventory++;storyAdvanceTo(3,'YA TENEMOS COMIDA','un saco menos. vamos a llevarselo a benja antes de que se coma la cerca.','🌾');}
-                        else{showToast('te faltan monedas. vuelve al granero a trabajar');setFarmGuideTarget(FARM_WORK_POS.x,FARM_WORK_POS.z,'consigue monedas');}
-                    }
-                }
-            }else if(storyStage===3){
-                if(character.position.distanceTo(benjaPig.position)<17){
-                    prompt='pulsa ATACAR para darle comida a benja';
-                    if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1800;
-                        if(storyFeedInventory>0){storyFeedInventory--;storyPigWeight=Math.min(BENJA_SAVE_WEIGHT_GOAL,storyPigWeight+5);storyFeedingCount++;updateBenjaWeightVisual();updateFarmMoneyLabel();playBenjaGrunt(true);
-                            if(storyPigWeight>=BENJA_SAVE_WEIGHT_GOAL)storyAdvanceTo(4,'MIRA COMO HA CRECIDO','ya se nota el cambio, benja. ahora si estas comiendo bien. esto apenas empieza.','🐷');
-                            else storyAdvanceTo(1,'BUEN PROVECHO','eso, come tranquilo. voy a preparar otro pedido para comprarte mas comida.','🌽');
-                        }else{showToast('no tienes comida. toca ganar unas monedas');storyAdvanceTo(1,null,null,null);}
+            if(farmRaidActive){const n=smallPenes.filter(p=>p&&p.userData&&p.userData.farmRaider).length;prompt='DEFIENDE A BENJA · intrusos: '+n+' · $5 por cada 2';}
+            else{
+                const shopDist=Math.hypot(character.position.x-FARM_SHOP_POS.x,character.position.z-FARM_SHOP_POS.z),storeDist=Math.hypot(character.position.x-FARM_STORAGE_POS.x,character.position.z-FARM_STORAGE_POS.z);
+                if(shopDist<19){prompt='pulsa ATACAR para comprar comida y suministros';if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}}
+                if(storeDist<21){prompt='pulsa ATACAR para abrir el almacen';if(isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}}
+                const m=FARM_MISSION_DATA[farmMissionId];
+                if(m){const dist=Math.hypot(character.position.x-m.target.x,character.position.z-m.target.z);
+                    if(dist<(farmMissionId==='feed'?18:20)){
+                        if(farmMissionId==='warehouse')prompt='pulsa ATACAR para abrir el almacen y guardar la carga';
+                        else if(farmMissionId==='delivery')prompt='pulsa ATACAR para entregar 2 verduras y 1 huevo';
+                        else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar las defensas del corral';
+                        else if(farmMissionId==='feed')prompt='pulsa ATACAR para darle comida a benja';
+                        else prompt='pulsa ATACAR para completar: '+m.title.toLowerCase();
+                        if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse')farmHandleMissionAction();
+                        if(farmMissionId==='warehouse'&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
                     }
                 }
             }
-            else if(storyStage===4){
-                if(character.position.distanceTo(benjaPig.position)<17){
-                    prompt=storyFeedInventory>0?'pulsa ATACAR para darle otra racion':'benja quiere mas comida. ve a trabajar para comprar otro saco';
-                    if(isAttacking&&now>storyInteractAfter){
-                        storyInteractAfter=now+1800;
-                        if(storyFeedInventory>0){
-                            storyFeedInventory--;storyPigWeight+=5;storyFeedingCount++;
-                            updateBenjaWeightVisual();updateMissionUI();playBenjaGrunt(true);
-                            showStoryDialog('OTRA RACION','ahi tienes benja. ya te estas poniendo fuerte. toca seguir trabajando para mantenerte bien alimentado.','🐷');
-                            saveStoryProgress();
-                        }else{
-                            storyAdvanceTo(1,'OTRO DIA EN LA GRANJA','se acabo la comida. voy a preparar otro pedido y vuelvo con un saco nuevo.','🌾');
-                        }
-                    }
-                }
-            }
-            if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}
-            updateFarmMoneyLabel();updateFarmGuide();
-            if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
+            if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}else if(interactionPrompt)interactionPrompt.style.display='none';
+            updateFarmMoneyLabel();updateFarmGuide();if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
         }
-
-        function startProtestMission() {
+                function startProtestMission() {
             missionActive = true; missionType = 'protest'; postersIntact = totalPosters; protestSoundTimer = 0; posters.forEach(p => scene.remove(p)); posters = [];
             const mUI = document.getElementById('missionUI'); mUI.style.display = 'block'; document.getElementById('missionTitle').textContent = 'EVENTO: PROTEGE LOS CARTELES'; updateMissionUI();
             for(let i=0; i<totalPosters; i++){
