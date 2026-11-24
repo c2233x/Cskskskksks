@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" role="img" aria-label="Cuida a Benja: el personaje cuida a su cerdo en la granja">
+<defs>
+ <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#75d2ff"/><stop offset="1" stop-color="#efffd0"/></linearGradient>
+ <linearGradient id="hill" x2="0" y2="1"><stop stop-color="#79bb53"/><stop offset="1" stop-color="#347d3d"/></linearGradient>
+ <linearGradient id="wood" x2="0" y2="1"><stop stop-color="#b97635"/><stop offset="1" stop-color="#653719"/></linearGradient>
+ <linearGradient id="pig" x2="0" y2="1"><stop stop-color="#ffd0d4"/><stop offset="1" stop-color="#e67f91"/></linearGradient>
+ <linearGradient id="shirt" x2="0" y2="1"><stop stop-color="#35c9ff"/><stop offset="1" stop-color="#0879c3"/></linearGradient>
+ <filter id="shadow"><feGaussianBlur stdDeviation="12"/></filter>
+ <filter id="titleShadow" x="-20%" y="-20%" width="140%" height="150%"><feGaussianBlur in="SourceAlpha" stdDeviation="7"/><feOffset dy="7"/><feComponentTransfer><feFuncA type="linear" slope=".55"/></feComponentTransfer><feMerge><feMergeNode/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+</defs>
+<rect width="1024" height="1024" fill="url(#sky)"/>
+<circle cx="120" cy="165" r="75" fill="#fff4a8" opacity=".9"/>
+<path d="M0 395 Q120 270 255 360 Q430 215 585 350 Q760 190 1024 345 V1024 H0Z" fill="url(#hill)"/>
+<path d="M0 510 Q230 400 415 505 Q650 390 1024 480 V1024 H0Z" fill="#76b54f"/>
+<g opacity=".95">
+ <path d="M0 585 L0 420 130 420 130 585Z" fill="#e7cfaa"/><path d="M-10 430 L65 348 145 430Z" fill="#d94b42"/>
+ <path d="M855 540 L855 375 980 375 980 540Z" fill="#f4e4c8"/><path d="M840 386 L920 300 1000 386Z" fill="#cd4c41"/>
+ <path d="M695 530 L695 410 790 410 790 530Z" fill="#f3dfbd"/><path d="M685 420 L742 355 800 420Z" fill="#b8493e"/>
+</g>
+<!-- red barn -->
+<g transform="translate(600 380)">
+ <rect x="0" y="92" width="330" height="260" rx="8" fill="#bd4335" stroke="#7d2828" stroke-width="10"/>
+ <path d="M-30 110 L165 -25 360 110Z" fill="#71372c" stroke="#e7a07b" stroke-width="12"/>
+ <path d="M115 352 V175 H215 V352" fill="#713b2d" stroke="#f0d7a7" stroke-width="13"/>
+ <path d="M120 178 L210 270 M210 178 L120 270" stroke="#e3bf89" stroke-width="10"/>
+ <rect x="38" y="138" width="52" height="48" fill="#9be2ef" stroke="#f4d7ae" stroke-width="8"/>
+</g>
+<!-- windmill -->
+<g transform="translate(920 250)" fill="#9c633e" stroke="#70452f" stroke-width="9">
+ <path d="M-16 65 L-4 320 L20 320 L13 65Z"/>
+ <path d="M0 65 L-105 -15 L-118 4 L-5 90Z"/><path d="M0 65 L105 -15 L119 5 L7 90Z"/>
+ <path d="M0 65 L-12 190 L11 192 L15 65Z"/><path d="M0 65 L-11 -67 L12 -69 L15 65Z"/>
+ <circle cy="65" r="21" fill="#d39a58"/>
+</g>
+<!-- shop -->
+<g transform="translate(52 495)">
+ <rect x="0" y="105" width="260" height="185" fill="#e8c38f" stroke="#93603a" stroke-width="9"/>
+ <path d="M-16 115 L28 34 H236 L282 115Z" fill="#fff1d5" stroke="#865333" stroke-width="9"/>
+ <path d="M-5 115 H270 V148 H-5Z" fill="#c74936"/>
+ <path d="M35 115 V148 M90 115 V148 M145 115 V148 M200 115 V148 M250 115 V148" stroke="#fff1d5" stroke-width="28"/>
+ <rect x="26" y="175" width="65" height="105" fill="#8b5b37"/><rect x="118" y="175" width="112" height="60" fill="#a2d9df" stroke="#8b5b37" stroke-width="8"/>
+ <text x="130" y="93" text-anchor="middle" font-family="Arial,sans-serif" font-size="35" font-weight="900" fill="#fff5d8" stroke="#784b2a" stroke-width="3" paint-order="stroke">TIENDA</text>
+</g>
+<!-- trees -->
+<g fill="#278b50">
+ <circle cx="355" cy="420" r="55"/><circle cx="420" cy="400" r="65"/><circle cx="475" cy="430" r="50"/>
+ <circle cx="80" cy="355" r="54"/><circle cx="160" cy="360" r="66"/><circle cx="980" cy="620" r="72"/>
+</g>
+<g fill="#815332"><path d="M398 425h22v120h-22z"/><path d="M135 390h19v115h-19z"/><path d="M965 650h24v130h-24z"/></g>
+<!-- fence and paddock -->
+<g stroke="#9a693e" stroke-width="18" stroke-linecap="round" fill="none">
+ <path d="M40 790 H980 M40 875 H980 M85 745 V935 M250 745 V935 M415 745 V935 M580 745 V935 M745 745 V935 M910 745 V935"/>
+</g>
+<ellipse cx="510" cy="825" rx="390" ry="115" fill="#573526" opacity=".45" filter="url(#shadow)"/>
+<!-- pig Benja -->
+<g transform="translate(640 665)">
+ <ellipse cx="10" cy="115" rx="215" ry="45" fill="#492f26" opacity=".35"/>
+ <ellipse cx="-2" cy="12" rx="185" ry="125" fill="url(#pig)" stroke="#c75d75" stroke-width="12"/>
+ <ellipse cx="118" cy="-36" rx="118" ry="105" fill="url(#pig)" stroke="#c75d75" stroke-width="12"/>
+ <path d="M52 -102 Q7 -205 79 -182 Q122 -167 108 -91Z" fill="#efa4ae" stroke="#c75d75" stroke-width="10"/>
+ <path d="M168 -105 Q236 -188 250 -130 Q251 -91 205 -63Z" fill="#efa4ae" stroke="#c75d75" stroke-width="10"/>
+ <ellipse cx="200" cy="8" rx="69" ry="48" fill="#ffb8bf" stroke="#d36d80" stroke-width="8"/>
+ <ellipse cx="178" cy="8" rx="11" ry="16" fill="#7f4350"/><ellipse cx="222" cy="8" rx="11" ry="16" fill="#7f4350"/>
+ <ellipse cx="85" cy="-58" rx="18" ry="22" fill="#fff"/><ellipse cx="150" cy="-58" rx="18" ry="22" fill="#fff"/>
+ <circle cx="91" cy="-54" r="9" fill="#24202b"/><circle cx="156" cy="-54" r="9" fill="#24202b"/>
+ <path d="M-115 96 L-120 166 L-72 166 L-58 105 M40 106 L47 168 L94 168 L89 90" fill="#d77a8a" stroke="#ba6274" stroke-width="8"/>
+ <path d="M-200 -2 Q-254 -42 -244 12 Q-234 47 -206 28" fill="none" stroke="#d77a8a" stroke-width="12" stroke-linecap="round"/>
+</g>
+<!-- character based on the in-game blocky avatar -->
+<g transform="translate(270 525)">
+ <ellipse cx="130" cy="430" rx="150" ry="28" fill="#304c28" opacity=".35" filter="url(#shadow)"/>
+ <!-- legs -->
+ <path d="M72 270 H142 V404 H65Z" fill="#008d62" stroke="#005d47" stroke-width="9"/>
+ <path d="M143 270 H211 V404 H140Z" fill="#00a16b" stroke="#005d47" stroke-width="9"/>
+ <path d="M47 392 H128 V430 H35Z" fill="#26333d" stroke="#18212a" stroke-width="8"/>
+ <path d="M143 392 H225 V430 H137Z" fill="#26333d" stroke="#18212a" stroke-width="8"/>
+ <!-- body -->
+ <path d="M42 100 H219 V300 H42Z" fill="url(#shirt)" stroke="#075f9b" stroke-width="10"/>
+ <path d="M57 108 L91 108 L121 294 H88Z M176 108 H206 L176 294 H146Z" fill="#04a46e" stroke="#006c4b" stroke-width="7"/>
+ <!-- arms -->
+ <path d="M40 135 L-6 265 L40 287 L98 166Z" fill="#f1bf8b" stroke="#bd835a" stroke-width="9"/>
+ <path d="M217 140 L279 244 L235 272 L181 170Z" fill="#f1bf8b" stroke="#bd835a" stroke-width="9"/>
+ <path d="M-6 265 L56 292 L35 330 L-29 299Z" fill="#f1bf8b"/>
+ <path d="M235 272 L296 249 L318 286 L262 320Z" fill="#f1bf8b"/>
+ <!-- head -->
+ <rect x="67" y="-33" width="136" height="137" rx="12" fill="#f2c18f" stroke="#b98260" stroke-width="9"/>
+ <!-- hair -->
+ <path d="M58 28 Q40 -75 104 -94 Q178 -121 222 -64 L212 12 L185 -10 L158 9 L127 -20 L99 9 L78 -4Z" fill="#503324" stroke="#321e18" stroke-width="10"/>
+ <path d="M69 -38 Q40 -4 55 26 L83 13 L94 -15 L122 5 L152 -22 L181 8 L210 -6 L212 -42Z" fill="#603b28"/>
+ <!-- face -->
+ <ellipse cx="111" cy="52" rx="11" ry="17" fill="#231d1b"/><ellipse cx="169" cy="52" rx="11" ry="17" fill="#231d1b"/>
+ <path d="M118 81 Q143 103 166 80" fill="none" stroke="#8a4540" stroke-width="8" stroke-linecap="round"/>
+ <!-- carrot held towards Benja -->
+ <path d="M245 275 L320 314 L296 367 L230 302Z" fill="#f58b24" stroke="#b85d19" stroke-width="7"/>
+ <path d="M311 312 Q338 272 355 281 Q341 314 311 323 M306 311 Q299 274 277 269 Q278 298 306 323" fill="#4a9b48" stroke="#2f7035" stroke-width="7"/>
+</g>
+<!-- title panel -->
+<path d="M120 62 Q512 8 904 62 L904 244 Q512 290 120 244Z" fill="#5a321f" stroke="#f1ba58" stroke-width="14" filter="url(#titleShadow)"/>
+<text x="512" y="126" text-anchor="middle" font-family="Arial,sans-serif" font-weight="1000" font-size="64" fill="#fff8dd" stroke="#633d2a" stroke-width="8" paint-order="stroke">CUIDA A</text>
+<text x="512" y="214" text-anchor="middle" font-family="Arial,sans-serif" font-weight="1000" font-size="98" fill="#ffd02f" stroke="#8f4d17" stroke-width="12" paint-order="stroke">BENJA</text>
+<path d="M260 946 Q512 977 764 946" fill="none" stroke="#e6b35c" stroke-width="9" stroke-linecap="round"/>
+<text x="512" y="987" text-anchor="middle" font-family="Arial,sans-serif" font-size="29" font-weight="900" fill="#fff6dc" stroke="#643a22" stroke-width="4" paint-order="stroke">UNA GRANJA, MIL HISTORIAS</text>
+</svg>
