@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.6.3",
+  "version": "1.6.5",
   "updates": [
     {
       "version": "1.0",
@@ -163,6 +163,32 @@
         "Se incorporaron diez señales adicionales de Honduras en categorías educativas, deportivas, religiosas y generales.",
         "Se ampliaron zonas de chicharras en el patio central, huerto, arboleda y camino del tractor; se aumenta su presencia y se ajustan viento y pájaros para altavoces móviles.",
         "La música de fondo se detiene al regresar desde ciudad a la granja y permanece apagada en la granja."
+      ]
+    },
+    {
+      "version": "1.6.4",
+      "title": "Pocilga ampliable, lagunas y depósito de agua",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Se construye una pocilga propia de Benja con cuatro niveles de mejora; se mantienen entradas abiertas para acceder al animal.",
+        "Se añaden dos lagunitas con agua azul translúcida, piedras, juncos, orillas y ondas animadas.",
+        "Se crea un depósito transparente cuyo nivel visible depende del agua guardada y cuya capacidad se amplía con dinero y madera.",
+        "Se añade la acción para bañar a Benja con tres unidades de agua y un indicador de aseo que se guarda en la partida.",
+        "Se eleva el volumen de las chicharras sintetizadas con Web Audio; el viento se reproduce por toda la granja y la radio se escucha más lejos a menor volumen.",
+        "El escáner de TV incluye siete páginas oficiales de Pluto TV para Anime y Kids; se abren en Pluto TV y no como HLS integrado."
+      ]
+    },
+    {
+      "version": "1.6.5",
+      "title": "Acceso al corral, cámara con colisiones y ciclo día/noche",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Se centra la entrada del corral de Benja y se añade un segundo acceso lateral.",
+        "La cámara utiliza las cajas orientadas de colisión para no atravesar estructuras; se incorporan colisiones a árboles, pinos, piedras de las lagunas, pacas de heno, sacos y palés.",
+        "El campo incorpora surcos de tierra y trigo detallado con tallos, hojas, espigas y granos; las flores se dibujan como sprites redondos para eliminar cuadrados blancos.",
+        "El ciclo día/noche se basa en el tiempo transcurrido, con una vuelta completa de aproximadamente 20 minutos, variación de luz y un reloj de hora/fase.",
+        "Se añaden botones físicos 3D de canal anterior y siguiente debajo del televisor.",
+        "Se guarda el nivel de pocilga, la ampliación del depósito y el aseo de Benja."
       ]
     }
   ]
