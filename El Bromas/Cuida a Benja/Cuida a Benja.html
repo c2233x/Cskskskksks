@@ -345,10 +345,6 @@
 
 </style>
 <style>
-#accessGate{position:fixed;inset:0;z-index:5000;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;background:radial-gradient(ellipse at center,#102c42 0%,#071521 55%,#02070d 100%);color:#fff}
-#accessGateTitle{font-size:clamp(28px,7vw,42px);font-weight:950;letter-spacing:.13em;text-shadow:0 0 24px rgba(76,216,255,.45)}
-#accessGateCode{width:min(340px,84vw);height:56px;border:1px solid rgba(106,222,245,.65);border-radius:14px;background:rgba(1,10,18,.85);color:#fff;text-align:center;font-size:17px;letter-spacing:.12em;outline:none;padding:0 15px}
-#accessGateCode:focus{border-color:#b5f7ff;box-shadow:0 0 0 3px rgba(80,220,244,.13),0 0 28px rgba(40,183,217,.28)}
 #storyDialog,#storyInfoPanel{position:fixed;inset:0;z-index:1400;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(1,6,13,.82);backdrop-filter:blur(7px);touch-action:pan-y}
 .storyCard{width:min(520px,94vw);max-height:88vh;overflow-y:auto;padding:22px;border:2px solid rgba(74,174,255,.6);border-radius:18px;background:linear-gradient(145deg,rgba(8,20,43,.98),rgba(4,10,25,.98));box-shadow:0 18px 60px rgba(0,0,0,.65);color:#fff}
 .storyIcon{font-size:34px;text-align:center;margin-bottom:7px}
@@ -869,7 +865,7 @@ let farmTVPlaceholderTexture=null,farmTVVideoTexture=null;
 let farmTVScanToken=0,farmTVScanHls=null,farmTVScanVideo=null,farmTVScanCancelCurrent=null,farmTVScanActive=false;
         let cityTravelRetryAt=0;
         let farmRadioProp=null,farmRadioPanelBound=false,farmRadioAudio=new Audio(),farmRadioPowerOn=false,farmRadioStationIndex=0,farmRadioVolume=.55,farmRadioLastCheck=0;
-let farmRadioScanToken=0,farmRadioScanActive=false,farmRadioScanAudio=null;
+let farmRadioScanToken=0,farmRadioScanActive=false,farmRadioScanAudio=null,farmRadioScanCurrentFinish=null;
         farmRadioAudio.preload='none';farmRadioAudio.setAttribute('playsinline','');let farmRadioGeneration=0,farmRadioStreamTry=0;
         let farmAmbienceContext=null,farmAmbienceNoiseSource=null,farmAmbienceGain=null,farmAmbienceActiveZone='',farmAmbienceBirdTimer=0,farmAmbienceLastCheck=0,farmAmbienceLevel=0,farmCicadaAudio=null;
         let farmBenjaHunger=100,farmBenjaHungerLast=0,farmBenjaHungerLinePlayed=false,benjaWalkTarget=null,benjaWalkTargetAt=0;
@@ -5659,7 +5655,8 @@ async function startFarmRadioScan(){
    if(token!==farmRadioScanToken||!farmRadioScanActive)break;
    ok=await new Promise(resolve=>{
     const audio=new Audio();farmRadioScanAudio=audio;audio.preload='auto';audio.muted=true;audio.volume=0;
-    let settled=false,timer=0;const finish=v=>{if(settled)return;settled=true;clearTimeout(timer);audio.oncanplay=null;audio.onplaying=null;audio.onerror=null;try{audio.pause();audio.removeAttribute('src');audio.load();}catch(_){}if(farmRadioScanAudio===audio)farmRadioScanAudio=null;resolve(v);};
+    let settled=false,timer=0;const finish=v=>{if(settled)return;settled=true;clearTimeout(timer);audio.oncanplay=null;audio.onplaying=null;audio.onerror=null;if(farmRadioScanCurrentFinish===cancelCurrent)farmRadioScanCurrentFinish=null;try{audio.pause();audio.removeAttribute('src');audio.load();}catch(_){}if(farmRadioScanAudio===audio)farmRadioScanAudio=null;resolve(v);};
+    const cancelCurrent=()=>finish(false);farmRadioScanCurrentFinish=cancelCurrent;
     timer=setTimeout(()=>finish(false),6500);audio.oncanplay=()=>finish(true);audio.onplaying=()=>finish(true);audio.onerror=()=>finish(false);audio.src=source;audio.load();
     try{const p=audio.play();if(p&&p.catch)p.catch(()=>finish(false));}catch(_){finish(false);}
     if(token!==farmRadioScanToken)finish(false);
@@ -5670,7 +5667,7 @@ async function startFarmRadioScan(){
  }
  if(token===farmRadioScanToken){farmRadioScanActive=false;if(start)start.disabled=false;if(stop)stop.disabled=true;if(status)status.textContent='Prueba terminada: '+good+' de '+done+' emisoras entregaron audio en este dispositivo.';}
 }
-function stopFarmRadioScan(){farmRadioScanToken++;farmRadioScanActive=false;if(farmRadioScanAudio){try{farmRadioScanAudio.pause();farmRadioScanAudio.removeAttribute('src');farmRadioScanAudio.load();}catch(_){}farmRadioScanAudio=null;}const a=document.getElementById('farmRadioScanStart'),b=document.getElementById('farmRadioScanStop'),status=document.getElementById('farmRadioScanStatus');if(a)a.disabled=false;if(b)b.disabled=true;if(status)status.textContent='Búsqueda detenida.';}
+function stopFarmRadioScan(){farmRadioScanToken++;farmRadioScanActive=false;if(farmRadioScanCurrentFinish){farmRadioScanCurrentFinish();farmRadioScanCurrentFinish=null;}if(farmRadioScanAudio){try{farmRadioScanAudio.pause();farmRadioScanAudio.removeAttribute('src');farmRadioScanAudio.load();}catch(_){}farmRadioScanAudio=null;}const a=document.getElementById('farmRadioScanStart'),b=document.getElementById('farmRadioScanStop'),status=document.getElementById('farmRadioScanStatus');if(a)a.disabled=false;if(b)b.disabled=true;if(status)status.textContent='Búsqueda detenida.';}
 function openFarmRadio(){
  const panel=document.getElementById('farmRadioPanel');if(!panel)return;
  const tv=document.getElementById('farmTVPanel');if(tv)tv.style.display='none';
