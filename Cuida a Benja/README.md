@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.7.0**
+**Version actual: 1.7.1**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -128,3 +128,10 @@ Ruta de publicación: `Cuida a Benja/Sonidos/ambiente/chicharra_original.mp3`.
 - El cargador ahora descarga solo los archivos de `Cuida a Benja/` y deja de recorrer todos los recursos de `El Bromas/` durante el inicio.
 - Se actualizan las rutas de los mapas, la versión y el audio ambiente.
 - La carpeta `Sonidos/ambiente/` queda preparada para el MP3 original `chicharra_original.mp3`.
+
+
+## Actualización 1.7.1 · Corrección de inicio en Android
+- Las solicitudes de versión y de listado de archivos tienen límites de espera y rutas alternativas.
+- El juego ya no descarga el ZIP de todo el repositorio cuando falla la API.
+- La configuración de la granja está integrada en el HTML y no depende de una petición externa bloqueante.
+- El inicio descarga solo los recursos de `Cuida a Benja/`.
