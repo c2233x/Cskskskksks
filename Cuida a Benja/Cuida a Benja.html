@@ -1369,6 +1369,37 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         async function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
+        // Ninguna consulta de red de arranque debe poder dejar la pantalla esperando sin fin.
+        async function fetchJsonWithTimeout(url, timeoutMs = 8000, options = {}) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(url, { ...options, cache: 'no-store', signal: controller.signal });
+                if (!response.ok) throw new Error(`HTTP ${response.status} al consultar ${url}`);
+                return await response.json();
+            } catch (error) {
+                if (error?.name === 'AbortError') throw new Error(`Tiempo de espera agotado (${timeoutMs} ms) al consultar ${url}`);
+                throw error;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
+        async function fetchTextWithTimeout(url, timeoutMs = 4500) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+                if (!response.ok) throw new Error(`HTTP ${response.status} al consultar ${url}`);
+                return await response.text();
+            } catch (error) {
+                if (error?.name === 'AbortError') throw new Error(`Tiempo de espera agotado (${timeoutMs} ms) al consultar la versión`);
+                throw error;
+            } finally {
+                clearTimeout(timeoutId);
+            }
+        }
+
         function jsDelivrUrlForGitHub(rawUrl) {
             try {
                 const u = new URL(rawUrl);
@@ -1386,44 +1417,56 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             } catch (_) { return null; }
         }
 
-        async function fetchBlobWithProgressOnce(url, onProgress) {
-            const response = await fetch(url, { cache: 'no-store' });
-            if (!response.ok) {
-                const err = new Error(`HTTP ${response.status}`);
-                err.status = response.status;
-                err.url = url;
-                throw err;
-            }
-            const total = Number(response.headers.get('content-length')) || 0;
-            // response.blob() evita mantener dos copias del archivo grande en memoria
-            // (una por chunks y otra por Blob), algo que hace fallar a WebView/APK con
-            // poca RAM. La barra se actualiza por fases cuando el navegador no expone stream.
-            if (!response.body || !response.body.getReader) {
-                onProgress(0.15);
-                const blob = await response.blob();
+        async function fetchBlobWithProgressOnce(url, onProgress, timeoutMs = 18000) {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            let reader = null;
+            try {
+                const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+                if (!response.ok) {
+                    const err = new Error(`HTTP ${response.status}`);
+                    err.status = response.status;
+                    err.url = url;
+                    throw err;
+                }
+                const total = Number(response.headers.get('content-length')) || 0;
+                // response.blob() evita mantener dos copias grandes en memoria en Android/WebView.
+                if (!response.body || !response.body.getReader) {
+                    onProgress(0.15);
+                    const blob = await response.blob();
+                    onProgress(1);
+                    return blob;
+                }
+                reader = response.body.getReader();
+                const chunks = [];
+                let loaded = 0;
+                while (true) {
+                    const { value, done } = await reader.read();
+                    if (done) break;
+                    chunks.push(value);
+                    loaded += value.byteLength;
+                    onProgress(total ? Math.min(0.98, loaded / total) : Math.min(0.98, 0.05 + loaded / (loaded + 4 * 1048576)));
+                    if (loaded % (2 * 1048576) < value.byteLength) await sleep(0);
+                }
                 onProgress(1);
-                return blob;
+                return new Blob(chunks, { type: response.headers.get('content-type') || 'application/octet-stream' });
+            } catch (error) {
+                if (reader) { try { await reader.cancel(); } catch (_) {} }
+                if (error?.name === 'AbortError') {
+                    const timeoutError = new Error(`Tiempo de espera agotado al descargar ${url}`);
+                    timeoutError.url = url;
+                    throw timeoutError;
+                }
+                throw error;
+            } finally {
+                clearTimeout(timeoutId);
             }
-            const reader = response.body.getReader();
-            const chunks = [];
-            let loaded = 0;
-            while (true) {
-                const { value, done } = await reader.read();
-                if (done) break;
-                chunks.push(value);
-                loaded += value.byteLength;
-                onProgress(total ? Math.min(0.98, loaded / total) : Math.min(0.98, 0.05 + loaded / (loaded + 4 * 1048576)));
-                // Cede el hilo para que WebView pueda respirar durante archivos pesados.
-                if (loaded % (2 * 1048576) < value.byteLength) await sleep(0);
-            }
-            onProgress(1);
-            return new Blob(chunks);
         }
 
         // Primero usa raw.githubusercontent.com. Si un navegador/WebView no puede
         // manejar un archivo grande o devuelve Failed to fetch/5xx, cambia silenciosamente
         // a jsDelivr, que suele servir mejor archivos grandes y conexiones móviles.
-        async function fetchBlobWithProgress(url, onProgress, retries = 4) {
+        async function fetchBlobWithProgress(url, onProgress, retries = 1) {
             const urls = [url];
             const cdn = jsDelivrUrlForGitHub(url);
             if (cdn && cdn !== url) urls.push(cdn);
@@ -1456,44 +1499,22 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         async function githubListFolder(path) {
             const url = GITHUB_CONTENTS_URL + path.split('/').map(encodeURIComponent).join('/') + `?ref=${encodeURIComponent(GITHUB_BRANCH)}`;
             githubLogMsg(`Leyendo carpeta: /${path}/`);
-            githubLogMsg(`URL: ${url}`);
-            let response;
-            let lastNetworkError;
-            for (let attempt = 1; attempt <= 3; attempt++) {
+            let lastError;
+            for (let attempt = 1; attempt <= 2; attempt++) {
                 try {
-                    response = await fetch(url, {
-                        cache: 'no-store',
+                    const data = await fetchJsonWithTimeout(url, 6500, {
                         headers: { 'Accept': 'application/vnd.github+json' }
                     });
-                    lastNetworkError = null;
-                    break;
-                } catch (networkError) {
-                    lastNetworkError = networkError;
-                    githubLogMsg(`⚠️ Error de red/CORS (intento ${attempt}/3): ${networkError.message}`, 'error');
-                    if (attempt < 3) await sleep(800 * attempt);
+                    if (!Array.isArray(data)) throw new Error(`GitHub no devolvió una carpeta válida para /${path}/.`);
+                    githubLogMsg(`✓ Carpeta encontrada /${path}/ — ${data.length} elementos`, 'ok');
+                    return data;
+                } catch (error) {
+                    lastError = error;
+                    githubLogMsg(`⚠️ No se pudo leer /${path}/ (intento ${attempt}/2): ${error.message}`, 'error');
+                    if (attempt < 2) await sleep(500);
                 }
             }
-            if (lastNetworkError) {
-                throw new Error(`No se pudo conectar con GitHub: ${lastNetworkError.message}`);
-            }
-            githubLogMsg(`HTTP ${response.status} ${response.statusText}`);
-            if (!response.ok) {
-                let detail = '';
-                try {
-                    const data = await response.json();
-                    detail = data.message ? ` — ${data.message}` : '';
-                } catch (_) {}
-                githubLogMsg(`FALLÓ carpeta /${path}/ → HTTP ${response.status}${detail}`, 'error');
-                if (response.status === 404) {
-                    throw new Error(`GitHub respondió 404 al leer /${path}/. Revisa que el repositorio, rama y carpeta existan y sean públicos.`);
-                }
-                throw new Error(`GitHub respondió HTTP ${response.status} al leer /${path}/${detail}`);
-            }
-            const data = await response.json();
-            if (!Array.isArray(data)) throw new Error(`GitHub respondió algo que no es una carpeta para /${path}/.`);
-            githubLogMsg(`✓ Carpeta encontrada /${path}/ — ${data.length} elementos`, 'ok');
-            for (const item of data) githubLogMsg(`   ${item.type === 'dir' ? '📁' : '📄'} ${item.path}`);
-            return data;
+            throw lastError || new Error(`No se pudo leer /${path}/ en GitHub.`);
         }
 
         async function githubCollectFiles(path, result, foldersRead) {
@@ -1515,30 +1536,71 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         // Lectura de árbol en una sola petición: reduce fallos de red y límites
         // de WebView/APK que aparecen al recorrer carpeta por carpeta.
         async function githubCollectFilesFromTree() {
+            const prefix = `${GITHUB_FOLDER}/`;
+            const toEntries = (items, allowMissingType = false) => (Array.isArray(items) ? items : [])
+                .map(item => ({
+                    path: String(item.path || item.name || '').replace(/^\\/+/, ''),
+                    type: item.type || (allowMissingType ? 'blob' : ''),
+                    size: Number(item.size) || 0
+                }))
+                .filter(item => item.type === 'blob' && item.path.startsWith(prefix))
+                .map(item => ({
+                    path: item.path,
+                    size: item.size,
+                    download_url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${encodeURIComponent(GITHUB_BRANCH)}/${item.path.split('/').map(encodeURIComponent).join('/')}`
+                }));
+
             const treeUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/git/trees/${encodeURIComponent(GITHUB_BRANCH)}?recursive=1`;
-            let response, lastError;
-            for (let attempt = 1; attempt <= 3; attempt++) {
-                try {
-                    response = await fetch(treeUrl, { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } });
-                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                    const data = await response.json();
-                    if (data.truncated) throw new Error('Árbol de GitHub truncado');
-                    const prefix = `${GITHUB_FOLDER}/`;
-                    const entries = (Array.isArray(data.tree) ? data.tree : [])
-                        .filter(x => x.type === 'blob' && x.path.startsWith(prefix))
-                        .map(x => ({
-                            path: x.path,
-                            size: Number(x.size) || 0,
-                            download_url: `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${encodeURIComponent(GITHUB_BRANCH)}/${x.path.split('/').map(encodeURIComponent).join('/')}`
-                        }));
-                    if (!entries.length) throw new Error(`No se encontraron archivos dentro de /${GITHUB_FOLDER}/.`);
+            let lastError;
+            if (loadingText) loadingText.textContent = 'Buscando archivos';
+
+            // Ruta principal: un solo árbol de GitHub, con tiempo máximo de espera.
+            try {
+                const data = await fetchJsonWithTimeout(treeUrl, 8000, {
+                    headers: { 'Accept': 'application/vnd.github+json' }
+                });
+                if (data.truncated) throw new Error('GitHub devolvió un árbol incompleto.');
+                const entries = toEntries(data.tree);
+                if (entries.length) {
+                    githubLogMsg(`Árbol de GitHub leído: ${entries.length} archivos del juego.`, 'ok');
                     return entries;
-                } catch (e) {
-                    lastError = e;
-                    if (attempt < 3) await sleep(700 * attempt);
                 }
+                throw new Error(`No se encontraron archivos dentro de /${GITHUB_FOLDER}/ en el árbol.`);
+            } catch (error) {
+                lastError = error;
+                githubLogMsg(`⚠️ La consulta del árbol falló: ${error.message}`, 'error');
             }
-            throw lastError || new Error('No se pudo leer el árbol de GitHub.');
+
+            // Segunda ruta: listado plano del CDN, útil cuando la API de GitHub está limitada.
+            try {
+                const flatUrl = `https://data.jsdelivr.com/v1/package/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}?structure=flat`;
+                const data = await fetchJsonWithTimeout(flatUrl, 8000);
+                const entries = toEntries(data.files, true);
+                if (entries.length) {
+                    githubLogMsg(`Listado alternativo encontrado: ${entries.length} archivos del juego.`, 'ok');
+                    return entries;
+                }
+                throw new Error('El CDN no devolvió archivos de Cuida a Benja.');
+            } catch (error) {
+                lastError = error;
+                githubLogMsg(`⚠️ El listado alternativo falló: ${error.message}`, 'error');
+            }
+
+            // Última ruta: Contents API por carpetas, con timeout en cada petición.
+            try {
+                const entries = [];
+                await githubCollectFiles(GITHUB_FOLDER, entries, []);
+                if (entries.length) {
+                    githubLogMsg(`Listado por carpetas encontrado: ${entries.length} archivos del juego.`, 'ok');
+                    return entries;
+                }
+                throw new Error('No se encontraron archivos al recorrer la carpeta del juego.');
+            } catch (error) {
+                lastError = error;
+                githubLogMsg(`❌ Falló el recorrido alternativo de carpetas: ${error.message}`, 'error');
+            }
+
+            throw lastError || new Error('No se pudo obtener el listado de archivos del juego.');
         }
 
         // ============ VERSION + CACHÉ LOCAL DE RECURSOS ============
@@ -1547,7 +1609,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         // el juego reutiliza los recursos guardados y evita volver a descargar todo.
         const GAME_CACHE_DB = 'ElBromas2GameCacheV1';
         const GAME_CACHE_STORE = 'files';
-        let currentGameVersion = 'sin-version';
+        let currentGameVersion = '1.7.1';
             savedFilesCount = 0;
             entriesTotalForUI = 0;
             failedDownloadEntries = [];
@@ -1705,27 +1767,30 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         async function fetchVersionDirect() {
             const candidates = [
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Cuida%20a%20Benja/Version.txt`
+                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Cuida%20a%20Benja/Version.txt`,
+                `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/Cuida%20a%20Benja/Version.txt`
             ];
             for (const url of candidates) {
                 try {
-                    const r = await fetch(url, { cache: 'no-store' });
-                    if (r.ok) {
-                        const text = (await r.text()).trim();
-                        if (text) return text;
-                    }
-                } catch (_) {}
+                    const text = (await fetchTextWithTimeout(url, 4500)).trim();
+                    if (text) return text;
+                } catch (error) {
+                    githubLogMsg(`Consulta de versión alternativa: ${error.message}`, 'error');
+                }
             }
             return null;
         }
 
         async function getGameVersion() {
-            const remote = await fetchVersionDirect();
-            const saved = localStorage.getItem('ElBromas2_GameVersion');
-            if (startupLatestVersion) startupLatestVersion.textContent = remote || '-';
+            const saved = localStorage.getItem('ElBromas2_GameVersion') || '';
             if (startupCurrentVersion) startupCurrentVersion.textContent = saved || '-';
+            // Un fallo de red al consultar Version.txt nunca debe detener el inicio:
+            // se reutiliza la versión guardada y, en un dispositivo nuevo, la de esta entrega.
+            const remote = await fetchVersionDirect();
+            const resolvedVersion = remote || saved || '1.7.1';
+            if (startupLatestVersion) startupLatestVersion.textContent = remote || 'sin conexión';
+            currentGameVersion = resolvedVersion;
             if (remote) {
-                currentGameVersion = remote;
                 if (saved && saved !== remote) {
                     githubLogMsg(`🔄 VERSION CAMBIÓ: ${saved} → ${remote}. Se actualizarán y guardarán los recursos.`, 'ok');
                     await cacheClearOldVersions(remote);
@@ -1734,12 +1799,11 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 } else {
                     githubLogMsg(`🆕 Versión detectada: ${remote}.`, 'ok');
                 }
-                localStorage.setItem('ElBromas2_GameVersion', remote);
-                if (startupCurrentVersion) startupCurrentVersion.textContent = remote;
             } else {
-                currentGameVersion = saved || 'sin-version';
-                githubLogMsg(`⚠️ No se encontró archivo Version; se usará ${currentGameVersion}.`);
+                githubLogMsg(`⚠️ No se pudo consultar Version.txt. Se continúa con la versión local ${resolvedVersion}.`, 'error');
             }
+            try { localStorage.setItem('ElBromas2_GameVersion', resolvedVersion); } catch (_) {}
+            if (startupCurrentVersion) startupCurrentVersion.textContent = resolvedVersion;
             return currentGameVersion;
         }
 
@@ -2068,7 +2132,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             if (startupPlayAnyway) startupPlayAnyway.style.display = 'none';
             if (startupDebugPanel) startupDebugPanel.style.display = 'none';
             partialVirtualFiles = [];
-            if (loadingText) loadingText.textContent = 'Iniciando';
+            if (loadingText) loadingText.textContent = 'Conectando';
             currentLoadProgress = 0;
             githubRetryBtn.style.display = 'none';
             playOfflineBtn.style.display = 'none';
@@ -2090,7 +2154,8 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 } catch (_) {}
                 // Primero revisamos Version y el caché. Esto evita la API de GitHub en cargas posteriores.
                 if (!forceScan && await tryCachedGame()) return;
-                setGitHubProgress(0, 'Iniciando...', entriesTotalForUI > 0 ? `0/${entriesTotalForUI}` : '0/0');
+                if (loadingText) loadingText.textContent = 'Buscando archivos';
+                setGitHubProgress(0, 'Buscando archivos en GitHub...', entriesTotalForUI > 0 ? `0/${entriesTotalForUI}` : '0/0');
                 const entries = await githubCollectFilesFromTree();
                 entriesTotalForUI = entries.length;
                 savedFilesCount = await getStoredCountForVersion(currentGameVersion);
@@ -2206,17 +2271,14 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     } catch (_) {}
                 }
 
-                // En errores tempranos sí probamos una sola alternativa silenciosa.
-                try {
-                    await loadGitHubZipFallback('');
-                    return;
-                } catch (zipError) {
-                    console.error('Error en respaldo ZIP:', zipError);
-                    startScreen.classList.remove('loading');
-                    startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`
-                    githubLoader.style.display = 'none';
-                    showStartupError(zipError);
-                }
+                // No descargamos el ZIP completo del repositorio: puede pesar mucho
+                // y dejar a Android/WebView esperando. Los listados alternativos ya
+                // se probaron; ahora mostramos el error y dejamos disponibles Reintentar.
+                startScreen.classList.remove('loading');
+                if (loadingText) loadingText.textContent = 'No se pudo conectar';
+                if (startupProgressCount) startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`;
+                githubLoader.style.display = 'none';
+                showStartupError(error);
             } finally {
                 githubLoader.dataset.loading = '0';
             }
