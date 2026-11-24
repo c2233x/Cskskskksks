@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.6.3**
+**Version actual: 1.6.5**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -48,9 +48,9 @@ Al salir del límite de la ciudad vuelves automáticamente a la granja; se cance
 ## Televisión y radio de la granja
 El televisor tiene una pantalla física que permanece en el mundo. El video HLS se aplica como textura de Three.js directamente sobre el plano 3D de la pantalla, con la misma perspectiva del aparato y sin una capa 2D proyectada. El panel permite encender, apagar, seleccionar canal y regular el volumen. El audio se atenúa según la distancia al televisor. Al cerrar el panel, la emisión sigue reproduciéndose; apagarlo deja la pantalla negra. Si una señal no está disponible o el navegador bloquea el flujo, se intenta el reproductor oficial alternativo.
 
-Canales disponibles para probar: 34 señales hondureñas e internacionales, organizadas por categorías (noticias, general, entretenimiento, educativo, religioso, música, deportes e internacional). El buscador filtra por nombre o categoría y `BUSCAR Y PROBAR` comprueba cada enlace en el navegador; `DETENER BÚSQUEDA` cancela el escaneo. Una señal marcada como disponible funcionó en ese dispositivo durante la prueba, pero puede cambiar según la emisión, región o navegador.
+Canales disponibles para probar: 43 entradas hondureñas e internacionales, organizadas por categorías (noticias, general, entretenimiento, educativo, religioso, música, deportes, internacional, anime y caricaturas). El catálogo añade accesos oficiales a Pluto TV para anime y Kids; estas páginas se abren en Pluto TV, ya que no se presentan como flujos HLS directos para la pantalla 3D. El buscador filtra por nombre o categoría y `BUSCAR Y PROBAR` comprueba cada enlace en el navegador; `DETENER BÚSQUEDA` cancela el escaneo. Una señal marcada como disponible funcionó en ese dispositivo durante la prueba, pero puede cambiar según la emisión, región o navegador.
 
-La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. En zonas concretas se genera un coro de chicharras con Web Audio, además de viento y cantos de pájaros; los tres ambientes bajan gradualmente al alejarse de cada zona. Al volver desde la ciudad, la música de fondo se detiene y no se reinicia en la granja.
+La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. El coro de chicharras se sintetiza con Web Audio en las zonas de insectos; el viento suena por toda la granja y los pájaros aparecen como ambiente. El volumen varía según la zona y la distancia. El proyecto no copia el MP3 adjunto al repositorio. Al volver desde la ciudad, la música de fondo se detiene y no se reinicia en la granja.
 
 ## HUD y desplazamiento
 El nombre del jugador es Cornatan. La salud y el hambre de Benja aparecen en barras separadas encima del HUD del jugador. Los paneles de tienda, almacén, televisión y trabajos permiten desplazamiento táctil.
@@ -74,3 +74,14 @@ El indicador de objetivo se ubica por encima del área central de juego. La tarj
 Las colisiones de las estructuras de granja usan cajas orientadas que respetan la rotación de vallas, TV y radio. Se agregan límites al granero, casas, almacén (con entrada central abierta), tienda, gallinero, pozo, tractor, bebedero, cajas de pedidos y muros/torres del corral. Las colisiones de la granja se ignoran mientras está cargado el mapa de ciudad.
 
 Se detallan el granero y las casas con vigas, molduras, puertas, ventanas, chimenea, aleros y remates de techo. Las zonas de chicharras incluyen el patio central, huerto, arboleda y camino del tractor. El volumen de chicharras, viento y aves se atenúa progresivamente con la distancia. La música se detiene al regresar de ciudad a granja.
+
+## Pocilga, agua y mejoras de la granja (1.6.5)
+La pocilga de Benja tiene cuatro niveles de mejora comprables con dinero y madera. Se conserva una entrada abierta para entrar y salir. El depósito de agua empieza con 20 L de capacidad y se puede ampliar hasta cuatro niveles; el nivel de agua visible depende de las unidades de agua guardadas en el almacén. Dos lagunitas muestran agua azul translúcida, orillas, piedras, juncos y ondas.
+
+Se puede bañar a Benja desde el panel del almacén consumiendo 3 unidades de agua. Su indicador incluye aseo, que baja lentamente con el tiempo y se recupera al bañarlo. Las mejoras y el aseo se guardan en la partida.
+
+El ciclo de día y noche ahora avanza por tiempo transcurrido y dura aproximadamente 20 minutos por ciclo completo. Se muestra un reloj con hora y fase del día. El viento continúa en toda la granja; el coro de chicharras tiene mayor presencia en las zonas rurales. La radio puede oírse a mayor distancia y se atenúa suavemente al alejarse.
+
+La cámara comprueba las mismas cajas de colisión que el jugador para evitar atravesar edificios y objetos. Se añaden colisiones a árboles, pinos, piedras de las lagunas, pacas, sacos, palés, vallas y estructuras principales. La entrada del corral se centra y se abre otra entrada lateral. El campo se representa con surcos oscuros y trigo de varias piezas (tallo, hoja, espiga y granos) y las flores usan sprites redondos para evitar puntos blancos cuadrados.
+
+La TV incluye botones físicos 3D para canal anterior y siguiente debajo de la pantalla y una opción para abrir los catálogos oficiales de Pluto TV de Anime y Kids. El botón de escaneo muestra páginas oficiales del catálogo; Pluto TV se reproduce en su propio sitio y la disponibilidad depende de la región y del servicio.
