@@ -5933,7 +5933,7 @@ const CITY_MAP_FALLBACK={
  buildWorld(engine){
   if(!engine)throw new Error('No se recibió el motor de ciudad');
   engine.createRoads();engine.createDrivableCars();engine.createBuildings();engine.createStreetLamps();
-  engine.createCityProps();engine.initDrones();engine.createBillboards();engine.createCityJobBoard();engine.applyBillboardTextures();
+  engine.createCityProps();engine.createBillboards();engine.createCityJobBoard();engine.applyBillboardTextures();
  }
 };
 async function loadCityMapModule(){
