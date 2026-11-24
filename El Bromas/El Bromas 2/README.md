@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.6.1**
+**Version actual: 1.6.2**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -31,7 +31,7 @@ En la noche llegan invasores para atacar a Benja. Defiende el corral; cada dos i
 La tienda vende maiz, trigo, zanahorias, heno, pienso y madera. El almacen separa y acumula cada producto, permite guardar toda la carga o retirar una unidad y conserva las cantidades con la partida.
 
 ## Ciudad principal
-Al cruzar el límite de la granja se muestra una transición cinematográfica y se carga el mapa de ciudad por separado. Los vehiculos y el sistema de oleadas siguen disponibles. Cada enemigo derrotado en la ciudad paga $1.
+El botón `RUMBO A CIUDAD` permite iniciar el viaje directamente; también se conserva la salida automática al cruzar el límite de la granja. La transición muestra una pantalla cinematográfica y carga el mapa de ciudad por separado. Los vehiculos y el sistema de oleadas siguen disponibles. Cada enemigo derrotado en la ciudad paga $1.
 
 Hay ocho trabajos disponibles en el tablero:
 1. Repartidor.
@@ -46,11 +46,11 @@ Hay ocho trabajos disponibles en el tablero:
 Al salir del límite de la ciudad vuelves automáticamente a la granja; se cancela cualquier trabajo de ciudad que estuviera activo. Al aproximarse la noche, Benja avisa que conviene regresar.
 
 ## Televisión y radio de la granja
-El televisor tiene una pantalla física que permanece en el mundo y reproduce señales HLS mediante un reproductor HTML5; el panel permite encender, apagar, seleccionar canal y regular el volumen. El audio se atenúa según la distancia al televisor. Al cerrar el panel, la emisión sigue reproduciéndose; apagarlo deja la pantalla negra. Si una señal no está disponible o el navegador bloquea el flujo, se intenta el reproductor oficial alternativo.
+El televisor tiene una pantalla física que permanece en el mundo. El video HLS se aplica como textura de Three.js directamente sobre el plano 3D de la pantalla, con la misma perspectiva del aparato y sin una capa 2D proyectada. El panel permite encender, apagar, seleccionar canal y regular el volumen. El audio se atenúa según la distancia al televisor. Al cerrar el panel, la emisión sigue reproduciéndose; apagarlo deja la pantalla negra. Si una señal no está disponible o el navegador bloquea el flujo, se intenta el reproductor oficial alternativo.
 
-Canales: HCH, TSi, Canal 5, Al Jazeera English y France 24 English.
+Canales disponibles para probar: 24 señales hondureñas e internacionales, organizadas por categorías (noticias, general, entretenimiento, educativo, religioso, música, deportes e internacional). El buscador filtra por nombre o categoría y `BUSCAR Y PROBAR` comprueba cada enlace en el navegador; `DETENER BÚSQUEDA` cancela el escaneo. Una señal marcada como disponible funcionó en ese dispositivo durante la prueba, pero puede cambiar según la emisión, región o navegador.
 
-La radio física está junto al televisor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo; en algunas zonas se oyen viento, pájaros y chicharras.
+La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. En zonas concretas se escucha el MP3 de chicharras adjunto, además de viento y cantos de pájaros; los tres ambientes bajan gradualmente al alejarse de la zona.
 
 ## HUD y desplazamiento
 El nombre del jugador es Cornatan. La salud y el hambre de Benja aparecen en barras separadas encima del HUD del jugador. Los paneles de tienda, almacén, televisión y trabajos permiten desplazamiento táctil.
