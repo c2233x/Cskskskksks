@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "El Bromas 2",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "updates": [
     {
       "version": "1.0",
@@ -149,6 +149,20 @@
         "Se añade el botón único RUMBO A CIUDAD para iniciar el viaje sin tener que alcanzar el borde del mapa; también se conserva el viaje automático.",
         "Se integra el MP3 de chicharras en zonas seleccionadas y se atenúan chicharras, viento y pájaros según la distancia.",
         "La radio física queda más cerca de la TV, con mayor alcance de interacción y reintentos de emisoras corregidos."
+      ]
+    },
+    {
+      "version": "1.6.3",
+      "title": "HUD reorganizado, colisiones exactas y sonido de granja",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "Se subió el indicador de objetivo y se separaron las tarjetas de estado de Benja y dinero/almacén; el botón de ajustes pasa a la parte superior derecha.",
+        "El canvas se extiende a todo el viewport del documento para eliminar márgenes internos del juego.",
+        "Se añadieron colisiones orientadas para vallas, granero, casas, almacén con entrada abierta, tienda, gallinero, pozo, tractor, TV, radio, bebederos, cajas y defensas del corral.",
+        "Se añadieron molduras, vigas, remates, puertas y detalles de techo a las estructuras rurales.",
+        "Se incorporaron diez señales adicionales de Honduras en categorías educativas, deportivas, religiosas y generales.",
+        "Se ampliaron zonas de chicharras en el patio central, huerto, arboleda y camino del tractor; se aumenta su presencia y se ajustan viento y pájaros para altavoces móviles.",
+        "La música de fondo se detiene al regresar desde ciudad a la granja y permanece apagada en la granja."
       ]
     }
   ]
