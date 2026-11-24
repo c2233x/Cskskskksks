@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.6.7",
+  "version": "1.6.9",
   "updates": [
     {
       "version": "1.0",
@@ -217,6 +217,32 @@
         "La lista de radio de la granja usa el mismo catálogo de emisoras que la radio del vehículo e incorpora prueba de audio, parada y estados.",
         "La TV permite mostrar u ocultar canales marcados sin señal. El acceso de Pluto abre el catálogo oficial y no se presenta como emisión HLS integrada.",
         "El sonido sintetizado de chicharras se reemplaza por la referencia al MP3 original, sin cambios de tono o velocidad; el archivo binario debe publicarse en El Bromas/Sonidos/Effectos."
+      ]
+    },
+    {
+      "version": "1.6.8",
+      "title": "Suministros, balde y construcción por piezas",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Se amplía Suministros con balde reutilizable, antorchas y piezas para construir muros de madera o ladrillo, puertas, ventanas y paneles de tejado.",
+        "Se implementa colocación manual con vista previa, ajuste a cuadrícula de 2 metros, giro de 90 grados, confirmación y cancelación.",
+        "Las piezas colocadas se guardan en el dispositivo, vuelven a aparecer al crear la granja y añaden colisiones.",
+        "El balde se llena en el pozo con 5 litros; para bañar a Benja se requieren 3 litros y un balde reutilizable.",
+        "Los tramos de carretera del mapa de ciudad se alargan en dispositivos móviles para reducir llamadas de dibujo."
+      ]
+    },
+    {
+      "version": "1.6.9",
+      "title": "Limpieza de mapas, diseños de corral y optimización",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Se elimina initDrones del mapa externo y del fallback de ciudad para que los objetos generados fuera del grupo no se acumulen en la granja al regresar.",
+        "Se corrigen las rutas de carga de los mapas separados de Cuida a Benja.",
+        "El corral presenta tres estilos de mejora: madera, mampostería con ladrillo y fortificación con almenas. Al mejorar, se retiran las vallas y colisiones anteriores.",
+        "Al entrar a los coches vuelve a encenderse su radio. El modelo y la física de vehículos se mantienen iguales a Salva a Cornatan.",
+        "El medidor se denomina Barro y mantiene su lógica de juego con efectos de color tierra.",
+        "Se añade iluminación suave del televisor, antorchas y farolas de ciudad al anochecer.",
+        "Se optimiza Android reduciendo terreno, resolución dinámica, árboles y tramos de carretera."
       ]
     }
   ]
