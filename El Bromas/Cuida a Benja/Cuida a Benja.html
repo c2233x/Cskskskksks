@@ -776,7 +776,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.7"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Granja.js?v=1.6.8"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -804,7 +804,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const STORY_SAVE_KEY = 'ElBromas2_StoryProgress_v1';
         const STORY_FRAGMENT_SPOTS = [{x:48,z:0},{x:-48,z:36},{x:0,z:-72}];
         const STORY_ANTENNA_SPOTS = [{x:145,z:80},{x:-145,z:-80}];
-        const WORLD_TERRAIN_SEGMENTS=88;
+        const WORLD_TERRAIN_SEGMENTS=IS_MOBILE_DEVICE?56:88;
         const IS_MOBILE_DEVICE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'') || ((navigator.maxTouchPoints||0)>1 && Math.min(window.innerWidth||0,window.innerHeight||0)<=900);
         const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
@@ -2490,7 +2490,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             scene = new THREE.Scene(); scene.background = new THREE.Color(0x0a1526); scene.fog = new THREE.Fog(0x0a1526, IS_MOBILE_DEVICE ? 145 : 140, IS_MOBILE_DEVICE ? 385 : 420);
             camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 0.35, 1800); camera.position.set(0, 25, 40);
             renderer = new THREE.WebGLRenderer({ antialias: false, powerPreference: "high-performance", alpha: false, stencil: false, depth: true });
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, IS_MOBILE_DEVICE ? 0.9 : 1.2)); renderer.setSize(window.innerWidth, window.innerHeight, false);
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, IS_MOBILE_DEVICE ? 0.76 : 1.15)); renderer.setSize(window.innerWidth, window.innerHeight, false);
         // Filtrado de alta calidad para evitar parpadeo/pixelado al alejar la cámara.
         renderer.capabilities.getMaxAnisotropy(); renderer.outputEncoding = THREE.sRGBEncoding;
             renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15; renderer.shadowMap.enabled = !IS_MOBILE_DEVICE; renderer.shadowMap.type = THREE.PCFShadowMap;
@@ -5738,8 +5738,8 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.7',
-   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js'
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.6.8',
+   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/Cuida%20a%20Benja/Mapas/Ciudad.js'
   ];
   let lastError=null;
   for(const url of urls){
@@ -6332,11 +6332,11 @@ function startProtestMission() {
             if(graphicsSettings.dynamicResolution===false){ dynamicResolutionScale=1; return; }
             let target=dynamicResolutionScale;
             if(perfFps<22) target-=0.10; else if(perfFps<28) target-=0.06; else if(perfFps>48) target+=0.04;
-            target=THREE.MathUtils.clamp(target,IS_MOBILE_DEVICE?0.54:0.62,1);
+            target=THREE.MathUtils.clamp(target,IS_MOBILE_DEVICE?0.46:0.62,IS_MOBILE_DEVICE?0.84:1);
             if(Math.abs(target-dynamicResolutionScale)>=0.03){
                 dynamicResolutionScale=target;
                 const base=(window.devicePixelRatio||1)*getTargetResolutionScale(graphicsSettings.resolutionTarget)*(Number(graphicsSettings.resolution)||100)/100;
-                renderer.setPixelRatio(Math.min(IS_MOBILE_DEVICE?0.94:1.35,Math.max(.5,base*dynamicResolutionScale)));
+                renderer.setPixelRatio(Math.min(IS_MOBILE_DEVICE?0.84:1.35,Math.max(.46,base*dynamicResolutionScale)));
                 renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             // Limpieza/culling extra a baja tasa, sin tocar la lógica de gameplay.
@@ -7060,7 +7060,7 @@ function startProtestMission() {
         
 
         const GRAPHICS_KEY = 'fornatan2_graphics_settings_v1';
-        const defaultGraphics = {contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:!IS_MOBILE_DEVICE,shadowDetail:IS_MOBILE_DEVICE?35:55,resolution:IS_MOBILE_DEVICE?82:100,resolutionTarget:"auto",shadowDistance:IS_MOBILE_DEVICE?190:280,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:IS_MOBILE_DEVICE?6:8,worldOptimizer:true,carShadows:!IS_MOBILE_DEVICE,carShadowQuality:IS_MOBILE_DEVICE?0:2,carDetail:IS_MOBILE_DEVICE?78:100,carDrawDistance:IS_MOBILE_DEVICE?250:360,carMetallic:35,carOptimizer:true,ultraPerformance:false,carPhysicsRate:2,distanceCulling:true,particleCulling:true,animationCulling:true,lightOptimizer:true,simpleMaterials:true,effectLimiter:true,dynamicResolution:true};
+        const defaultGraphics = {contrast:100,saturation:100,brightness:100,bloom:0,metallic:10,shadows:!IS_MOBILE_DEVICE,shadowDetail:IS_MOBILE_DEVICE?30:55,resolution:IS_MOBILE_DEVICE?72:100,resolutionTarget:"auto",shadowDistance:IS_MOBILE_DEVICE?190:280,optimizeNpcStains:true,autoOptimizer:true,chunkDistance:IS_MOBILE_DEVICE?6:8,worldOptimizer:true,carShadows:!IS_MOBILE_DEVICE,carShadowQuality:IS_MOBILE_DEVICE?0:2,carDetail:IS_MOBILE_DEVICE?78:100,carDrawDistance:IS_MOBILE_DEVICE?250:360,carMetallic:35,carOptimizer:true,ultraPerformance:false,carPhysicsRate:2,distanceCulling:true,particleCulling:true,animationCulling:true,lightOptimizer:true,simpleMaterials:true,effectLimiter:true,dynamicResolution:true};
         let graphicsSettings = Object.assign({}, defaultGraphics);
         function loadGraphicsSettings(){ try{ const saved=JSON.parse(localStorage.getItem(GRAPHICS_KEY)||'null'); if(saved) graphicsSettings=Object.assign({},defaultGraphics,saved); delete graphicsSettings.shadowQuality; }catch(e){} }
         function getTargetResolutionScale(target){
