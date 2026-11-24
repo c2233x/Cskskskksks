@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.6.9**
+**Version actual: 1.7.0**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -47,7 +47,7 @@ El televisor tiene una pantalla física que permanece en el mundo. El video HLS 
 
 Canales disponibles para probar: 43 entradas hondureñas e internacionales, organizadas por categorías (noticias, general, entretenimiento, educativo, religioso, música, deportes, internacional, anime y caricaturas). Los accesos de Pluto TV abren el catálogo oficial en el navegador. Pluto TV no queda integrado como señal HLS directa en la pantalla 3D; la disponibilidad y reproducción se gestionan en su propio servicio. El buscador filtra por nombre o categoría y `BUSCAR Y PROBAR` comprueba cada enlace en el navegador; `DETENER BÚSQUEDA` cancela el escaneo. Una señal marcada como disponible funcionó en ese dispositivo durante la prueba, pero puede cambiar según la emisión, región o navegador.
 
-La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. El coro de chicharras se sintetiza con Web Audio en las zonas de insectos; el viento suena por toda la granja y los pájaros aparecen como ambiente. El volumen varía según la zona y la distancia. El proyecto no copia el MP3 adjunto al repositorio. Al volver desde la ciudad, la música de fondo se detiene y no se reinicia en la granja.
+La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. El audio original de chicharras se carga desde `Sonidos/ambiente/chicharra_original.mp3` en las zonas de insectos; el viento suena por toda la granja y los pájaros aparecen como ambiente. El volumen varía según la zona y la distancia. El audio ambiente pertenece a `Cuida a Benja/Sonidos/ambiente/` y se reproduce en las zonas de insectos. Al volver desde la ciudad, la música de fondo se detiene y no se reinicia en la granja.
 
 ## HUD y desplazamiento
 El nombre del jugador es Cornatan. La salud y el hambre de Benja aparecen en barras separadas encima del HUD del jugador. Los paneles de tienda, almacén, televisión y trabajos permiten desplazamiento táctil.
@@ -91,7 +91,7 @@ La TV incluye botones físicos 3D para canal anterior y siguiente debajo de la p
 - Se suaviza el oscurecimiento del cielo en el amanecer y atardecer.
 - Se elimina la luz artificial automática del avatar; la iluminación portátil se añadirá como antorcha comprable.
 - La TV muestra brevemente el número y nombre del canal al cambiarlo.
-- El sonido original de chicharras no está en el repositorio. No se sustituye por el sintetizador actual: falta subir el audio exacto para integrarlo.
+- El sonido original de chicharras se carga desde `Sonidos/ambiente/chicharra_original.mp3`, sin cambiar tono ni velocidad.
 
 ## Actualización 1.6.7
 - El inicio ya no solicita contraseña ni código.
@@ -99,11 +99,11 @@ La TV incluye botones físicos 3D para canal anterior y siguiente debajo de la p
 - Los botones físicos de canal anterior/siguiente bajo el televisor usan zonas de toque mayores y eventos de puntero para Android.
 - La lista de emisoras de la radio de la granja se deriva de la misma lista hondureña que la radio del vehículo y dispone de una prueba individual de audio y botón para detenerla.
 - Se recupera la cinemática de apertura que faltaba. Cada diálogo usa el lector de voz local del navegador/dispositivo y se muestra en los subtítulos inferiores.
-- El reproductor de chicharras ya no sintetiza el insecto: carga el MP3 original sin cambiar tono ni velocidad desde ../Sonidos/Effectos/la chicharra japonesa(MP3_160K).mp3. El binario debe estar en el repositorio para que el juego web pueda descargarlo.
+- El reproductor de chicharras carga el MP3 original sin cambiar tono ni velocidad desde `Sonidos/ambiente/chicharra_original.mp3`.
 - La lista de TV permite mostrar/ocultar canales que la prueba marcó sin señal. Pluto TV abre su catálogo oficial; no se anuncia como una señal directa integrada.
 
-Audio original adjunto: la chicharra japonesa(MP3_160K).mp3.
-Ruta de publicación: El Bromas/Sonidos/Effectos/la chicharra japonesa(MP3_160K).mp3.
+Audio ambiente: `chicharra_original.mp3`.
+Ruta de publicación: `Cuida a Benja/Sonidos/ambiente/chicharra_original.mp3`. 
 ## Actualización 1.6.8 · Suministros y construcción
 - Se amplía el catálogo de Suministros con balde reutilizable, antorchas, muros de madera y ladrillo, puertas, ventanas y paneles de tejado.
 - Se añaden modelos 3D de las piezas y un modo de construcción: vista previa semitransparente, ajuste a cuadrícula de 2 m, giro de 90 grados, confirmación y cancelación.
@@ -114,7 +114,7 @@ Ruta de publicación: El Bromas/Sonidos/Effectos/la chicharra japonesa(MP3_160K)
 
 ## Actualización 1.6.9 · Ciudad, corral y optimización
 - Se elimina la llamada a los drones de reconstrucción tanto en el mapa de ciudad externo como en el respaldo interno. Evita que edificios y props se creen fuera del grupo de ciudad y queden acumulados en la granja.
-- Se corrigen las rutas de carga de Granja.js y Ciudad.js para la carpeta El Bromas/Cuida a Benja.
+- Se corrigen las rutas de carga de Granja.js y Ciudad.js para la carpeta Cuida a Benja.
 - El corral reforzado presenta tres diseños distintos: valla alta de madera, mampostería con franja de ladrillo y muro fortificado con almenas y torres. Cada refuerzo sustituye la cerca anterior y mantiene libre el acceso.
 - La radio del coche vuelve a encenderse al entrar, como en Salva a Cornatan. El modelo de coche, sus diseños y la física de conducción se mantienen sin cambios.
 - El indicador de suciedad se normaliza como Barro, con manchas y proyectiles marrones; conserva el medidor y el efecto de juego sin terminología sexual.
