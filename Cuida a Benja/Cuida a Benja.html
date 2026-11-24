@@ -783,7 +783,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="tuboBigFireBtn">🔫<br/>DISPARAR</div>
 <div id="morteroTimer">Mortero: 20s</div>
 <div id="crosshair"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="./three.min.js?v=1.7.2"></script>
 <script>
 // Cuida a Benja - datos del mapa de la granja.
 // El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
@@ -1334,6 +1334,8 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         function showStartupError(error) {
             const msg = error?.stack || error?.message || String(error || 'Error desconocido');
+            startScreen.classList.remove('loading', 'ready');
+            if (githubLoader) githubLoader.style.display = 'none';
             startScreen.classList.add('error');
             if (loadingText) loadingText.textContent = 'Error';
             if (startupProgressPercent) startupProgressPercent.textContent = 'Error';
@@ -1601,6 +1603,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             const items = await githubListFolder(path);
             for (const item of items) {
                 if (item.type === 'file') {
+                    if (/\/three\.min\.js$/i.test(item.path || '')) continue;
                     result.push({
                         path: item.path,
                         size: Number(item.size) || 0,
@@ -1622,7 +1625,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     type: item.type || (allowMissingType ? 'blob' : ''),
                     size: Number(item.size) || 0
                 }))
-                .filter(item => item.type === 'blob' && item.path.startsWith(prefix))
+                .filter(item => item.type === 'blob' && item.path.startsWith(prefix) && !/\/three\.min\.js$/i.test(item.path))
                 .map(item => ({
                     path: item.path,
                     size: item.size,
@@ -1696,15 +1699,27 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         function openGameCache() {
             return new Promise((resolve, reject) => {
-                const req = indexedDB.open(GAME_CACHE_DB, 1);
+                let settled = false;
+                const finish = (callback, value) => {
+                    if (settled) return;
+                    settled = true;
+                    clearTimeout(timer);
+                    callback(value);
+                };
+                const timer = setTimeout(() => finish(reject, new Error('Tiempo de espera agotado al abrir el caché local.')), 7000);
+                let req;
+                try { req = indexedDB.open(GAME_CACHE_DB, 1); }
+                catch (error) { finish(reject, error); return; }
                 req.onupgradeneeded = () => {
                     const db = req.result;
-                    if (!db.objectStoreNames.contains(GAME_CACHE_STORE)) {
-                        db.createObjectStore(GAME_CACHE_STORE, { keyPath: 'key' });
-                    }
+                    if (!db.objectStoreNames.contains(GAME_CACHE_STORE)) db.createObjectStore(GAME_CACHE_STORE, { keyPath: 'key' });
                 };
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error || new Error('No se pudo abrir el caché local.'));
+                req.onsuccess = () => {
+                    if (settled) { try { req.result.close(); } catch (_) {} return; }
+                    finish(resolve, req.result);
+                };
+                req.onerror = () => finish(reject, req.error || new Error('No se pudo abrir el caché local.'));
+                req.onblocked = () => console.warn('El caché está bloqueado por otra pestaña.');
             });
         }
 
@@ -2130,28 +2145,29 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         // Si nunca se completó ninguna carga, entra igual al juego (sin recursos
         // remotos) para que al menos no se quede trabado en la pantalla de carga.
         async function playWithoutDownload() {
-            githubLogMsg('▶️ El usuario eligió jugar sin esperar la descarga...', 'ok');
+            githubLogMsg('▶️ Activando el inicio de respaldo, como en Salva a Cornatan...', 'ok');
             try {
-                await getGameVersion();
+                currentGameVersion = localStorage.getItem('ElBromas2_GameVersion') || currentGameVersion || '1.7.2';
                 let cached = await cacheGetAllFilesForVersion(currentGameVersion);
-                if (!cached || !cached.length) {
-                    // Por si la versión detectada cambió mientras se descargaba,
-                    // busca también bajo 'sin-version' como respaldo.
-                    cached = await cacheGetAllFilesForVersion('sin-version');
-                }
+                if (!cached || !cached.length) cached = await cacheGetAllFilesForVersion('sin-version');
                 if (cached && cached.length) {
-                    githubLogMsg(`Usando ${cached.length} archivo(s) ya descargados de GitHub en este intento (aunque no se haya llegado al 100%).`, 'ok');
-                    await finishLoadedFiles(cached, 'descarga parcial de GitHub');
+                    githubLogMsg(`Usando ${cached.length} archivo(s) guardados para entrar sin volver a descargar.`, 'ok');
+                    await finishLoadedFiles(cached, 'caché parcial local');
                     return;
                 }
             } catch (e) {
                 githubLogMsg(`No se pudo leer el caché local: ${e?.message || e}`, 'error');
             }
-            githubLogMsg('⚠️ No hay ningún archivo descargado todavía. Entrando sin recursos del juego (puede verse incompleto).', 'error');
-            githubLoader.style.display = 'none';
+            githubLogMsg('⚠️ Sin conexión y sin archivos guardados: se abre el juego en modo local.', 'error');
+            if (githubLoader) githubLoader.style.display = 'none';
+            startScreen.classList.remove('loading', 'ready', 'error', 'hasFailed');
+            if (loadingText) loadingText.textContent = 'Entrando al juego';
             filesLoaded = true;
-            enterFullscreen();
-            setTimeout(startGame, 200);
+            try { await enterFullscreen(); } catch (_) {}
+            setTimeout(() => {
+                try { startGame(); }
+                catch (error) { showStartupError(error); }
+            }, 180);
         }
 
         async function refreshGitHubIfNeeded() {
@@ -2350,14 +2366,24 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     } catch (_) {}
                 }
 
-                // No descargamos el ZIP completo del repositorio: puede pesar mucho
-                // y dejar a Android/WebView esperando. Los listados alternativos ya
-                // se probaron; ahora mostramos el error y dejamos disponibles Reintentar.
-                startScreen.classList.remove('loading');
-                if (loadingText) loadingText.textContent = 'No se pudo conectar';
-                if (startupProgressCount) startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`;
-                githubLoader.style.display = 'none';
-                showStartupError(error);
+                // Igual que Salva a Cornatan: aprovechar archivos guardados y, si no existen, entrar en modo local.
+                githubLogMsg(`No se pudo completar la conexión: ${msg}. Se intentará iniciar con los recursos locales.`, 'error');
+                if (startupDebugLog) startupDebugLog.textContent = error?.stack || msg;
+                try {
+                    if (partialVirtualFiles && partialVirtualFiles.length) {
+                        await finishLoadedFiles(partialVirtualFiles, 'carga parcial local');
+                    } else {
+                        await playWithoutDownload();
+                    }
+                    return;
+                } catch (fallbackError) {
+                    console.error('Falló también el inicio de respaldo:', fallbackError);
+                    startScreen.classList.remove('loading');
+                    if (loadingText) loadingText.textContent = 'No se pudo iniciar';
+                    if (startupProgressCount) startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`;
+                    if (githubLoader) githubLoader.style.display = 'none';
+                    showStartupError(new Error(`${msg}\\nRespaldo local: ${fallbackError?.stack || fallbackError?.message || fallbackError}`));
+                }
             } finally {
                 githubLoader.dataset.loading = '0';
             }
@@ -2374,24 +2400,33 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         }
 
         function startGame() {
-            startScreen.style.display = 'none'; statusText.style.display = 'block'; sysRestartBtn.style.display = 'none';
-            forceHudVisible();
-            document.getElementById('playerHealthBar').style.display = 'block'; document.getElementById('playerHealthLabel').style.display = 'block';
-            document.getElementById('auraBarContainer').style.display = 'block'; document.getElementById('auraLabel').style.display = 'block';
-            document.getElementById('mudBar').style.display = 'block'; document.getElementById('mudLabel').style.display = 'block';
-            const pci = document.getElementById('peneCountInfo'); if (pci) pci.style.display = 'block';
-            
-            if (fueraSoundUrl) { audioFuera.src = fueraSoundUrl; audioFuera.volume = 0.35; }
-            if (rolonSoundUrl) { audioRolon.src = rolonSoundUrl; audioRolon.volume = 0.6; }
-            // Marcar el juego como iniciado ANTES de intentar el audio. Así el
-            // desbloqueo por toque funciona inmediatamente y no reinicia la pista.
+            if (gameStarted) return;
             gameStarted = true;
-            // Cuida a Benja no arranca música de fondo: el audio musical solo
-            // se escucha cuando el jugador activa la radio del vehículo.
-            try { if(audioPlayer){audioPlayer.pause();audioPlayer.currentTime=0;} } catch(_) {}
-            initGame();
-            // Reafirmar la visibilidad después de initGame para evitar que otro ajuste la oculte.
-            forceHudVisible();
+            try {
+                startScreen.style.display = 'none';
+                statusText.style.display = 'block';
+                sysRestartBtn.style.display = 'none';
+                forceHudVisible();
+                document.getElementById('playerHealthBar').style.display = 'block';
+                document.getElementById('playerHealthLabel').style.display = 'block';
+                document.getElementById('auraBarContainer').style.display = 'block';
+                document.getElementById('auraLabel').style.display = 'block';
+                document.getElementById('mudBar').style.display = 'block';
+                document.getElementById('mudLabel').style.display = 'block';
+                const pci = document.getElementById('peneCountInfo');
+                if (pci) pci.style.display = 'block';
+                if (fueraSoundUrl) { audioFuera.src = fueraSoundUrl; audioFuera.volume = 0.35; }
+                if (rolonSoundUrl) { audioRolon.src = rolonSoundUrl; audioRolon.volume = 0.6; }
+                try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = 0; } } catch (_) {}
+                initGame();
+                forceHudVisible();
+            } catch (error) {
+                gameStarted = false;
+                console.error('Error al iniciar Cuida a Benja:', error);
+                startScreen.style.display = 'flex';
+                if (statusText) statusText.style.display = 'none';
+                showStartupError(error);
+            }
         }
 
         function fullRestartGame() {
