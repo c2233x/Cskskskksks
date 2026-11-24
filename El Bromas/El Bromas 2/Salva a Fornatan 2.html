@@ -226,7 +226,7 @@ function updateContinueButton(){
 }
 function hideScreen(id){$(id).classList.add("hide")}
 function showScreen(id){$(id).classList.remove("hide")}
-function openMenu(){gameVisible=false;cancelAnimationFrame(raf);hideScreen("gameScreen");showScreen("menuScreen");hideScreen("storyOverlay");hideScreen("settingsOverlay");updateContinueButton()}
+function openMenu(){saveGame();gameVisible=false;cancelAnimationFrame(raf);hideScreen("gameScreen");showScreen("menuScreen");hideScreen("storyOverlay");hideScreen("settingsOverlay");updateContinueButton()}
 function showStory(title,text,icon,callback){
   $("storyTitle").textContent=title;
   $("storyText").textContent=text;
@@ -287,7 +287,7 @@ function nearbyTargets(){
   return out;
 }
 function interact(){
-  if(!gameVisible||!$("storyOverlay").classList.contains("hide")===false)return;
+  if(!gameVisible||!$("storyOverlay").classList.contains("hide"))return;
   const targets=nearbyTargets();
   let target=null,best=Infinity;
   targets.forEach(t=>{const d=Math.hypot(t.pos.x-player.x,t.pos.y-player.y);if(d<best){best=d;target=t}});
