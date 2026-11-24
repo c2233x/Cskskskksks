@@ -779,7 +779,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="crosshair"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.4"></script>
+<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.6.5"></script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -4329,7 +4329,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 benjaPig.userData.groundY=farmGroundAt(benjaPig.position.x,benjaPig.position.z);
                 if(now-farmBenjaHungerLast>70000){farmBenjaHungerLast=now;farmBenjaHunger=Math.max(0,farmBenjaHunger-3);farmUpdateBenjaHud();if(farmBenjaHunger<=28&&!farmBenjaHungerLinePlayed){farmBenjaHungerLinePlayed=true;speakFarmLine('benja','ocupo pa la renta. ¿no traes algo de comer?');}}
                 if(!farmBenjaLastCleanlinessTick)farmBenjaLastCleanlinessTick=now;
-                if(now-farmBenjaLastCleanlinessTick>180000){farmBenjaLastCleanlinessTick=now;farmBenjaCleanliness=Math.max(0,farmBenjaCleanliness-2);farmUpdateBenjaHud();}
+                if(now-farmBenjaLastCleanlinessTick>180000){farmBenjaLastCleanlinessTick=now;farmBenjaCleanliness=Math.max(0,farmBenjaCleanliness-2);farmUpdateBenjaHud();saveStoryProgress();}
             }
             benjaPig.position.y=benjaPig.userData.groundY+Math.abs(Math.sin(t*2.1))*.16;
             benjaPig.rotation.z=Math.sin(t*1.18)*.12;benjaPig.rotation.x=Math.sin(t*1.55)*.1;
@@ -4479,6 +4479,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.5,0),leafMat,trees.length);
                 trees.forEach((tree,i)=>{
                     const y=farmGroundAt(tree.x,tree.z),sc=tree.scale;
+                    addFarmCollider(tree.x,tree.z,1.35*sc,1.35*sc,0,'farm-tree',6*sc);
                     dummy.position.set(tree.x,y+2.6*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc,sc);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
                     dummy.position.set(tree.x,y+6.3*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc*1.08,sc);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
                 });
@@ -4492,7 +4493,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             for(let sector=0;sector<sectorCount;sector++){
                 const pinesData=pineBuckets[sector];if(!pinesData.length)continue;
                 const pines=new THREE.InstancedMesh(new THREE.ConeGeometry(3.3,9,6),pineMat,pinesData.length);
-                pinesData.forEach((p,i)=>{const y=farmGroundAt(p.x,p.z);dummy.position.set(p.x,y+4.3*p.scale,p.z);dummy.rotation.set(0,p.angle,0);dummy.scale.set(p.scale,p.scale,p.scale);dummy.updateMatrix();pines.setMatrixAt(i,dummy.matrix);});
+                pinesData.forEach((p,i)=>{const y=farmGroundAt(p.x,p.z);addFarmCollider(p.x,p.z,1.45*p.scale,1.45*p.scale,0,'farm-pine',9*p.scale);dummy.position.set(p.x,y+4.3*p.scale,p.z);dummy.rotation.set(0,p.angle,0);dummy.scale.set(p.scale,p.scale,p.scale);dummy.updateMatrix();pines.setMatrixAt(i,dummy.matrix);});
                 pines.instanceMatrix.needsUpdate=true;pines.castShadow=false;pines.receiveShadow=false;pines.frustumCulled=false;farmGroup.add(pines);
             }
             const grassMat=new THREE.MeshLambertMaterial({color:0x4e8a39});
@@ -4563,7 +4564,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const x=FARM_STORAGE_POS.x-17.1+col*11.4,z=FARM_STORAGE_POS.z-8+row*15.2,y=storageY;
                 // Pallet y separador propio para que cada producto se distinga.
                 const pallet=new THREE.Mesh(new THREE.BoxGeometry(8.6,.75,10.7),darkWood);
-                pallet.position.set(x,y+.45,z);pallet.castShadow=true;farmGroup.add(pallet);
+                pallet.position.set(x,y+.45,z);pallet.castShadow=true;farmGroup.add(pallet);addFarmCollider(x,z,7.2,8.8,0,'farm-storage-pallet',2.4);
                 const labelCanvas=document.createElement('canvas');labelCanvas.width=384;labelCanvas.height=96;
                 const labelCtx=labelCanvas.getContext('2d');labelCtx.fillStyle='#f4e5c5';labelCtx.fillRect(0,0,384,96);
                 labelCtx.fillStyle='#49311f';labelCtx.font='bold 34px Arial';labelCtx.textAlign='center';labelCtx.textBaseline='middle';
@@ -4769,6 +4770,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const solar=new THREE.Mesh(new THREE.BoxGeometry(4.2,.16,2.4),new THREE.MeshStandardMaterial({color:0x28506d,metalness:.35,roughness:.38}));solar.position.set(0,7.9,-1);solar.rotation.z=-.38;farmPigstyGroup.add(solar);
             }
             farmPigstyGroup.position.set(x,y,z);farmPigstyGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+            farmGroup.add(createFarmSign('POCILGA DE BENJA · NIVEL '+level,x,y+10,z-9));
         }
         function createFarmPonds(){
             if(!farmGroup)return;
@@ -4907,7 +4909,6 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const trunk=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.6,12,8),darkWood);trunk.position.set(tx,ty+6,tz);trunk.castShadow=true;farmGroup.add(trunk);
             const leaves=new THREE.Mesh(new THREE.SphereGeometry(8,10,8),new THREE.MeshStandardMaterial({color:0x2f6635,roughness:1}));leaves.position.set(tx,ty+15,tz);leaves.castShadow=true;farmGroup.add(leaves);
             createBenjaPig();
-            createFarmPigsty();
         }
         function removeFarmGuideMarker(){if(farmGuideMarker&&farmGuideMarker.parent)farmGuideMarker.parent.remove(farmGuideMarker);farmGuideMarker=null;}
         function setFarmGuideTarget(x,z,label){
@@ -5704,7 +5705,7 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.4',
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.6.5',
    'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js'
   ];
   let lastError=null;
@@ -5907,7 +5908,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 farmMissionIndex=Math.max(0,Math.min(farmMissionOrder.length-1,Number(d.missionIndex)||0));
                 farmMissionCycle=Math.max(0,Number(d.missionCycle)||0);farmMissionId=FARM_MISSION_DATA[d.missionId]?d.missionId:(farmMissionOrder[farmMissionIndex]||'harvest');
                 farmDefenseLevel=Math.max(0,Math.min(3,Number(d.defenseLevel)||0));
-                farmPigstyLevel=Math.max(0,Math.min(4,Number(d.pigstyLevel)||0));farmWaterStorageLevel=Math.max(1,Math.min(4,Number(d.waterStorageLevel)||1));farmBenjaCleanliness=Math.max(0,Math.min(100,Number(d.benjaCleanliness)||100));
+                farmPigstyLevel=Math.max(0,Math.min(4,Number(d.pigstyLevel)||0));farmWaterStorageLevel=Math.max(1,Math.min(4,Number(d.waterStorageLevel)||1));farmBenjaCleanliness=Math.max(0,Math.min(100,d.benjaCleanliness===0?0:(Number(d.benjaCleanliness)||100)));
                 farmBenjaHealth=Math.max(0,Math.min(100,Number(d.benjaHealth)||100));
                 farmBenjaHunger=Math.max(0,Math.min(100,d.benjaHunger===0?0:(Number(d.benjaHunger)||85)));
                 farmRaidKillCarry=Math.max(0,Number(d.raidKillCarry)||0);farmRaidKillsTotal=Math.max(0,Number(d.raidKillsTotal)||0);
@@ -6755,7 +6756,9 @@ function startProtestMission() {
                 }
             }
             
-            timeOfDay += 0.000015; if (timeOfDay > 1) timeOfDay = 0; updateDayNight(); updateFarmNightRaid();
+            const worldClockNow=performance.now();if(!lastDayNightTick)lastDayNightTick=worldClockNow;
+            const worldClockDelta=Math.min(120,Math.max(0,worldClockNow-lastDayNightTick));lastDayNightTick=worldClockNow;
+            timeOfDay=(timeOfDay+worldClockDelta/1200000)%1;updateDayNight();updateFarmNightRaid();
             
             function createEpicSpaceStars() {
                 if (epicSpaceStars || !scene) return;
@@ -6931,9 +6934,7 @@ function startProtestMission() {
                 let idealX = targetPos.x + cameraDistance * Math.sin(cameraPhi) * Math.sin(cameraTheta); let idealY = targetPos.y + cameraDistance * Math.cos(cameraPhi); let idealZ = targetPos.z + cameraDistance * Math.sin(cameraPhi) * Math.cos(cameraTheta);
                 const dir = new THREE.Vector3(idealX - targetPos.x, idealY - targetPos.y, idealZ - targetPos.z).normalize();
                 
-                let finalDistance = cameraDistance; const raycaster = new THREE.Raycaster(targetPos, dir, 0, cameraDistance);
-                const obstacles = buildingColliders.map(c => c.group.children[0]).filter(m => m); const intersects = raycaster.intersectObjects(obstacles, false);
-                if (intersects.length > 0) { finalDistance = Math.max(2, intersects[0].distance - 0.8); }
+                const finalDistance = getCameraSafeDistance(targetPos,dir,cameraDistance);
                 
                 idealX = targetPos.x + finalDistance * Math.sin(cameraPhi) * Math.sin(cameraTheta); idealY = targetPos.y + finalDistance * Math.cos(cameraPhi); idealZ = targetPos.z + finalDistance * Math.sin(cameraPhi) * Math.cos(cameraTheta);
                 const floorY = getTerrainY(idealX, idealZ, null);
@@ -6946,6 +6947,7 @@ function startProtestMission() {
             updateStoryMode();
             updateBenjaAnimation();
             updateFarmThrownFood();
+            updateFarmPondAnimations(performance.now());
             updateFarmGuide();
             updateFarmCinematic();
             if(graphicsSettings && graphicsSettings.worldOptimizer!==false && (worldCullFrameCounter%8===0))updateWorldChunkVisibility();
@@ -6955,6 +6957,16 @@ function startProtestMission() {
         
         function updateDayNight() {
             const t = timeOfDay;
+            if(performance.now()-farmClockLastUi>800){
+                farmClockLastUi=performance.now();
+                const clock=document.getElementById('farmClockHud');
+                if(clock){
+                    const mins=Math.floor((t%1)*1440),hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0');
+                    const phase=t<.22||t>=.79?'NOCHE':t<.35?'AMANECIENDO':t<.68?'DÍA':t<.78?'ATARDECIENDO':'ANOCHECER';
+                    clock.innerHTML=hh+':'+mm+'<small>'+phase+'</small>';
+                    clock.style.display=storyModeActive&&!farmCityMode?'block':'none';
+                }
+            }
             const stops = [
                 { t: 0.00, sky: 0x020412, sun: 0x050511, amb: 0x0a0c1a, sunInt: 0.0, lampInt: 1.0, winInt: 1.0, winCol: 0xffdd88 },
                 { t: 0.20, sky: 0x020412, sun: 0x050511, amb: 0x0a0c1a, sunInt: 0.0, lampInt: 1.0, winInt: 1.0, winCol: 0xffdd88 },
@@ -6990,9 +7002,9 @@ function startProtestMission() {
             const moonZ = character ? character.position.z - 80 : -80;
             if (nightMoonMesh) { nightMoonMesh.position.set(moonX, moonY, moonZ); nightMoonMesh.visible = lampInt > 0.45; }
             if (moonLight) { moonLight.position.set(moonX, moonY, moonZ); moonLight.intensity = lampInt > 0.45 ? 0.16 : 0.02; }
-            if (window.ambientLight) { window.ambientLight.intensity = 1.0; window.ambientLight.color.copy(ambCol); }
-            if (window.hemiLight) { window.hemiLight.intensity = (sunInt * 0.3) + 0.1; }
-            if (window.playerLight) { window.playerLight.intensity = lampInt * 1.5; }
+            if (window.ambientLight) { window.ambientLight.intensity = 0.28+sunInt*.68; window.ambientLight.color.copy(ambCol); }
+            if (window.hemiLight) { window.hemiLight.intensity = (sunInt * 0.48) + 0.12; }
+            if (window.playerLight) { window.playerLight.intensity = lampInt * 0.75; }
             if (window.sunShadowTarget && character && window.sunLight) {
                 // El mapa de sombras se centra directamente en el jugador para que las sombras no queden atrás.
                 const target = window.sunShadowTarget.position;
