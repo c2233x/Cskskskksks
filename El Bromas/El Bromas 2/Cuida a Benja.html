@@ -2161,12 +2161,9 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
             // Marcar el juego como iniciado ANTES de intentar el audio. Así el
             // desbloqueo por toque funciona inmediatamente y no reinicia la pista.
             gameStarted = true;
-            // Arrancar la música ANTES de initGame(): initGame() puede tardar
-            // bastante en Android/WebView y eso provocaba el retraso audible.
-            if (musicTracks.length > 0) {
-                audioPlayer.volume = 0.65;
-                if (audioUnlocked) playMusic(true).catch(() => {});
-            }
+            // Cuida a Benja no arranca música de fondo: el audio musical solo
+            // se escucha cuando el jugador activa la radio del vehículo.
+            try { if(audioPlayer){audioPlayer.pause();audioPlayer.currentTime=0;} } catch(_) {}
             initGame();
             // Reafirmar la visibilidad después de initGame para evitar que otro ajuste la oculte.
             forceHudVisible();
@@ -2213,7 +2210,9 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
             civilianHouses.forEach(h => scene.remove(h)); civilianHouses = []; posters.forEach(p => scene.remove(p)); posters = [];
             if(epicAsteroid) { scene.remove(epicAsteroid); epicAsteroid = null; } if(epicSemen) { scene.remove(epicSemen); epicSemen = null; } if(epicTrail) { scene.remove(epicTrail); epicTrail = null; } epicSpaceStart = null; epicDeflectMeteors.forEach(m => scene.remove(m)); epicDeflectMeteors = [];
 
-            createRoads(); createDrivableCars(); createBuildings(); createStreetLamps(); createCityProps(); initDrones(); createBillboards(); applyBillboardTextures(); rebuildCarCollisionGrid();
+            if(cityWorldGroup&&cityWorldGroup.parent===scene)scene.remove(cityWorldGroup);
+             cityWorldGroup=null;cityWorldLoaded=false;cityJobBoard=null;
+             // La ciudad vuelve a cargarse desde su archivo solo cuando se entre de nuevo.
 
             waveNumber = 0; totalPenesKilled = 0; isCinematic = false; cinematicPhase = 0; waitingNextWave = false;
             missionActive = false; document.getElementById('missionUI').style.display = 'none'; asteroidRainTimer = 0; document.getElementById('meteorRainBar').style.display = 'none'; document.getElementById('meteorRainLabel').style.display = 'none';
@@ -2281,6 +2280,7 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
         
         async function playMusic(force = false) {
             if (carRadioEnabled) return false;
+            if (storyModeActive && !farmCityMode && !isDriving) return false;
             if (supremeEffectActive) return false;
             if (!musicTracks.length) return false;
             if (musicStarting && !force) return false;
@@ -2457,11 +2457,11 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
             stoneMat.polygonOffset = true; stoneMat.polygonOffsetFactor = 1; stoneMat.polygonOffsetUnits = 1; stoneMat.depthWrite = true;
             stonePlane = new THREE.Mesh(stoneGeo, stoneMat); stonePlane.receiveShadow = true; stonePlane.position.y = -5; stonePlane.renderOrder = 0; scene.add(stonePlane);
 
-            applyWorldTextures(); createRoads(); createDrivableCars(); createBuildings(); createStreetLamps(); createCityProps(); initDrones();
+            applyWorldTextures(); // La ciudad y sus objetos se generan únicamente al viajar a ese mapa.
             posterTextureObj = createPosterTexture(); createBillboards(); applyBillboardTextures(); stabilizeTexturedMaterials(); rebuildCarCollisionGrid();
             character = createCharacterWithSkeleton(); scene.add(character); character.traverse(o => { if(o.isMesh){ o.castShadow = true; o.receiveShadow = true; } });
             if (faceTextureUrl) applyFaceTexture();
-            createFarmWorld();createCityJobBoard();updateFarmCarryVisual(true);
+            createFarmWorld();updateFarmCarryVisual(true);
             
             setupControls();setupFarmUiControls();setupCarUI(); updatePlayerHealth(); updateAuraUI(); setupGraphicsUI(); setupHudEditor(); applyGraphicsSettings();
             setInterval(() => { if (cartelTextures.length > 1) { currentCartelIndex = (currentCartelIndex + 1) % cartelTextures.length; updateBillboardsWithCurrentTexture(); } }, 5000);
@@ -3064,7 +3064,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             musicStarting=false;
             try{ if(carRadioAudio){carRadioAudio.pause(); carRadioAudio.onended=null; carRadioAudio.onerror=null; carRadioAudio.removeAttribute('src'); carRadioAudio.load();} }catch(_){ }
             updateCarRadioUI();
-            if(resumeMusic && !isDriving && gameStarted && musicTracks.length && !supremeEffectActive && !bossRolonActive){
+            if(resumeMusic && !isDriving && gameStarted && musicTracks.length && !supremeEffectActive && !bossRolonActive && !(storyModeActive&&!farmCityMode)){
                 normalMusicResumePending=true;
                 try{audioPlayer.volume=.65;}catch(_){ }
                 // La reproducción de música también tiene su propio token; no se deja una promesa
@@ -4320,7 +4320,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                         const x=positions.getX(index)-FARM_CENTER.x;
                         const z=positions.getZ(index)-FARM_CENTER.z;
                         const distance=Math.hypot(x,z);
-                        if(distance<92||distance>470)continue;
+                        if(distance<(Number(FARM_MAP_CONFIG.flatRadius)||245)||distance>470)continue;
                         let height=0;
                         const rolling=Math.exp(-Math.pow((distance-168)/92,2));
                         height+=rolling*(7+4*Math.sin(x*.035+z*.018)+3*Math.cos(z*.041));
@@ -4586,7 +4586,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
             createFarmPrivateProperty(FARM_CENTER.x+112,FARM_CENTER.z-105,0xd5c49d,0x4d6574,'CASA DEL VECINO',.78);
             createFarmNature();
             createFarmMissionProps();
-            createFarmDefensiveCorral();
+             createFarmTelevision();
+             createFarmDefensiveCorral();
             const tx=FARM_CENTER.x+64,tz=FARM_CENTER.z+46,ty=farmGroundAt(tx,tz);
             const trunk=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.6,12,8),darkWood);trunk.position.set(tx,ty+6,tz);trunk.castShadow=true;farmGroup.add(trunk);
             const leaves=new THREE.Mesh(new THREE.SphereGeometry(8,10,8),new THREE.MeshStandardMaterial({color:0x2f6635,roughness:1}));leaves.position.set(tx,ty+15,tz);leaves.castShadow=true;farmGroup.add(leaves);
@@ -4630,11 +4631,12 @@ function farmTakeItem(type,amount=1){
 }
 
 function farmUpdateBenjaHud(){
- const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText'),hunger=document.getElementById('farmBenjaHungerText');
+ const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText'),hunger=document.getElementById('farmBenjaHungerText'),hungerFill=document.getElementById('farmBenjaHungerFill');
  if(hud)hud.style.display=storyModeActive&&!farmCityMode?'flex':'none';
  if(fill){fill.style.width=Math.max(0,Math.min(100,farmBenjaHealth))+'%';fill.style.background=farmBenjaHealth<35?'linear-gradient(90deg,#a92121,#ff6868)':'linear-gradient(90deg,#54c953,#bcf46b)';}
  if(label)label.textContent=Math.round(farmBenjaHealth)+'%';
- if(hunger)hunger.textContent='HAMBRE '+Math.round(farmBenjaHunger)+'%';
+ if(hungerFill){hungerFill.style.width=Math.max(0,Math.min(100,farmBenjaHunger))+'%';hungerFill.style.background=farmBenjaHunger>70?'linear-gradient(90deg,#ed9a2c,#ef5b42)':'linear-gradient(90deg,#c4c85b,#85c95b)';}
+ if(hunger)hunger.textContent=Math.round(farmBenjaHunger)+'%';
 }
         function farmUpdateInventoryPanel(){
  const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
@@ -4647,11 +4649,11 @@ function farmUpdateBenjaHud(){
  if(title)title.textContent=mode==='shop'?'PUESTO DE SUMINISTROS':'ALMACEN DE LA GRANJA';
  if(!buttons)return;let html='';
  if(mode==='shop'){
-  ['maiz','trigo','zanahoria','heno','pienso','madera'].forEach(type=>{const good=FARM_GOODS[type],price=type==='madera'?9:good.price;html+='<button type="button" data-farm-action="buy" data-good="'+type+'">Comprar '+good.label+' · $'+price+'</button>';});
+  ['maiz','trigo','zanahoria','heno','pienso','madera'].forEach(type=>{const good=FARM_GOODS[type],price=type==='madera'?9:good.price;html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar '+good.label+' · $'+price+'</button>';});
   html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
  }else{
   html+='<button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button>';
-  Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';});
+  Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">'+(good.icon||'📦')+' Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';});
   html+='<button type="button" class="primary" data-farm-action="close">CERRAR ALMACEN</button>';
  }
  buttons.innerHTML=html;
