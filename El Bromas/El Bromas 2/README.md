@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.6.5**
+**Version actual: 1.6.6**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -75,7 +75,7 @@ Las colisiones de las estructuras de granja usan cajas orientadas que respetan l
 
 Se detallan el granero y las casas con vigas, molduras, puertas, ventanas, chimenea, aleros y remates de techo. Las zonas de chicharras incluyen el patio central, huerto, arboleda y camino del tractor. El volumen de chicharras, viento y aves se atenúa progresivamente con la distancia. La música se detiene al regresar de ciudad a granja.
 
-## Pocilga, agua y mejoras de la granja (1.6.5)
+## Pocilga, agua y mejoras de la granja (1.6.6)
 La casa base de la granja se transforma en tu pocilga, con cuatro niveles de mejora comprables con dinero y madera. Se conserva una entrada abierta para entrar y salir. El depósito de agua empieza con 20 L de capacidad y se puede ampliar hasta cuatro niveles; el nivel de agua visible depende de las unidades de agua guardadas en el almacén. Dos lagunitas muestran agua azul translúcida, orillas, piedras, juncos y ondas.
 
 Se puede bañar a Benja desde el panel del almacén consumiendo 3 unidades de agua. Su indicador incluye aseo, que baja lentamente con el tiempo y se recupera al bañarlo. Las mejoras y el aseo se guardan en la partida.
@@ -85,3 +85,13 @@ El ciclo de día y noche ahora avanza por tiempo transcurrido y dura aproximadam
 La cámara comprueba las mismas cajas de colisión que el jugador para evitar atravesar edificios y objetos. Se añaden colisiones a árboles, pinos, piedras de las lagunas, pacas, sacos, palés, vallas y estructuras principales. La entrada del corral se centra y se abre otra entrada lateral. El campo se representa con surcos oscuros y trigo de varias piezas (tallo, hoja, espiga y granos) y las flores usan sprites redondos para evitar puntos blancos cuadrados.
 
 La TV incluye botones físicos 3D para canal anterior y siguiente debajo de la pantalla y una opción para abrir los catálogos oficiales de Pluto TV de Anime y Kids. El botón de escaneo muestra páginas oficiales del catálogo; Pluto TV se reproduce en su propio sitio y la disponibilidad depende de la región y del servicio.
+
+
+## 1.6.6 · Corrección de tejados y render del campo
+- Se corrige la inclinación de los tejados de casas, granero y pocilga: las dos faldones ahora suben hacia la cumbrera en lugar de cruzarse por encima.
+- Se reduce y oscurece la geometría de los surcos del cultivo para que no aparezcan franjas claras sobre el terreno.
+- Se ajusta la superficie de las lagunas a un azul más natural y a una ordenación de profundidad más estable.
+- Se suaviza el oscurecimiento del cielo en el amanecer y atardecer.
+- Se elimina la luz artificial automática del avatar; la iluminación portátil se añadirá como antorcha comprable.
+- La TV muestra brevemente el número y nombre del canal al cambiarlo.
+- El sonido original de chicharras no está en el repositorio. No se sustituye por el sintetizador actual: falta subir el audio exacto para integrarlo.
