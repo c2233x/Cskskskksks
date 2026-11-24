@@ -2283,7 +2283,7 @@ let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
         
         async function playMusic(force = false) {
             if (carRadioEnabled) return false;
-            if (storyModeActive && !farmCityMode && !isDriving) return false;
+            if (storyModeActive && (!farmCityMode || isDriving)) return false;
             if (supremeEffectActive) return false;
             if (!musicTracks.length) return false;
             if (musicStarting && !force) return false;
