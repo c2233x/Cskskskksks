@@ -1,16 +1,13 @@
-# Cuida a Benja — El Bromas 2
+# Cuida a Benja
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.6.6**
+**Version actual: 1.6.7**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
-## Acceso
-- Titulo: `Codis`
-- Codigo: `pepa`
-
-El codigo es una pantalla de acceso visual, no autenticacion segura.
+## Inicio
+El juego carga directamente, sin pedir código de acceso.
 
 ## Mapas separados
 Los mapas tienen archivos propios dentro de `Mapas/` y se cargan por separado:
@@ -48,7 +45,7 @@ Al salir del límite de la ciudad vuelves automáticamente a la granja; se cance
 ## Televisión y radio de la granja
 El televisor tiene una pantalla física que permanece en el mundo. El video HLS se aplica como textura de Three.js directamente sobre el plano 3D de la pantalla, con la misma perspectiva del aparato y sin una capa 2D proyectada. El panel permite encender, apagar, seleccionar canal y regular el volumen. El audio se atenúa según la distancia al televisor. Al cerrar el panel, la emisión sigue reproduciéndose; apagarlo deja la pantalla negra. Si una señal no está disponible o el navegador bloquea el flujo, se intenta el reproductor oficial alternativo.
 
-Canales disponibles para probar: 43 entradas hondureñas e internacionales, organizadas por categorías (noticias, general, entretenimiento, educativo, religioso, música, deportes, internacional, anime y caricaturas). El catálogo añade accesos oficiales a Pluto TV para anime y Kids; estas páginas se abren en Pluto TV, ya que no se presentan como flujos HLS directos para la pantalla 3D. El buscador filtra por nombre o categoría y `BUSCAR Y PROBAR` comprueba cada enlace en el navegador; `DETENER BÚSQUEDA` cancela el escaneo. Una señal marcada como disponible funcionó en ese dispositivo durante la prueba, pero puede cambiar según la emisión, región o navegador.
+Canales disponibles para probar: 43 entradas hondureñas e internacionales, organizadas por categorías (noticias, general, entretenimiento, educativo, religioso, música, deportes, internacional, anime y caricaturas). Los accesos de Pluto TV abren el catálogo oficial en el navegador. Pluto TV no queda integrado como señal HLS directa en la pantalla 3D; la disponibilidad y reproducción se gestionan en su propio servicio. El buscador filtra por nombre o categoría y `BUSCAR Y PROBAR` comprueba cada enlace en el navegador; `DETENER BÚSQUEDA` cancela el escaneo. Una señal marcada como disponible funcionó en ese dispositivo durante la prueba, pero puede cambiar según la emisión, región o navegador.
 
 La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. El coro de chicharras se sintetiza con Web Audio en las zonas de insectos; el viento suena por toda la granja y los pájaros aparecen como ambiente. El volumen varía según la zona y la distancia. El proyecto no copia el MP3 adjunto al repositorio. Al volver desde la ciudad, la música de fondo se detiene y no se reinicia en la granja.
 
@@ -95,3 +92,15 @@ La TV incluye botones físicos 3D para canal anterior y siguiente debajo de la p
 - Se elimina la luz artificial automática del avatar; la iluminación portátil se añadirá como antorcha comprable.
 - La TV muestra brevemente el número y nombre del canal al cambiarlo.
 - El sonido original de chicharras no está en el repositorio. No se sustituye por el sintetizador actual: falta subir el audio exacto para integrarlo.
+
+## Actualización 1.6.7
+- El inicio ya no solicita contraseña ni código.
+- El corral original de Benja tiene una abertura frontal real de 12 m. Al reforzarlo se retira la cerca de madera anterior y sus colisiones antes de levantar el nuevo muro.
+- Los botones físicos de canal anterior/siguiente bajo el televisor usan zonas de toque mayores y eventos de puntero para Android.
+- La lista de emisoras de la radio de la granja se deriva de la misma lista hondureña que la radio del vehículo y dispone de una prueba individual de audio y botón para detenerla.
+- Se recupera la cinemática de apertura que faltaba. Cada diálogo usa el lector de voz local del navegador/dispositivo y se muestra en los subtítulos inferiores.
+- El reproductor de chicharras ya no sintetiza el insecto: carga el MP3 original sin cambiar tono ni velocidad desde ../Sonidos/Effectos/la chicharra japonesa(MP3_160K).mp3. El binario debe estar en el repositorio para que el juego web pueda descargarlo.
+- La lista de TV permite mostrar/ocultar canales que la prueba marcó sin señal. Pluto TV abre su catálogo oficial; no se anuncia como una señal directa integrada.
+
+Audio original adjunto: la chicharra japonesa(MP3_160K).mp3.
+Ruta de publicación: El Bromas/Sonidos/Effectos/la chicharra japonesa(MP3_160K).mp3.
