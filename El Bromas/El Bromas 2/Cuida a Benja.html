@@ -510,6 +510,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="farmQuickActions">
 <button id="farmQuickJobs" class="jobs" type="button" style="display:none">TRABAJOS</button>
 <button id="farmGoCity" class="travel" type="button" style="display:none">🚗 IR A CIUDAD</button>
+<button id="farmGoCity" class="travel" type="button" style="display:none">🚗 IR A CIUDAD</button>
 </div>
 <div id="farmSubtitles" aria-live="polite"></div>
 <div id="cityJobPanel" role="dialog" aria-label="Trabajos de la ciudad">
@@ -4951,45 +4952,44 @@ async function loadFarmTVChannel(){
  const token=farmTVPlaybackToken,video=document.getElementById('farmTVWorldVideo'),frame=document.getElementById('farmTVWorldFrame');
  if(!video||!frame)return;
  if(!channel.hls){startFarmTVIframeFallback(channel,token);return;}
- frame.style.display='none';video.style.display='block';
- video.volume=farmTVVolume;video.muted=false;video.playsInline=true;
+ frame.style.display='none';video.style.display='block';video.volume=farmTVVolume;video.muted=false;video.playsInline=true;
+ const sources=[channel.hls,channel.backupHls].filter(Boolean);let sourceIndex=0;
  const playVideo=()=>{
   if(token!==farmTVPlaybackToken||!farmTVPowerOn)return;
   video.volume=farmTVVolume;video.muted=farmTVVolume<=.001;
   const result=video.play();
   if(result&&result.catch)result.catch(()=>{
-   video.muted=true;
-   const retry=video.play();
+   video.muted=true;const retry=video.play();
    if(retry&&retry.catch)retry.catch(()=>startFarmTVIframeFallback(channel,token));
-   const hint=document.getElementById('farmTVHint');
-   if(hint)hint.textContent='La reproducción empezó sin sonido. Ajusta el volumen o toca ENCENDER TV otra vez.';
   });
  };
- video.onerror=()=>{if(token===farmTVPlaybackToken)startFarmTVIframeFallback(channel,token);};
+ const startHlsSource=(Hls,url)=>{
+  if(token!==farmTVPlaybackToken||!farmTVPowerOn)return;
+  if(farmTVHlsPlayer){try{farmTVHlsPlayer.destroy();}catch(_){}farmTVHlsPlayer=null;}
+  const player=new Hls({enableWorker:true,lowLatencyMode:true,maxBufferLength:28,liveSyncDurationCount:3});
+  farmTVHlsPlayer=player;
+  player.on(Hls.Events.ERROR,(_event,data)=>{
+   if(token!==farmTVPlaybackToken||!data||!data.fatal)return;
+   if(sourceIndex+1<sources.length){sourceIndex++;startHlsSource(Hls,sources[sourceIndex]);}
+   else startFarmTVIframeFallback(channel,token);
+  });
+  player.on(Hls.Events.MANIFEST_PARSED,playVideo);
+  player.loadSource(url);player.attachMedia(video);
+ };
+ video.onerror=()=>{
+  if(token!==farmTVPlaybackToken)return;
+  if(sourceIndex+1<sources.length){sourceIndex++;ensureFarmHlsLibrary().then(Hls=>startHlsSource(Hls,sources[sourceIndex])).catch(()=>startFarmTVIframeFallback(channel,token));}
+  else startFarmTVIframeFallback(channel,token);
+ };
  try{
   if(video.canPlayType('application/vnd.apple.mpegurl')){
-   video.src=channel.hls;video.load();video.addEventListener('loadedmetadata',playVideo,{once:true});playVideo();return;
+   video.src=sources[0];video.load();video.addEventListener('loadedmetadata',playVideo,{once:true});return;
   }
   const Hls=await ensureFarmHlsLibrary();
   if(token!==farmTVPlaybackToken||!farmTVPowerOn)return;
   if(!Hls||!Hls.isSupported()){startFarmTVIframeFallback(channel,token);return;}
-  farmTVHlsPlayer=new Hls({enableWorker:true,lowLatencyMode:true,maxBufferLength:28,liveSyncDurationCount:3});
-  farmTVHlsPlayer.on(Hls.Events.ERROR,(_event,data)=>{
-   if(token!==farmTVPlaybackToken||!data||!data.fatal)return;
-   if(data.type===Hls.ErrorTypes.NETWORK_ERROR&&farmTVHlsPlayer){
-    try{farmTVHlsPlayer.startLoad();return;}catch(_){}
-   }
-   if(data.type===Hls.ErrorTypes.MEDIA_ERROR&&farmTVHlsPlayer){
-    try{farmTVHlsPlayer.recoverMediaError();return;}catch(_){}
-   }
-   startFarmTVIframeFallback(channel,token);
-  });
-  farmTVHlsPlayer.on(Hls.Events.MANIFEST_PARSED,playVideo);
-  farmTVHlsPlayer.loadSource(channel.hls);
-  farmTVHlsPlayer.attachMedia(video);
- }catch(error){
-  if(token===farmTVPlaybackToken)startFarmTVIframeFallback(channel,token);
- }
+  startHlsSource(Hls,sources[0]);
+ }catch(error){if(token===farmTVPlaybackToken)startFarmTVIframeFallback(channel,token);}
 }
 function setFarmTVPower(on){
  farmTVPowerOn=!!on;
@@ -5116,7 +5116,8 @@ function attemptFarmRadioStream(token){
  try{
   farmRadioAudio.pause();farmRadioAudio.onerror=null;farmRadioAudio.src=url;farmRadioAudio.volume=farmRadioVolume;
   const result=farmRadioAudio.play();
-  if(result&&result.catch)result.catch(()=>{if(token!==farmRadioGeneration)return;attemptFarmRadioStream(token);});
+  farmRadioAudio.onerror=()=>{if(token===farmRadioGeneration&&farmRadioStreamTry===attemptNo)attemptFarmRadioStream(token);};
+  if(result&&result.catch)result.catch(()=>{if(token===farmRadioGeneration&&farmRadioStreamTry===attemptNo)attemptFarmRadioStream(token);});
  }catch(_){attemptFarmRadioStream(token);}
 }
 function setFarmRadioPower(on){
@@ -5320,7 +5321,9 @@ async function travelToCity(){
   showMapTravelOverlay('LLEGASTE A LA CIUDAD','La granja quedó fuera de este mapa.');
   await new Promise(resolve=>setTimeout(resolve,550));
  }catch(error){
-  showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga'));isCinematic=false;
+  cityTravelRetryAt=Date.now()+12000;
+  const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='inline-flex';
+  showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga')+'. Puedes pulsar IR A CIUDAD para reintentar.');isCinematic=false;
  }finally{hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;}
 }
 async function travelToFarm(){
@@ -5339,6 +5342,7 @@ async function enterCityMap(){
  if(farmGroup)farmGroup.visible=false;if(benjaPig)benjaPig.visible=false;
  if(cityWorldGroup){cityWorldGroup.visible=true;if(cityWorldGroup.parent!==scene)scene.add(cityWorldGroup);}
  if(farmGuideMarker)farmGuideMarker.visible=false;
+ cityTravelRetryAt=0;const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='none';
  const p=CITY_MAP_CONFIG.spawn||{x:0,z:0};
  character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.rotation.y=0;cameraTheta=0;cameraDistance=28;farmGuideTarget=null;cityActiveJob=null;waveNumber=0;waitingNextWave=false;waveActive=true;
  document.getElementById('missionUI').style.display='block';
@@ -5376,8 +5380,9 @@ function updateCityMapMode(now){
  if(timeOfDay<.24)cityNightWarningDone=false;
 }
 function setupFarmUiControls(){
- const jobs=document.getElementById('farmQuickJobs'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
+ const jobs=document.getElementById('farmQuickJobs'),go=document.getElementById('farmGoCity'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
  if(jobs)jobs.addEventListener('click',showCityJobPanel);
+ if(go)go.addEventListener('click',()=>{cityTravelRetryAt=0;travelToCity();});
  if(close)close.addEventListener('click',()=>{const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';});
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-city-job]');if(b)startCityJob(b.dataset.cityJob);});
  setupFarmTVControls();setupFarmRadioControls();
@@ -5551,7 +5556,10 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   }
  }
  const distanceFromFarm=Math.hypot(character.position.x-FARM_CENTER.x,character.position.z-FARM_CENTER.z);
- if(!farmRaidActive&&distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235)){
+ const beyondFarmLimit=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235);
+ const cityRetryButton=document.getElementById('farmGoCity');
+ if(cityRetryButton)cityRetryButton.style.display=beyondFarmLimit&&!farmRaidActive?'inline-flex':'none';
+ if(!farmRaidActive&&beyondFarmLimit&&Date.now()>=cityTravelRetryAt){
   travelToCity();
   return;
  }
