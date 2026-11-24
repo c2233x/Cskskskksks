@@ -1,5 +1,7 @@
 # Cuida a Benja — El Bromas 2
 
+**Archivo del juego:** `Cuida a Benja.html`
+
 **Version actual: 1.4.0**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
