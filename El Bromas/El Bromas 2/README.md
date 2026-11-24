@@ -1,28 +1,31 @@
 # Salva a Fornatan 2 — El Bromas 2
 
-**Versión:** 1.0
+**Version actual: 1.1**
 
-Esta entrega conserva la base del juego 3D original **Salva a cornatan**. Utiliza el mismo motor Three.js/WebGL, ciudad, cámara, personaje animado, vehículos, controles, HUD, sistema gráfico y cargador de recursos.
-
-El cambio principal es la lógica: en vez de oleadas infinitas, la aventura sigue una campaña con misiones y progreso propio.
+Esta entrega conserva la base del juego 3D original **Salva a cornatan**: Three.js/WebGL, ciudad, camara, personaje animado, vehiculos, controles, HUD y ajustes graficos. El nuevo contenido es una historia diferente.
 
 ## Acceso
-- Título: `Codis`
-- Código: `pepa`
+- Titulo: `Codis`
+- Codigo: `pepa`
 
-El código es una pantalla de acceso visual; no es autenticación segura, ya que este repositorio es público.
+El codigo es una pantalla de acceso visual, no autenticacion segura.
 
-## Historia 1.0 — La señal perdida
-1. Recupera los tres fragmentos de la señal.
-2. Reactiva las dos antenas del valle.
-3. Defiende el refugio de los guardianes mecánicos.
-4. Derrota al Guardián de la Tormenta.
-5. Encuentra y rescata a Fornatan.
+## Capitulo 1. La granja de Benja
+La historia comienza en una granja. Benja es un cerdo de corral que se revuelca en su charco de lodo.
 
-## Controles
-Se conservan los controles del juego original, incluidos el joystick y los botones táctiles, la cámara y las acciones del personaje. También se conservan los sistemas de vehículos.
+1. Mira la llegada a la granja y conoce a Benja durante la cinematica.
+2. Acercate a Benja y habla con el.
+3. Prepara pedidos en la mesa del granero para ganar monedas.
+4. Compra un saco de comida en el puesto.
+5. Llevale la comida a Benja y aumenta su peso.
+6. Puedes repetir el trabajo, la compra y la alimentacion para seguir cuidandolo.
+
+La flecha en pantalla apunta al objetivo actual. El marcador 3D muestra donde esta y la distancia aproximada.
+
+## Sonidos
+Los sonidos originales enviados para Benja estan en `Sonidos/Benja/` y se alternan mientras el cerdo esta cerca.
 
 ## Guardado y actualizaciones
-El progreso de historia y el caché de recursos de esta edición usan claves independientes, para no mezclarse con el primer juego.
+La partida se guarda en el dispositivo con claves propias de El Bromas 2 y no comparte el progreso del primer juego.
 
-El historial de cambios está en `actualizaciones.json` y aparece dentro del panel **Historia y actualizaciones** de Ajustes. Las nuevas misiones, capítulos y correcciones se incorporarán en futuras versiones publicadas.
+El archivo `actualizaciones.json` guarda las notas de cada version. Las futuras versiones pueden agregar capitulos, cinematicas, dialogos, misiones y correcciones. Las actualizaciones no se generan solas cada dia: se publican cuando se realiza una nueva actualizacion del repositorio.
