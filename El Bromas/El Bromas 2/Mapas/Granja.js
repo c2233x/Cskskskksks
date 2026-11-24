@@ -50,3 +50,13 @@ window.CUIDA_BENJA_FARM_MAP = {
   ambientWorkers: 0,
   nightInvaders: { min: 4, max: 6, rewardPerTwo: 5 }
 };
+
+window.CUIDA_BENJA_FARM_MAP.buildWorld = function(engine) {
+  if (!engine || typeof engine.createFarmWorld !== "function") {
+    throw new Error("No está disponible el motor del mapa de granja");
+  }
+  engine.createFarmWorld();
+  if (typeof engine.updateFarmCarryVisual === "function") {
+    engine.updateFarmCarryVisual(true);
+  }
+};
