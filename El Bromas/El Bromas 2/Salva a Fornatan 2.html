@@ -3990,7 +3990,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
 
         function updateMissionUI() {
             if(storyModeActive){
-                const titles=['VE A VER A BENJA','HAZ UN TRABAJO EN LA GRANJA','COMPRA COMIDA PARA BENJA','DALE DE COMER A BENJA','BENJA ESTA CRECIENDO'];
+                const titles=['VE A VER A BENJA','HAZ UN TRABAJO EN LA GRANJA','COMPRA COMIDA PARA BENJA','DALE DE COMER A BENJA','CUIDA A BENJA'];
                 document.getElementById('missionTitle').textContent=titles[Math.max(0,Math.min(4,storyStage))];
                 document.getElementById('missionProgress').textContent=getStoryMissionProgress();
                 updateFarmMoneyLabel();return;
@@ -4129,7 +4129,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function removeFarmGuideMarker(){if(farmGuideMarker&&farmGuideMarker.parent)farmGuideMarker.parent.remove(farmGuideMarker);farmGuideMarker=null;}
         function setFarmGuideTarget(x,z,label){
             removeFarmGuideMarker();farmGuideTarget=new THREE.Vector3(x,farmGroundAt(x,z),z);farmGuideLabel=label||'objetivo';
-            if(storyStage>=4){const ui=document.getElementById('storyGuide');if(ui)ui.style.display='none';farmGuideTarget=null;return;}
+            if(storyStage>4){const ui=document.getElementById('storyGuide');if(ui)ui.style.display='none';farmGuideTarget=null;return;}
             const marker=new THREE.Group(),gold=new THREE.MeshStandardMaterial({color:0xffc451,emissive:0xff9b22,emissiveIntensity:1.1,metalness:.25,roughness:.3});
             const ring=new THREE.Mesh(new THREE.TorusGeometry(3.6,.2,8,28),new THREE.MeshBasicMaterial({color:0xffd36c}));ring.rotation.x=Math.PI/2;ring.position.y=.45;marker.add(ring);
             const beam=new THREE.Mesh(new THREE.CylinderGeometry(.25,.85,13,10,1,true),new THREE.MeshBasicMaterial({color:0xffd36c,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false}));beam.position.y=7;marker.add(beam);
@@ -4153,7 +4153,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             if(storyStage===1)return 'pedido '+storyWorkCount+' · cobro $18';
             if(storyStage===2)return 'dinero $'+storyMoney+' · saco $12';
             if(storyStage===3)return 'peso '+storyPigWeight+' / '+BENJA_SAVE_WEIGHT_GOAL+' kg';
-            return 'peso final '+storyPigWeight+' kg';
+            return 'benja: '+storyPigWeight+' kg · raciones '+storyFeedingCount;
         }
         function saveStoryProgress(){
             if(!storyModeActive||!character)return;
@@ -4187,13 +4187,13 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const t=storyStage===0?FARM_PIG_POS:storyStage===1?FARM_WORK_POS:storyStage===2?FARM_SHOP_POS:FARM_PIG_POS;
                 const lab=storyStage===0?'ve con benja':storyStage===1?'ve al granero':storyStage===2?'ve al puesto':'vuelve con benja';
                 setFarmGuideTarget(t.x,t.z,lab);showStoryDialog('YA ESTAMOS DE VUELTA','benja sigue en el corral. vamos a continuar donde lo dejamos.','🐷');
-            }else{isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');removeFarmGuideMarker();farmGuideTarget=null;showStoryDialog('BENJA ESTA CONTENTO','mira como ha crecido. todavia queda historia por delante.','🐷');}
+            }else{isCinematic=false;storyCinematicPlaying=false;document.body.classList.remove('farmCinematic');setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'sigue cuidando a benja');showStoryDialog('BENJA ESTA CONTENTO','mira como ha crecido. todavia queda historia por delante.','🐷');}
             saveStoryProgress();
         }
         function storyAdvanceTo(next,title,text,icon){
             storyStage=next;updateMissionUI();updateFarmMoneyLabel();
-            const t=next===0?FARM_PIG_POS:next===1?FARM_WORK_POS:next===2?FARM_SHOP_POS:next===3?FARM_PIG_POS:null;
-            const lab=next===0?'ve con benja':next===1?'ve al granero':next===2?'ve al puesto':next===3?'vuelve con benja':'';
+            const t=next===0?FARM_PIG_POS:next===1?FARM_WORK_POS:next===2?FARM_SHOP_POS:(next===3||next===4)?FARM_PIG_POS:null;
+            const lab=next===0?'ve con benja':next===1?'ve al granero':next===2?'ve al puesto':next===3?'vuelve con benja':next===4?'sigue cuidando a benja':'';
             if(t)setFarmGuideTarget(t.x,t.z,lab);else{removeFarmGuideMarker();farmGuideTarget=null;const ui=document.getElementById('storyGuide');if(ui)ui.style.display='none';}
             saveStoryProgress();if(title)showStoryDialog(title,text,icon);
         }
@@ -4228,6 +4228,22 @@ function removeCarRadioStation(index, reason='Sin señal'){
                             if(storyPigWeight>=BENJA_SAVE_WEIGHT_GOAL)storyAdvanceTo(4,'MIRA COMO HA CRECIDO','ya se nota el cambio, benja. ahora si estas comiendo bien. esto apenas empieza.','🐷');
                             else storyAdvanceTo(1,'BUEN PROVECHO','eso, come tranquilo. voy a preparar otro pedido para comprarte mas comida.','🌽');
                         }else{showToast('no tienes comida. toca ganar unas monedas');storyAdvanceTo(1,null,null,null);}
+                    }
+                }
+            }
+            else if(storyStage===4){
+                if(character.position.distanceTo(benjaPig.position)<17){
+                    prompt=storyFeedInventory>0?'pulsa ATACAR para darle otra racion':'benja quiere mas comida. ve a trabajar para comprar otro saco';
+                    if(isAttacking&&now>storyInteractAfter){
+                        storyInteractAfter=now+1800;
+                        if(storyFeedInventory>0){
+                            storyFeedInventory--;storyPigWeight+=5;storyFeedingCount++;
+                            updateBenjaWeightVisual();playBenjaGrunt(true);
+                            showStoryDialog('OTRA RACION','ahi tienes benja. ya te estas poniendo fuerte. toca seguir trabajando para mantenerte bien alimentado.','🐷');
+                            saveStoryProgress();
+                        }else{
+                            storyAdvanceTo(1,'OTRO DIA EN LA GRANJA','se acabo la comida. voy a preparar otro pedido y vuelvo con un saco nuevo.','🌾');
+                        }
                     }
                 }
             }
