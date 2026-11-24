@@ -4248,7 +4248,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                     dummy.position.set(tree.x,y+2.6*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc,sc);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
                     dummy.position.set(tree.x,y+6.3*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc*1.08,sc);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
                 });
-                for(const mesh of [trunks,crowns]){mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=!IS_MOBILE_DEVICE;mesh.receiveShadow=false;mesh.computeBoundingSphere();farmGroup.add(mesh);}
+                for(const mesh of [trunks,crowns]){mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=!IS_MOBILE_DEVICE;mesh.receiveShadow=false;mesh.frustumCulled=false;farmGroup.add(mesh);}
             }
             for(let i=0;i<32;i++){
                 const angle=i*2.39996+.8,dist=184+Math.random()*95,scale=.72+Math.random()*.55;
@@ -4259,7 +4259,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const pinesData=pineBuckets[sector];if(!pinesData.length)continue;
                 const pines=new THREE.InstancedMesh(new THREE.ConeGeometry(3.3,9,6),pineMat,pinesData.length);
                 pinesData.forEach((p,i)=>{const y=farmGroundAt(p.x,p.z);dummy.position.set(p.x,y+4.3*p.scale,p.z);dummy.rotation.set(0,p.angle,0);dummy.scale.set(p.scale,p.scale,p.scale);dummy.updateMatrix();pines.setMatrixAt(i,dummy.matrix);});
-                pines.instanceMatrix.needsUpdate=true;pines.castShadow=false;pines.receiveShadow=false;pines.computeBoundingSphere();farmGroup.add(pines);
+                pines.instanceMatrix.needsUpdate=true;pines.castShadow=false;pines.receiveShadow=false;pines.frustumCulled=false;farmGroup.add(pines);
             }
             const grassMat=new THREE.MeshLambertMaterial({color:0x4e8a39});
             const flowerMat=new THREE.MeshBasicMaterial({color:0xf5e7bd});
@@ -4289,13 +4289,13 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const bin=new THREE.Mesh(new THREE.BoxGeometry(4.1,2.3,3.8),new THREE.MeshLambertMaterial({color:0x775538}));bin.position.set(x,y+1.15,z);farmGroup.add(bin);
                 const items=new THREE.InstancedMesh(new THREE.BoxGeometry(.82,.72,.82),new THREE.MeshLambertMaterial({color:FARM_GOODS[type].color}),60),dummy=new THREE.Object3D();
                 for(let i=0;i<60;i++){const col=i%5,row=Math.floor(i/5)%4,layer=Math.floor(i/20);dummy.position.set(x-1.4+col*.7,y+2.1+layer*.68,z-1.2+row*.78);dummy.rotation.y=(i%3)*.18;dummy.updateMatrix();items.setMatrixAt(i,dummy.matrix);}
-                items.count=0;items.instanceMatrix.needsUpdate=true;items.computeBoundingSphere();farmGroup.add(items);farmStorageVisuals[type]=items;farmStorageBins[type]=bin;
+                items.count=0;items.instanceMatrix.needsUpdate=true;items.frustumCulled=false;farmGroup.add(items);farmStorageVisuals[type]=items;farmStorageBins[type]=bin;
             });
             const fieldY=farmGroundAt(FARM_CROP_POS.x,FARM_CROP_POS.z),soil=new THREE.Mesh(new THREE.CircleGeometry(28,32),new THREE.MeshLambertMaterial({color:0x775438}));
             soil.rotation.x=-Math.PI/2;soil.position.set(FARM_CROP_POS.x,fieldY+.09,FARM_CROP_POS.z);farmGroup.add(soil);
             const crops=new THREE.InstancedMesh(new THREE.ConeGeometry(.55,3.8,5),new THREE.MeshLambertMaterial({color:0x5b9b3d}),42),dummy=new THREE.Object3D();
             for(let i=0;i<42;i++){const x=FARM_CROP_POS.x-15+(i%7)*5,z=FARM_CROP_POS.z-12+Math.floor(i/7)*4,y=farmGroundAt(x,z);dummy.position.set(x,y+1.9,z);dummy.rotation.z=(Math.random()-.5)*.18;dummy.scale.set(.75,1,.75);dummy.updateMatrix();crops.setMatrixAt(i,dummy.matrix);}
-            crops.instanceMatrix.needsUpdate=true;crops.castShadow=false;crops.computeBoundingSphere();farmGroup.add(crops);
+            crops.instanceMatrix.needsUpdate=true;crops.castShadow=false;crops.frustumCulled=false;farmGroup.add(crops);
             farmGroup.add(createFarmSign('CULTIVO',FARM_CROP_POS.x,fieldY+8,FARM_CROP_POS.z-22));
             const coopY=farmGroundAt(FARM_COOP_POS.x,FARM_COOP_POS.z),coop=new THREE.Group();
             makeFarmBox(coop,0,0,0,12,6,9,new THREE.MeshLambertMaterial({color:0xd1b38a}));
@@ -4304,7 +4304,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             coop.position.set(FARM_COOP_POS.x,coopY,FARM_COOP_POS.z);farmGroup.add(coop);farmGroup.add(createFarmSign('GALLINERO',FARM_COOP_POS.x,coopY+10,FARM_COOP_POS.z-7));
             const eggs=new THREE.InstancedMesh(new THREE.SphereGeometry(.38,9,7),new THREE.MeshLambertMaterial({color:0xf4e9d0}),8);
             for(let i=0;i<8;i++){dummy.position.set(FARM_COOP_POS.x-4+(i%4)*2.5,coopY+1.3,FARM_COOP_POS.z+7+Math.floor(i/4)*1.2);dummy.scale.set(1,.78,1);dummy.updateMatrix();eggs.setMatrixAt(i,dummy.matrix);}
-            eggs.instanceMatrix.needsUpdate=true;eggs.computeBoundingSphere();farmGroup.add(eggs);
+            eggs.instanceMatrix.needsUpdate=true;eggs.frustumCulled=false;farmGroup.add(eggs);
             const wellY=farmGroundAt(FARM_WELL_POS.x,FARM_WELL_POS.z),well=new THREE.Group();
             const base=new THREE.Mesh(new THREE.CylinderGeometry(4.2,4.8,2.4,10),new THREE.MeshLambertMaterial({color:0x8b7a62}));base.position.y=1.2;well.add(base);
             const water=new THREE.Mesh(new THREE.CircleGeometry(3.2,18),new THREE.MeshBasicMaterial({color:0x3e9fca}));water.rotation.x=-Math.PI/2;water.position.y=2.48;well.add(water);
@@ -4332,7 +4332,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 makeFarmFence(farmDefenseGroup,x1,z1,x2,z1,wood);makeFarmFence(farmDefenseGroup,x2,z1,x2,z2,wood);makeFarmFence(farmDefenseGroup,x2,z2,x1,z2,wood);makeFarmFence(farmDefenseGroup,x1,z2,x1,z1+7,wood);}
         }
         function refreshFarmStorageVisuals(){
-            Object.keys(farmStorageVisuals).forEach(type=>{const mesh=farmStorageVisuals[type];if(mesh){mesh.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));mesh.instanceMatrix.needsUpdate=true;mesh.computeBoundingSphere();}});
+            Object.keys(farmStorageVisuals).forEach(type=>{const mesh=farmStorageVisuals[type];if(mesh){mesh.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));mesh.instanceMatrix.needsUpdate=true;mesh.frustumCulled=false;}});
         }
         function createFarmWorld(){
             deformFarmTerrain();
