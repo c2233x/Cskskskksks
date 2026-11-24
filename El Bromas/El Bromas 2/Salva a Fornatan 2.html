@@ -3179,7 +3179,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const p=smallPenes[i]; if(!p || !p.parent || p.userData?.health<=0) continue;
                 if(applyCarImpact(p,car,car.userData.speed) && p.userData.health<=0){
                     if(p.userData.sign) dropProtesterSign(p,getTerrainY(p.position.x,p.position.z,p.position.y));
-                    scene.remove(p); smallPenes.splice(i,1); onPeneKilled();
+                    scene.remove(p); smallPenes.splice(i,1); onPeneKilled(p);
                 }
             }
             if(Array.isArray(activeMiniBosses)) for(const mb of activeMiniBosses){
@@ -3603,7 +3603,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                             p.userData.health -= (25 + bonusDamage);
                             if (p.userData.health <= 0) {
                                 if (p.userData.sign) dropProtesterSign(p, getTerrainY(p.position.x, p.position.z, p.position.y));
-                                scene.remove(p); smallPenes.splice(i, 1); onPeneKilled();
+                                scene.remove(p); smallPenes.splice(i,1); onPeneKilled(p);
                             }
                         }
                     }
@@ -4028,8 +4028,15 @@ function removeCarRadioStation(index, reason='Sin señal'){
         
         function updatePeneCountUI() { const el = document.getElementById('peneCountInfo'); if (el) el.textContent = storyModeActive ? `🤖 Guardianes: ${smallPenes.length}` : `🤖 Guardianes: ${smallPenes.length} | Desactivados: ${totalPenesKilled}`; }
         
-        function onPeneKilled() {
+        function onPeneKilled(enemy=null) {
             totalPenesKilled++; changeAura(10); updatePeneCountUI();
+            if(storyModeActive && enemy && enemy.userData && enemy.userData.farmRaider){
+                farmRaidKillsTotal++;farmRaidKillCarry++;
+                if(farmRaidKillCarry>=2){farmRaidKillCarry-=2;storyMoney+=5;updateFarmMoneyLabel();showToast('bonificacion de defensa: +$5');}
+                const remaining=smallPenes.some(p=>p&&p.userData&&p.userData.farmRaider);
+                if(farmRaidActive&&!remaining)farmFinishNightRaid();
+                saveStoryProgress();return;
+            }
             if(storyModeActive && storyStage===2 && storyDefenseActive && smallPenes.length===0){
                 storyAdvanceTo(3,'EL GUARDIÁN HA APARECIDO','El refugio está protegido, pero una máquina antigua controla la tormenta. Derrota al Guardián para encontrar la estación donde está Fornatan.','🛡️');
                 return;
@@ -4040,7 +4047,6 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 playRisaSound(); setTimeout(() => { if (waveActive) spawnNextWave(); }, 2000);
             }
         }
-
         function createPosterTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 512; canvas.height = 512; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, 512, 512);
             if (faceTextureUrl && faceImageObj.complete) { ctx.drawImage(faceImageObj, 0, 0, 512, 512); } else { ctx.fillStyle = '#ffaa00'; ctx.fillRect(100, 100, 312, 312); ctx.fillStyle = '#000'; ctx.font = '50px Arial'; ctx.fillText('CORNATAN', 120, 256); }
@@ -5077,7 +5083,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                         const en = smallPenes[j]; if (en.userData.health <= 0) continue;
                         if (p.position.distanceTo(en.position) < 4.0) {
                             en.userData.health -= 25; u.hasHit = true;
-                            if (en.userData.health <= 0) { if (en.userData.sign) dropProtesterSign(en, tY); scene.remove(en); smallPenes.splice(j, 1); onPeneKilled(); } break;
+                            if (en.userData.health <= 0) { if (en.userData.sign) dropProtesterSign(en, tY); scene.remove(en); smallPenes.splice(j,1); onPeneKilled(en); } break;
                         }
                     }
                 }
@@ -5162,7 +5168,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                         const p = smallPenes[j]; if (p.userData.health <= 0) continue;
                         if (c.position.distanceTo(p.position) < 4.0) {
                             p.userData.health -= 32; u.hasHit = true;
-                            if (p.userData.health <= 0) { if (p.userData.sign) dropProtesterSign(p, tY); scene.remove(p); smallPenes.splice(j, 1); onPeneKilled(); } break;
+                            if (p.userData.health <= 0) { if (p.userData.sign) dropProtesterSign(p, tY); scene.remove(p); smallPenes.splice(j,1); onPeneKilled(p); } break;
                         }
                     }
                 }
@@ -5180,7 +5186,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                         const p = smallPenes[j]; if (p.userData.health <= 0) continue;
                         if (p.position.distanceTo(s.position) < s.userData.damageRadius) {
                             p.userData.health -= 4;
-                            if (p.userData.health <= 0) { if (p.userData.sign) dropProtesterSign(p, getTerrainY(p.position.x, p.position.z, p.position.y)); scene.remove(p); smallPenes.splice(j, 1); onPeneKilled(); }
+                            if (p.userData.health <= 0) { if (p.userData.sign) dropProtesterSign(p, getTerrainY(p.position.x, p.position.z, p.position.y)); scene.remove(p); smallPenes.splice(j,1); onPeneKilled(p); }
                         }
                     }
                     if (boss && boss.userData.health > 0) { if (boss.position.distanceTo(s.position) < s.userData.damageRadius + (boss.userData.isGiant ? 8 : 2)) { boss.userData.health -= 2; updateBossHealth(); } }
@@ -5198,8 +5204,10 @@ function removeCarRadioStation(index, reason='Sin señal'){
                     const p = smallPenes[i]; let pty = getTerrainY(p.position.x, p.position.z, p.position.y);
                     if (p.userData.health <= 0) {
                         if (p.userData.sign) dropProtesterSign(p, pty);
-                        scene.remove(p); smallPenes.splice(i, 1); onPeneKilled(); continue;
+                        scene.remove(p); smallPenes.splice(i,1); onPeneKilled(p); continue;
                     }
+
+                    if(updateFarmRaider(p,pty)) continue;
 
                     if (waveNumber >= 16 && Math.random() < 0.002 && !p.userData.flyTimer && !p.userData.isLeaping) { p.userData.flyTimer = 300; }
                     if (p.userData.flyTimer > 0) { pty += 6; p.userData.flyTimer--; p.position.y += Math.sin(p.userData.flyTimer * 0.1) * 0.05; }
@@ -5250,7 +5258,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 }
             }
             
-            timeOfDay += 0.000015; if (timeOfDay > 1) timeOfDay = 0; updateDayNight();
+            timeOfDay += 0.000015; if (timeOfDay > 1) timeOfDay = 0; updateDayNight(); updateFarmNightRaid();
             
             function createEpicSpaceStars() {
                 if (epicSpaceStars || !scene) return;
