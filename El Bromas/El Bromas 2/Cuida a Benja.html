@@ -395,6 +395,34 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmQuickActions button{border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:7px 10px;background:rgba(10,23,35,.88);color:#fff;font-size:10px;font-weight:950;box-shadow:0 3px 12px rgba(0,0,0,.28);touch-action:manipulation}
 #farmQuickActions button.shop{background:#865425}#farmQuickActions button.store{background:#36553c}#farmQuickActions button.jobs{background:#36517d}#farmQuickActions button.travel{background:#965024}
 #farmQuickActions button:active{transform:scale(.96)}
+/* HUD de Benja ordenado sobre el HUD de Cornatan */
+#farmBenjaHud{top:auto!important;left:14px!important;bottom:207px!important;transform:none!important;width:min(226px,calc(100vw - 185px));min-width:190px;display:none;flex-direction:column;align-items:stretch;gap:5px;padding:7px 9px;z-index:56}
+#farmBenjaHudTop{display:flex;align-items:center;justify-content:space-between;gap:7px;font-size:10px;font-weight:950}
+.farmBenjaStat{display:flex;align-items:center;gap:6px}
+.farmBenjaStat small{width:36px;flex:none;font-size:8px;font-weight:900;color:#f7d9ae}
+#farmBenjaHealthTrack,#farmBenjaHungerTrack{height:7px;flex:1;min-width:55px;border-radius:9px;overflow:hidden;background:#352a27;border:1px solid rgba(255,255,255,.32)}
+#farmBenjaHungerFill{height:100%;width:85%;background:linear-gradient(90deg,#e5ad43,#ff7040);transition:width .2s}
+#farmBenjaHealthText,#farmBenjaHungerText{width:37px;text-align:right;font-size:8px}
+#farmInventoryPanel,#farmTVPanel,#cityJobPanel{touch-action:pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+#farmInventoryPanel{max-height:86vh;max-height:86dvh;overflow-y:auto;touch-action:pan-y}
+#farmInventoryButtons{max-height:48vh;max-height:48dvh;overflow-y:auto;touch-action:pan-y}
+#farmTVPanel{position:fixed;left:50%;top:5%;transform:translateX(-50%);z-index:1520;display:none;flex-direction:column;gap:9px;width:min(760px,94vw);max-height:90vh;max-height:90dvh;overflow-y:auto;padding:12px;border:2px solid #d8b36d;border-radius:16px;background:linear-gradient(145deg,rgba(17,25,26,.98),rgba(5,12,17,.99));color:#fff;box-shadow:0 18px 50px rgba(0,0,0,.7)}
+#farmTVHeader{display:flex;align-items:center;justify-content:space-between;gap:8px;color:#ffe0a0;font-size:14px;font-weight:950}
+#farmTVHeader button,#farmTVOpenOfficial{border:0;border-radius:9px;padding:8px 11px;background:#79512e;color:#fff;font-weight:900}
+#farmTVScreenShell{position:relative;width:100%;aspect-ratio:16/9;min-height:150px;background:#000;border:4px solid #4a3321;border-radius:9px;overflow:hidden}
+#farmTVFrame{display:block;width:100%;height:100%;border:0;background:#000}
+#farmTVHint{font-size:10px;line-height:1.35;color:#e8d5b7}
+#farmTVChannels{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:6px}
+#farmTVChannels button{min-height:42px;border:1px solid #7d714f;border-radius:9px;padding:7px;background:#263b35;color:#fff;font-size:10px;font-weight:900;text-align:left}
+#farmTVChannels button.active{background:#84602d;border-color:#ffdd9a}
+#farmTVOpenOfficial{width:100%;background:#315b76}
+#mapTravelOverlay{position:fixed;inset:0;z-index:1800;display:none;align-items:center;justify-content:center;flex-direction:column;gap:13px;background:radial-gradient(ellipse at center,rgba(33,72,89,.96),rgba(1,7,12,.99) 72%);color:#fff;text-align:center;pointer-events:all}
+#mapTravelOverlay.active{display:flex;animation:mapTravelPulse 1.1s ease-in-out infinite alternate}
+#mapTravelTitle{font-size:clamp(23px,5vw,42px);font-weight:1000;letter-spacing:.08em;text-shadow:0 4px 20px #000}
+#mapTravelSubtitle{font-size:13px;color:#f3d9a6;font-weight:800}
+@keyframes mapTravelPulse{from{opacity:.78}to{opacity:1}}
+@media(max-width:600px){#farmBenjaHud{bottom:204px!important;width:190px;min-width:180px;padding:6px 7px}#farmTVPanel{top:3%;max-height:94dvh;padding:9px}#farmTVChannels{grid-template-columns:1fr 1fr}}
+
 #farmSubtitles{position:fixed;left:50%;bottom:18px;transform:translateX(-50%);z-index:1250;display:none;width:min(680px,88vw);padding:9px 14px;border-radius:12px;border:1px solid rgba(255,223,151,.7);background:rgba(4,10,17,.88);color:#fff;text-align:center;font-size:13px;line-height:1.45;font-weight:850;text-shadow:0 2px 2px #000;pointer-events:none;white-space:pre-line}
 #cityJobPanel{position:fixed;left:50%;top:8%;transform:translateX(-50%);z-index:1510;display:none;width:min(440px,92vw);max-height:82vh;max-height:82dvh;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px;border:2px solid #79b8f2;border-radius:17px;background:rgba(7,16,30,.97);color:#fff;touch-action:pan-y}
 #cityJobPanel h2{margin:0 0 8px;color:#a9d9ff;font-size:17px}
@@ -450,17 +478,17 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="statusText">Listo</div>
 <div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
 <div id="storyGuide"><div id="storyGuideArrow">⬆</div><div id="storyGuideText">OBJETIVO</div></div>
-<div id="farmBenjaHud"><span>🐷 BENJA</span><div id="farmBenjaHealthTrack"><div id="farmBenjaHealthFill"></div></div><small id="farmBenjaHealthText">100%</small><small id="farmBenjaHungerText">HAMBRE 100%</small></div>
+<div id="farmBenjaHud">
+<div id="farmBenjaHudTop"><span>🐷 BENJA</span><span>ESTADO</span></div>
+<div class="farmBenjaStat"><small>VIDA</small><div id="farmBenjaHealthTrack"><div id="farmBenjaHealthFill"></div></div><small id="farmBenjaHealthText">100%</small></div>
+<div class="farmBenjaStat"><small>HAMBRE</small><div id="farmBenjaHungerTrack"><div id="farmBenjaHungerFill"></div></div><small id="farmBenjaHungerText">85%</small></div>
+</div>
 <div id="farmInventoryPanel" role="dialog" aria-label="Inventario de la granja">
 <div id="farmInventoryHeader"><b id="farmInventoryTitle">ALMACEN DE LA GRANJA</b><button type="button" data-farm-action="close">✕</button></div>
 <div id="farmInventoryMoney"></div><div id="farmInventorySummary"></div><div id="farmInventoryButtons"></div>
 <div id="farmInventoryHint">los productos guardados se quedan en tu partida</div></div>
 <div id="farmQuickActions">
-<button id="farmQuickShop" class="shop" type="button">TIENDA</button>
-<button id="farmQuickWarehouse" class="store" type="button">ALMACEN</button>
 <button id="farmQuickJobs" class="jobs" type="button" style="display:none">TRABAJOS</button>
-<button id="farmGoCity" class="travel" type="button">IR A CIUDAD</button>
-<button id="cityBackFarm" class="travel" type="button">VOLVER A GRANJA</button>
 </div>
 <div id="farmSubtitles" aria-live="polite"></div>
 <div id="cityJobPanel" role="dialog" aria-label="Trabajos de la ciudad">
@@ -469,13 +497,21 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="cityJobList"></div>
 <button id="cityJobClose" type="button">CERRAR</button>
 </div>
+<div id="farmTVPanel" role="dialog" aria-label="Televisión de la granja">
+  <div id="farmTVHeader"><span>📺 TELEVISIÓN · CANALES</span><button id="farmTVClose" type="button">✕</button></div>
+  <div id="farmTVScreenShell"><iframe id="farmTVFrame" title="Canal de televisión" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>
+  <div id="farmTVHint">Selecciona un canal. Algunos operadores bloquean la reproducción dentro del juego; usa «ABRIR CANAL OFICIAL» cuando ocurra.</div>
+  <div id="farmTVChannels"></div>
+  <button id="farmTVOpenOfficial" type="button">ABRIR CANAL OFICIAL</button>
+</div>
+<div id="mapTravelOverlay"><div id="mapTravelTitle">RUMBO A LA CIUDAD</div><div id="mapTravelSubtitle">Preparando el viaje…</div></div>
 <div id="cinematicLetterTop"><span>CUIDA A BENJA</span></div><div id="cinematicLetterBottom"><span>LA GRANJA DE BENJA</span></div>
 <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
 <div id="meteorRainBar"><div id="meteorRainFill"></div></div>
 <div id="meteorRainLabel" aria-hidden="true"></div>
 <div id="bossName">🛡️ GUARDIÁN DE LA TORMENTA</div>
 <div id="playerHealthBar"><div id="playerHealthFill"></div></div>
-<div id="playerHealthLabel">🧭 Explorador</div>
+<div id="playerHealthLabel">🧭 Cornatan</div>
 <div id="auraBarContainer"><div id="auraBarCenter"></div><div id="auraFillPositive"></div><div id="auraFillNegative"></div></div>
 <div id="auraLabel">💜 Aura: 0</div>
 <div id="semenBar"><div id="semenFill"></div></div>
@@ -684,7 +720,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Granja.js?v=1.4.0"></script>
-<script src="https://raw.githubusercontent.com/c2233x/Cskskskksks/main/El%20Bromas/El%20Bromas%202/Mapas/Ciudad.js?v=1.4.0"></script>
+<!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
 window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason, msg=(r&&r.message?String(r.message):String(r||'')); if(/play\(\) request was interrupted|The play\(\) request was interrupted|AbortError/i.test(msg)) { e.preventDefault(); return; } var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error de inicio: '+msg; } } catch(_){} });
