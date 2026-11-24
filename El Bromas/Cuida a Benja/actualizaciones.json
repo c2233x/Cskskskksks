@@ -1,7 +1,7 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.6.9",
+  "version": "1.7.0",
   "updates": [
     {
       "version": "1.0",
@@ -243,6 +243,17 @@
         "El medidor se denomina Barro y mantiene su lógica de juego con efectos de color tierra.",
         "Se añade iluminación suave del televisor, antorchas y farolas de ciudad al anochecer.",
         "Se optimiza Android reduciendo terreno, resolución dinámica, árboles y tramos de carretera."
+      ]
+    },
+    {
+      "version": "1.7.0",
+      "title": "Inicio y carpetas independientes",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Cuida a Benja pasa a la raíz del repositorio, fuera de El Bromas, conservando sus mapas, sonidos y archivos de guardado.",
+        "El cargador descarga únicamente los recursos de Cuida a Benja para evitar descargar toda la carpeta El Bromas y quedarse detenido durante el inicio.",
+        "Se actualizan las rutas de Granja.js, Ciudad.js, Version.txt y del audio ambiente.",
+        "Se reserva Sonidos/ambiente/ para el MP3 original de chicharras, con la ruta chicharra_original.mp3."
       ]
     }
   ]
