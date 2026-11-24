@@ -1,7 +1,7 @@
 {
   "game": "Salva a Fornatan 2",
   "edition": "El Bromas 2",
-  "version": "1.2",
+  "version": "1.3",
   "updates": [
     {
       "version": "1.0",
@@ -40,6 +40,21 @@
         "Se agrego un perfil grafico inicial para Android: resolucion limitada, sombras ligeras apagadas por defecto, distancia de dibujo menor y resolucion dinamica.",
         "Los ajustes graficos de esta entrega ahora se guardan separados de Salva a cornatan original.",
         "Nueva portada con el personaje principal cuidando y alimentando a Benja."
+      ]
+    },
+    {
+      "version": "1.3",
+      "title": "La granja cobra vida",
+      "date": "23 de noviembre de 2026",
+      "changes": [
+        "La flecha de objetivo ahora se calcula desde la direccion real de la camara.",
+        "El charco de barro de Benja tiene mayor superficie y contraste para distinguirse desde lejos.",
+        "La secuencia repetitiva se cambio por ocho trabajos: cosecha, huevos, entrega, refuerzo del corral, agua, tractor, alimentar a Benja y ordenar el almacen.",
+        "El puesto permite comprar maiz, trigo, zanahorias, heno, pienso y madera.",
+        "El almacen conserva cantidades separadas por producto, permite guardar toda la carga y retirar unidades; los montones visibles crecen con las existencias.",
+        "Durante la noche aparecen intrusos que avanzan hacia Benja y le bajan la salud; cada dos intrusos derrotados dan $5.",
+        "Se agrego un indicador de salud para Benja y las defensas del corral reducen el daño recibido.",
+        "La colision visual por camara usa frustum culling junto con la distancia de los grupos del mundo; la montana ahora nace de la deformacion del terreno."
       ]
     }
   ]
