@@ -5150,23 +5150,29 @@ async function ensureCityWorldLoaded(){
   return;
  }
  cityJobBoard=null;
- cityWorldGroup=new THREE.Group();cityWorldGroup.name='CiudadPrincipal_CargaDiferida';
- const targetGroup=cityWorldGroup,originalAdd=scene.add;
- scene.add=function(...objects){targetGroup.add(...objects);return scene;};
+ const targetGroup=new THREE.Group();targetGroup.name='CiudadPrincipal_CargaDiferida';
+ const sceneChildrenBefore=new Set(scene.children);
+ cityWorldGroup=targetGroup;
  try{
   if(!CITY_MAP_CONFIG||typeof CITY_MAP_CONFIG.buildWorld!=='function')throw new Error('Ciudad.js no contiene un constructor válido.');
+  // Construye usando el scene normal y después agrupa todos los objetos nuevos.
+  // Así no se reemplaza temporalmente scene.add(), que podía romper la creación de coches y luces en algunos WebView.
   CITY_MAP_CONFIG.buildWorld({
    createRoads,createDrivableCars,createBuildings,createStreetLamps,createCityProps,
    initDrones,createBillboards,createCityJobBoard,applyBillboardTextures
   });
-  if(!targetGroup.children.length)throw new Error('El archivo de ciudad no creó ningún objeto.');
+  const created=scene.children.filter(object=>!sceneChildrenBefore.has(object));
+  created.forEach(object=>{scene.remove(object);targetGroup.add(object);});
+  if(!targetGroup.children.length)throw new Error('El constructor terminó sin crear objetos para la ciudad.');
+  scene.add(targetGroup);cityWorldGroup=targetGroup;cityWorldLoaded=true;
+  rebuildCarCollisionGrid();
  }catch(error){
-  scene.add=originalAdd;
-  try{unloadCityWorld();}catch(_){cityWorldGroup=null;cityWorldLoaded=false;cityJobBoard=null;}
+  // Recoge cualquier objeto parcial antes de liberar los recursos de la ciudad.
+  scene.children.slice().filter(object=>!sceneChildrenBefore.has(object)).forEach(object=>{scene.remove(object);targetGroup.add(object);});
+  cityWorldGroup=targetGroup;cityWorldLoaded=false;
+  try{unloadCityWorld();}catch(_){if(targetGroup.parent)targetGroup.parent.remove(targetGroup);cityWorldGroup=null;cityJobBoard=null;}
   throw new Error('No se pudo construir la ciudad: '+(error&&error.message?error.message:String(error)));
- }finally{scene.add=originalAdd;}
- scene.add(targetGroup);cityWorldGroup=targetGroup;cityWorldLoaded=true;
- rebuildCarCollisionGrid();
+ }
 }
 function unloadCityWorld(){
  if(!cityWorldGroup)return;
