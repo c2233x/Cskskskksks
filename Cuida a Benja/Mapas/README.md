@@ -9,3 +9,8 @@ Los archivos definen datos; no duplican el motor, los controles, los vehiculos n
 
 ## Construcción de la granja
 Las piezas compradas se colocan manualmente en la granja con vista previa, giro, confirmación y colisiones. El progreso se guarda en el dispositivo. La ciudad no inicia drones de reconstrucción; los objetos del mapa deben quedar dentro del grupo de ciudad para que se descarguen al regresar.
+
+## Huerto de manzanas
+- Punto `fruitTrees` para la nueva misión de cosecha.
+- Las manzanas se guardan como producto acumulable; se pueden retirar y lanzar a Benja como alimento.
+- La misión se integra al ciclo sin borrar órdenes antiguas guardadas.

@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.7.2**
+**Version actual: 1.7.3**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -135,3 +135,9 @@ Ruta de publicación: `Cuida a Benja/Sonidos/ambiente/chicharra_original.mp3`.
 - El juego ya no descarga el ZIP de todo el repositorio cuando falla la API.
 - La configuración de la granja está integrada en el HTML y no depende de una petición externa bloqueante.
 - El inicio descarga solo los recursos de `Cuida a Benja/`.
+
+## Actualización 1.7.3 · Huerto y cosecha de manzanas
+- Se incorpora un pequeño huerto low-poly junto al árbol central, con frutos visibles y un marcador de misión.
+- La misión entrega cinco manzanas y $16. Las manzanas pueden guardarse, retirarse y lanzarse a Benja como alimento.
+- La migración del orden de misiones añade el nuevo encargo a partidas antiguas y conserva el índice/progreso, el dinero, el peso, la carga, el almacén y las mejoras.
+- No se añaden NPC trabajadores ni se modifica el mapa de ciudad, los vehículos o el juego original.

@@ -1,8 +1,18 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.2",
+  "version": "1.7.3",
   "updates": [
+    {
+      "version": "1.7.3",
+      "title": "Huerto y cosecha de manzanas",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Nuevo huerto low-poly alrededor del árbol del rancho, con manzanas visibles y punto de misión separado en Granja.js.",
+        "La misión de cosecha entrega cinco manzanas y $16; las manzanas se acumulan en carga y almacén, y cuentan como alimento lanzable para Benja.",
+        "Las partidas anteriores migran su lista de misiones añadiendo el nuevo encargo sin reiniciar dinero, peso, inventario ni construcciones guardadas."
+      ]
+    },
     {
       "version": "1.7.2",
       "title": "Arranque fiable en Android",

@@ -783,7 +783,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="tuboBigFireBtn">🔫<br/>DISPARAR</div>
 <div id="morteroTimer">Mortero: 20s</div>
 <div id="crosshair"></div>
-<script src="./three.min.js?v=1.7.2"></script>
+<script src="./three.min.js?v=1.7.3"></script>
 <script>
 // Cuida a Benja - datos del mapa de la granja.
 // El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
@@ -818,6 +818,7 @@ window.CUIDA_BENJA_FARM_MAP = {
   well: { x: -390, z: -440 },
   tractor: { x: -448, z: -286 },
   repair: { x: -286, z: -354 },
+  fruitTrees: { x: -266, z: -284 },
   cityExitRadius: 235,
   cityGate: { x: -135, z: -330 },
   maxBenjaWeight: 100,
@@ -837,13 +838,15 @@ window.CUIDA_BENJA_FARM_MAP = {
     muro_ladrillo: { label: "Muro de ladrillo", price: 42, color: 0x9a5542, food: false, icon: "🧱", buyable: true, buildable: true, model: "brick-wall" },
     puerta: { label: "Puerta de madera", price: 32, color: 0x754727, food: false, icon: "🚪", buyable: true, buildable: true, model: "door" },
     ventana: { label: "Ventana con cristal", price: 24, color: 0x8bc8dc, food: false, icon: "🪟", buyable: true, buildable: true, model: "window" },
-    techo: { label: "Panel de tejado", price: 30, color: 0x765044, food: false, icon: "🏠", buyable: true, buildable: true, model: "roof" }
+    techo: { label: "Panel de tejado", price: 30, color: 0x765044, food: false, icon: "🏠", buyable: true, buildable: true, model: "roof" },
+    manzanas: { label: "Manzanas", price: 0, color: 0xc83c36, food: true, icon: "🍎", buyable: false },
   },
-  missionOrder: ["harvest", "eggs", "delivery", "repair", "water", "tractor", "feed", "warehouse"],
+  missionOrder: ["harvest", "eggs", "delivery", "orchard", "repair", "water", "tractor", "feed", "warehouse"],
   missions: {
     harvest: { title: "COSECHA EL CAMPO", target: "crops", label: "ve al cultivo", progress: "recoge verduras para el pedido", icon: "🥕" },
     eggs: { title: "RECOGE LOS HUEVOS", target: "coop", label: "ve al gallinero", progress: "revisa los nidos y recoge los huevos", icon: "🥚" },
     delivery: { title: "ENTREGA A LA CASA VECINA", target: "delivery", label: "lleva el pedido a la casa", progress: "entrega 2 verduras y 1 huevo", icon: "📦" },
+    orchard: { title: "COSECHA MANZANAS", target: "fruitTrees", label: "ve al huerto", progress: "recoge manzanas para Benja", icon: "🍎" },
     repair: { title: "REFUERZA EL CORRAL", target: "repair", label: "ve al corral", progress: "usa 2 maderas para reforzar la defensa", icon: "🪵" },
     water: { title: "LLENA EL BEBEDERO", target: "well", label: "ve al pozo", progress: "recoge agua limpia para la granja", icon: "💧" },
     tractor: { title: "PON EL TRACTOR A PUNTO", target: "tractor", label: "ve al tractor", progress: "revisa el tractor y prepara heno", icon: "🚜" },
@@ -896,15 +899,15 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const IS_MOBILE_DEVICE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'') || ((navigator.maxTouchPoints||0)>1 && Math.min(window.innerWidth||0,window.innerHeight||0)<=900);
         const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
-    crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},
+    crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
     tv:{x:-414,z:-365},flatRadius:245,ambientZones:[
         {id:'huerto',x:-220,z:-250,radius:62,insects:true},
         {id:'arboleda',x:-266,z:-284,radius:58,insects:true},
         {id:'pozo',x:-390,z:-440,radius:48,insects:false}
     ],
     cityExitRadius:235,cityGate:{x:-135,z:-330},saveWeightGoal:52,
-    goods:{maiz:{label:'Maíz',price:8,color:0xe3b949,food:true,icon:'🌽',buyable:true},trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true,icon:'🌾',buyable:true},zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true,icon:'🥕',buyable:true},heno:{label:'Heno',price:6,color:0xc4a24c,food:true,icon:'🌿',buyable:true},pienso:{label:'Pienso',price:12,color:0x8c7049,food:true,icon:'🫘',buyable:true},huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false,icon:'🥚',buyable:false},agua:{label:'Agua',price:0,color:0x5aa8d7,food:false,icon:'💧',buyable:false},madera:{label:'Madera',price:9,color:0x805536,food:false,icon:'🪵',buyable:true},balde:{label:'Balde resistente',price:18,color:0x7f9aa7,food:false,icon:'🪣',buyable:true,model:'bucket'},antorcha:{label:'Antorcha',price:22,color:0xd78332,food:false,icon:'🔥',buyable:true,buildable:true,model:'torch'},muro_madera:{label:'Muro de madera',price:28,color:0x8f633b,food:false,icon:'🪵',buyable:true,buildable:true,model:'wood-wall'},muro_ladrillo:{label:'Muro de ladrillo',price:42,color:0x9a5542,food:false,icon:'🧱',buyable:true,buildable:true,model:'brick-wall'},puerta:{label:'Puerta de madera',price:32,color:0x754727,food:false,icon:'🚪',buyable:true,buildable:true,model:'door'},ventana:{label:'Ventana con cristal',price:24,color:0x8bc8dc,food:false,icon:'🪟',buyable:true,buildable:true,model:'window'},techo:{label:'Panel de tejado',price:30,color:0x765044,food:false,icon:'🏠',buyable:true,buildable:true,model:'roof'}},
-    missionOrder:['harvest','eggs','delivery','repair','water','tractor','feed','warehouse']
+    goods:{maiz:{label:'Maíz',price:8,color:0xe3b949,food:true,icon:'🌽',buyable:true},trigo:{label:'Trigo',price:7,color:0xd8c27c,food:true,icon:'🌾',buyable:true},zanahoria:{label:'Zanahorias',price:10,color:0xe77a37,food:true,icon:'🥕',buyable:true},heno:{label:'Heno',price:6,color:0xc4a24c,food:true,icon:'🌿',buyable:true},pienso:{label:'Pienso',price:12,color:0x8c7049,food:true,icon:'🫘',buyable:true},huevos:{label:'Huevos',price:5,color:0xf2e8cb,food:false,icon:'🥚',buyable:false},agua:{label:'Agua',price:0,color:0x5aa8d7,food:false,icon:'💧',buyable:false},madera:{label:'Madera',price:9,color:0x805536,food:false,icon:'🪵',buyable:true},balde:{label:'Balde resistente',price:18,color:0x7f9aa7,food:false,icon:'🪣',buyable:true,model:'bucket'},antorcha:{label:'Antorcha',price:22,color:0xd78332,food:false,icon:'🔥',buyable:true,buildable:true,model:'torch'},muro_madera:{label:'Muro de madera',price:28,color:0x8f633b,food:false,icon:'🪵',buyable:true,buildable:true,model:'wood-wall'},muro_ladrillo:{label:'Muro de ladrillo',price:42,color:0x9a5542,food:false,icon:'🧱',buyable:true,buildable:true,model:'brick-wall'},puerta:{label:'Puerta de madera',price:32,color:0x754727,food:false,icon:'🚪',buyable:true,buildable:true,model:'door'},ventana:{label:'Ventana con cristal',price:24,color:0x8bc8dc,food:false,icon:'🪟',buyable:true,buildable:true,model:'window'},techo:{label:'Panel de tejado',price:30,color:0x765044,food:false,icon:'🏠',buyable:true,buildable:true,model:'roof'},manzanas:{label:'Manzanas',price:0,color:0xc83c36,food:true,icon:'🍎',buyable:false},},
+    missionOrder:['harvest','eggs','delivery','orchard','repair','water','tractor','feed','warehouse']
 };
 const FARM_CENTER=FARM_MAP_CONFIG.center;
 const FARM_PIG_POS=FARM_MAP_CONFIG.pig;
@@ -930,7 +933,7 @@ const FARM_MISSION_DATA=FARM_MAP_CONFIG.missions?
     {
         harvest:{title:'COSECHA EL CAMPO',target:FARM_CROP_POS,label:'ve al cultivo',progress:'recoge verduras para el pedido',icon:'🥕'},
         eggs:{title:'RECOGE LOS HUEVOS',target:FARM_COOP_POS,label:'ve al gallinero',progress:'revisa los nidos y recoge los huevos',icon:'🥚'},
-        delivery:{title:'ENTREGA A LA CASA VECINA',target:FARM_DELIVERY_POS,label:'lleva el pedido a la casa',progress:'entrega 2 verduras y 1 huevo',icon:'📦'},
+        delivery:{title:'ENTREGA A LA CASA VECINA',target:FARM_DELIVERY_POS,label:'lleva el pedido a la casa',progress:'entrega 2 verduras y 1 huevo',icon:'📦'},orchard:{title:'COSECHA MANZANAS',target:'fruitTrees',label:'ve al huerto',progress:'recoge manzanas para Benja',icon:'🍎'},
         repair:{title:'REFUERZA EL CORRAL',target:FARM_REPAIR_POS,label:'ve al corral',progress:'usa 2 maderas para reforzar la defensa',icon:'🪵'},
         water:{title:'LLENA EL BEBEDERO',target:FARM_WELL_POS,label:'ve al pozo',progress:'recoge agua limpia para la granja',icon:'💧'},
         tractor:{title:'PON EL TRACTOR A PUNTO',target:FARM_TRACTOR_POS,label:'ve al tractor',progress:'revisa el tractor y prepara heno',icon:'🚜'},
@@ -963,8 +966,8 @@ let farmRadioScanToken=0,farmRadioScanActive=false,farmRadioScanAudio=null,farmR
         let farmMissionHintWasVisible=false;
         let farmStorageVisuals={},farmStorageBins={},farmMissionDecor=[];
         let farmMissionOrder=FARM_MISSION_ORDER.slice(),farmMissionIndex=0,farmMissionCycle=0,farmMissionId='harvest';
-        let farmCarriedGoods={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0};
-        let farmWarehouseStock={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:6};
+        let farmCarriedGoods={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0,manzanas:0};
+        let farmWarehouseStock={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:6,manzanas:0};
         let farmInventoryPanelMode='',farmInventoryPanelBound=false,farmLastHudUpdate=0;
         let farmDefenseLevel=0,farmBenjaHealth=100,farmRaidActive=false,farmRaidTriggered=false,farmRaidNightWasActive=false;
 let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenjaLastCleanlinessTick=0;
@@ -4792,7 +4795,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 muro_ladrillo:new THREE.BoxGeometry(1.6,1.05,.38),
                 puerta:new THREE.BoxGeometry(1.1,1.55,.16),
                 ventana:new THREE.BoxGeometry(1.35,1.05,.16),
-                techo:new THREE.BoxGeometry(1.6,.22,1.15)
+                techo:new THREE.BoxGeometry(1.6,.22,1.15),
+                manzanas:new THREE.SphereGeometry(.48,8,6)
             };
             const itemMaterials={
                 maiz:new THREE.MeshStandardMaterial({color:0xe7bd39,roughness:.9}),
@@ -4809,7 +4813,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 muro_ladrillo:new THREE.MeshStandardMaterial({color:0x9a5542,roughness:.96}),
                 puerta:new THREE.MeshStandardMaterial({color:0x754727,roughness:.93}),
                 ventana:new THREE.MeshStandardMaterial({color:0x8bc8dc,transparent:true,opacity:.72,roughness:.2}),
-                techo:new THREE.MeshStandardMaterial({color:0x765044,roughness:.94})
+                techo:new THREE.MeshStandardMaterial({color:0x765044,roughness:.94}),
+                manzanas:new THREE.MeshStandardMaterial({color:0xc83c36,roughness:.72})
             };
             const types=Object.keys(FARM_GOODS),dummy=new THREE.Object3D();
             types.forEach((type,index)=>{
@@ -5211,9 +5216,23 @@ function removeCarRadioStation(index, reason='Sin señal'){
              createFarmRadio();
              createFarmDefensiveCorral();
             createFarmPonds();createFarmWaterStorage();createFarmPigsty();
-            const tx=FARM_CENTER.x+64,tz=FARM_CENTER.z+46,ty=farmGroundAt(tx,tz);
+            const orchardPoint=FARM_MAP_CONFIG.fruitTrees||{x:FARM_CENTER.x+64,z:FARM_CENTER.z+46};const tx=orchardPoint.x,tz=orchardPoint.z,ty=farmGroundAt(tx,tz);
             const trunk=new THREE.Mesh(new THREE.CylinderGeometry(1.2,1.6,12,8),darkWood);trunk.position.set(tx,ty+6,tz);trunk.castShadow=true;farmGroup.add(trunk);
             const leaves=new THREE.Mesh(new THREE.SphereGeometry(8,10,8),new THREE.MeshStandardMaterial({color:0x2f6635,roughness:1}));leaves.position.set(tx,ty+15,tz);leaves.castShadow=true;farmGroup.add(leaves);
+            const appleGeometry=new THREE.SphereGeometry(.5,8,6),appleMaterial=new THREE.MeshStandardMaterial({color:0xc83c36,roughness:.72});
+            const appleOffsets=[[-5,11,-2],[-2,13,4],[3,10,-5],[5,12,1],[0,14,5],[-6,9,5]];
+            appleOffsets.forEach(([dx,dy,dz])=>{const apple=new THREE.Mesh(appleGeometry,appleMaterial);apple.position.set(tx+dx,ty+dy,tz+dz);apple.scale.setScalar(.85);apple.castShadow=!IS_MOBILE_DEVICE;farmGroup.add(apple);});
+            const orchardLeafMaterial=new THREE.MeshStandardMaterial({color:0x4c8945,roughness:1});
+            function addOrchardTree(x,z,scale){
+                const gy=farmGroundAt(x,z),stem=new THREE.Mesh(new THREE.CylinderGeometry(.5,.72,6.2,7),darkWood);
+                stem.position.set(x,gy+3.1,z);stem.castShadow=!IS_MOBILE_DEVICE;farmGroup.add(stem);
+                const crown=new THREE.Mesh(new THREE.IcosahedronGeometry(4.2,1),orchardLeafMaterial);crown.position.set(x,gy+7.3,z);crown.scale.setScalar(scale);crown.castShadow=!IS_MOBILE_DEVICE;farmGroup.add(crown);
+                for(let i=0;i<4;i++){const angle=i*Math.PI/2,fruit=new THREE.Mesh(appleGeometry,appleMaterial);fruit.position.set(x+Math.cos(angle)*2.6*scale,gy+7.5*scale+(i%2)*1.2,z+Math.sin(angle)*2.6*scale);fruit.scale.setScalar(.82*scale);fruit.castShadow=!IS_MOBILE_DEVICE;farmGroup.add(fruit);}
+                addFarmCollider(x,z,1.8*scale,1.8*scale,0,'farm-fruit-tree',7.4*scale);
+            }
+            addOrchardTree(tx-13,tz+8,.78);addOrchardTree(tx+13,tz-8,.78);
+            addFarmCollider(tx,tz,2.1,2.1,0,'farm-fruit-tree',12);
+            farmGroup.add(createFarmSign('HUERTO',tx,ty+19,tz+11));
             createBenjaPig();farmRestorePlacedBuilds();
         }
         function removeFarmGuideMarker(){if(farmGuideMarker&&farmGuideMarker.parent)farmGuideMarker.parent.remove(farmGuideMarker);farmGuideMarker=null;}
@@ -5514,7 +5533,7 @@ function speakFarmLine(speaker,line){
  const stamp=farmLastSubtitleAt;window.setTimeout(()=>{if(box&&farmLastSubtitleAt===stamp)box.style.display='none';},Math.max(4200,Math.min(8500,line.length*65)));
 }
 function farmThrowFood(){
- if(!storyModeActive||farmCityMode||!benjaPig||!character)return false;const type=Object.keys(FARM_GOODS).find(k=>FARM_GOODS[k].food&&(farmCarriedGoods[k]||0)>0);
+ if(!storyModeActive||farmCityMode||!benjaPig||!character)return false;const type=['manzanas','maiz','trigo','zanahoria','heno','pienso'].find(k=>FARM_GOODS[k]&&FARM_GOODS[k].food&&(farmCarriedGoods[k]||0)>0);
  if(!type){showToast('no llevas comida. compra algo en la tienda o sacalo del almacen.');return true;}
  farmCarriedGoods[type]--;storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(.62,9,7),new THREE.MeshStandardMaterial({color:FARM_GOODS[type].color,roughness:.9}));
@@ -6161,8 +6180,8 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.7.1',
-   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.7.1'
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.7.3',
+   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.7.3'
   ];
   let lastError=null;
   for(const url of urls){
@@ -6361,8 +6380,8 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 farmWarehouseStock=Object.assign(farmDefaultGoods(),d.warehouse||{});
                 if(!d.warehouse&&storyFeedInventory>0)farmCarriedGoods.pienso=storyFeedInventory;
                 if(!d.warehouse)farmWarehouseStock.madera=Math.max(6,Number(farmWarehouseStock.madera)||0);
-                farmMissionOrder=Array.isArray(d.missionOrder)&&d.missionOrder.length?d.missionOrder.filter(id=>FARM_MISSION_DATA[id]):FARM_MISSION_ORDER.slice();
-                if(farmMissionOrder.length!==FARM_MISSION_ORDER.length)farmMissionOrder=FARM_MISSION_ORDER.slice();
+                const savedMissionOrder=Array.isArray(d.missionOrder)?d.missionOrder.filter((id,index,arr)=>FARM_MISSION_DATA[id]&&arr.indexOf(id)===index):[];
+                farmMissionOrder=savedMissionOrder.length?savedMissionOrder.concat(FARM_MISSION_ORDER.filter(id=>!savedMissionOrder.includes(id))):FARM_MISSION_ORDER.slice();
                 farmMissionIndex=Math.max(0,Math.min(farmMissionOrder.length-1,Number(d.missionIndex)||0));
                 farmMissionCycle=Math.max(0,Number(d.missionCycle)||0);farmMissionId=FARM_MISSION_DATA[d.missionId]?d.missionId:(farmMissionOrder[farmMissionIndex]||'harvest');
                 farmDefenseLevel=Math.max(0,Math.min(3,Number(d.defenseLevel)||0));
@@ -6382,7 +6401,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
             updateMissionUI();updateFarmMoneyLabel();saveStoryProgress();
         }
         function farmShuffleMissionDeck(){
-            const rest=['repair','water','tractor','feed','warehouse'];
+            const rest=['orchard','repair','water','tractor','feed','warehouse'];
             for(let i=rest.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[rest[i],rest[j]]=[rest[j],rest[i]];}
             farmMissionOrder=['harvest','eggs','delivery'].concat(rest);
             farmMissionIndex=0;farmMissionCycle++;
@@ -6423,6 +6442,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
         function farmHandleMissionAction(){
             const id=farmMissionId,now=performance.now();
             if(id==='harvest'){farmCarriedGoods.zanahoria+=3;farmCarriedGoods.maiz+=2;storyMoney+=18;storyWorkCount++;updateFarmMoneyLabel();farmCompleteMission('COSECHA LISTA','ya salieron las verduras. las voy a guardar para el pedido de la casa vecina.','🥕');}
+            else if(id==='orchard'){farmCarriedGoods.manzanas=(Number(farmCarriedGoods.manzanas)||0)+5;storyMoney+=16;storyWorkCount++;updateFarmMoneyLabel();farmCompleteMission('MANZANAS RECOGIDAS','ya tengo unas manzanas para Benja. vamos a guardar algunas y dejarle otras.','🍎');}
             else if(id==='eggs'){farmCarriedGoods.huevos+=4;storyMoney+=20;updateFarmMoneyLabel();farmCompleteMission('HUEVOS RECOGIDOS','los nidos estaban llenos. con esto podemos completar una entrega.','🥚');}
             else if(id==='delivery'){
                 const veg=(farmCarriedGoods.zanahoria||0)+(farmWarehouseStock.zanahoria||0),egg=(farmCarriedGoods.huevos||0)+(farmWarehouseStock.huevos||0);
