@@ -121,3 +121,10 @@ Ruta de publicación: `Cuida a Benja/Sonidos/ambiente/chicharra_original.mp3`.
 - La TV aporta una luz azul suave; las antorchas iluminan por la noche y las farolas de ciudad activan luces cálidas cercanas.
 - En Android se reducen los segmentos del terreno, la resolución dinámica, los árboles de ciudad y el número de tramos de carretera dibujados.
 - Los enemigos del modo de Benja conservan un diseño de guardianes robóticos de estilo low-poly, separado del diseño anatómico del juego anterior.
+
+
+## Actualización 1.7.0 · Inicio y carpetas independientes
+- El juego queda publicado en la raíz del repositorio, dentro de `Cuida a Benja/`, fuera de `El Bromas/`.
+- El cargador ahora descarga solo los archivos de `Cuida a Benja/` y deja de recorrer todos los recursos de `El Bromas/` durante el inicio.
+- Se actualizan las rutas de los mapas, la versión y el audio ambiente.
+- La carpeta `Sonidos/ambiente/` queda preparada para el MP3 original `chicharra_original.mp3`.
