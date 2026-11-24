@@ -372,6 +372,23 @@
 #cinematicLetterBottom span{font-size:11px;letter-spacing:.22em;color:#f2d18d;font-weight:900}
 body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicLetterBottom{height:8vh}
 </style>
+<style>
+#farmBenjaHud{position:fixed;top:215px;left:50%;transform:translateX(-50%);z-index:54;display:none;align-items:center;gap:8px;min-width:180px;padding:6px 10px;border-radius:12px;background:rgba(8,17,28,.84);border:1px solid rgba(255,190,120,.55);color:#fff;font-size:10px;font-weight:900;pointer-events:none}
+#farmBenjaHealthTrack{width:96px;height:8px;border-radius:9px;overflow:hidden;background:#362528;border:1px solid rgba(255,255,255,.4)}
+#farmBenjaHealthFill{height:100%;width:100%;background:linear-gradient(90deg,#54c953,#bcf46b);transition:width .2s}
+#farmBenjaHealthText{font-size:9px;color:#f9dcb4}
+#farmInventoryPanel{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:1500;display:none;width:min(360px,92vw);max-height:76vh;overflow:auto;padding:14px;border:2px solid #d5ac64;border-radius:17px;background:linear-gradient(150deg,rgba(24,31,28,.98),rgba(7,15,18,.98));box-shadow:0 16px 55px rgba(0,0,0,.72);color:#fff;touch-action:pan-y}
+#farmInventoryHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+#farmInventoryHeader b{font-size:14px;color:#ffdd9b}
+#farmInventoryHeader button{width:32px;height:32px;border:0;border-radius:9px;background:#8b3434;color:#fff;font-size:18px;font-weight:900}
+#farmInventoryMoney{font-size:12px;color:#ffe2a7;font-weight:900;margin-bottom:8px}
+#farmInventorySummary{font-size:11px;line-height:1.55;color:#e1e7dc;padding:8px;border-radius:9px;background:rgba(255,255,255,.06);white-space:pre-line}
+#farmInventoryButtons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}
+#farmInventoryButtons button{min-height:39px;padding:7px;border:1px solid #b68a4e;border-radius:9px;background:linear-gradient(145deg,#435a43,#26352a);color:#fff;font-size:11px;font-weight:900;touch-action:manipulation}
+#farmInventoryButtons button.primary{grid-column:1/-1;background:linear-gradient(145deg,#bb8741,#78502c);border-color:#ffd48e}
+#farmInventoryHint{font-size:9px;color:#a7b7a7;line-height:1.4;margin-top:10px;text-align:center}
+@media(max-width:600px){#farmBenjaHud{top:205px;transform:translateX(-50%) scale(.92)}#farmInventoryPanel{top:48%;padding:12px}}
+</style>
 </head>
 <body>
 <div id="accessGate" role="main" aria-label="Acceso al juego">
@@ -408,6 +425,11 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 <div id="statusText">Listo</div>
 <div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
 <div id="storyGuide"><div id="storyGuideArrow">⬆</div><div id="storyGuideText">OBJETIVO</div></div>
+<div id="farmBenjaHud"><span>🐷 BENJA</span><div id="farmBenjaHealthTrack"><div id="farmBenjaHealthFill"></div></div><small id="farmBenjaHealthText">100%</small></div>
+<div id="farmInventoryPanel" role="dialog" aria-label="Inventario de la granja">
+<div id="farmInventoryHeader"><b id="farmInventoryTitle">ALMACEN DE LA GRANJA</b><button type="button" data-farm-action="close">✕</button></div>
+<div id="farmInventoryMoney"></div><div id="farmInventorySummary"></div><div id="farmInventoryButtons"></div>
+<div id="farmInventoryHint">los productos guardados se quedan en tu partida</div></div>
 <div id="cinematicLetterTop"><span>SALVA A FORNATAN 2</span></div><div id="cinematicLetterBottom"><span>LA GRANJA DE BENJA</span></div>
 <div id="bossHealthBar"><div id="bossHealthFill"></div></div>
 <div id="meteorRainBar"><div id="meteorRainFill"></div></div>
@@ -4027,14 +4049,15 @@ function removeCarRadioStation(index, reason='Sin señal'){
 
         function updateMissionUI() {
             if(storyModeActive){
-                const titles=['VE A VER A BENJA','HAZ UN TRABAJO EN LA GRANJA','COMPRA COMIDA PARA BENJA','DALE DE COMER A BENJA','CUIDA A BENJA'];
-                document.getElementById('missionTitle').textContent=titles[Math.max(0,Math.min(4,storyStage))];
-                document.getElementById('missionProgress').textContent=getStoryMissionProgress();
+                const m=FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest;
+                const title=document.getElementById('missionTitle'),progress=document.getElementById('missionProgress');
+                if(title)title.textContent=m.title;
+                if(progress)progress.textContent=m.progress+' · '+m.icon;
                 updateFarmMoneyLabel();return;
             }
             document.getElementById('missionProgress').textContent='Carteles intactos: '+postersIntact+'/'+totalPosters;
         }
-        function showStoryDialog(title,text,icon){
+                function showStoryDialog(title,text,icon){
             const p=document.getElementById('storyDialog');if(!p)return;
             document.getElementById('storyDialogTitle').textContent=title||'';
             document.getElementById('storyDialogText').textContent=text||'';
@@ -4048,8 +4071,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
             else if(storyCinematicStep===2)showStoryDialog('A VER, BENJA','bueno, que disfrute. pero hay que comprarle comida. voy a preparar unos pedidos y con eso saco para su primer saco.','🌾');
             else{
                 storyCinematicPlaying=false;isCinematic=false;document.body.classList.remove('farmCinematic');
-                hideStoryDialog();updateMissionUI();setFarmGuideTarget(FARM_PIG_POS.x,FARM_PIG_POS.z,'ve con benja');
-                saveStoryProgress();showToast('ve a ver a benja');
+                hideStoryDialog();storyStage=4;farmStartMission('harvest');saveStoryProgress();
+                showToast('primer encargo: recoge verduras en el campo');
             }
         }
         function updateFarmCinematic(){
@@ -4076,9 +4099,11 @@ function removeCarRadioStation(index, reason='Sin señal'){
             if(storyModeActive&&!storyCinematicPlaying&&character&&character.position.distanceTo(benjaPig.position)<58&&t*1000>benjaSoundNextAt)playBenjaGrunt();
         }
         function updateFarmMoneyLabel(){
-            const el=document.getElementById('peneCountInfo');if(el)el.textContent='💰 $'+storyMoney+'   🐷 '+storyPigWeight+' kg   🌾 '+storyFeedInventory;
+            const el=document.getElementById('peneCountInfo');
+            if(el)el.textContent='💰 $'+storyMoney+'   🐷 '+storyPigWeight+' kg   📦 '+farmTotalGoods(farmWarehouseStock)+' guardados';
+            farmUpdateBenjaHud();
         }
-        function farmGroundAt(x,z){return getTerrainY(x,z,null);}
+                function farmGroundAt(x,z){return getTerrainY(x,z,null);}
         function makeFarmBox(parent,x,y,z,w,h,d,mat){
             const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y+h/2,z);m.castShadow=true;m.receiveShadow=true;parent.add(m);return m;
         }
@@ -4357,90 +4382,27 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function removeFarmGuideMarker(){if(farmGuideMarker&&farmGuideMarker.parent)farmGuideMarker.parent.remove(farmGuideMarker);farmGuideMarker=null;}
         function setFarmGuideTarget(x,z,label){
             removeFarmGuideMarker();farmGuideTarget=new THREE.Vector3(x,farmGroundAt(x,z),z);farmGuideLabel=label||'objetivo';
-            if(storyStage>4){const ui=document.getElementById('storyGuide');if(ui)ui.style.display='none';farmGuideTarget=null;return;}
-            const marker=new THREE.Group(),gold=new THREE.MeshStandardMaterial({color:0xffc451,emissive:0xff9b22,emissiveIntensity:1.1,metalness:.25,roughness:.3});
-            const ring=new THREE.Mesh(new THREE.TorusGeometry(3.6,.2,8,28),new THREE.MeshBasicMaterial({color:0xffd36c}));ring.rotation.x=Math.PI/2;ring.position.y=.45;marker.add(ring);
-            const beam=new THREE.Mesh(new THREE.CylinderGeometry(.25,.85,13,10,1,true),new THREE.MeshBasicMaterial({color:0xffd36c,transparent:true,opacity:.22,side:THREE.DoubleSide,depthWrite:false}));beam.position.y=7;marker.add(beam);
-            const cone=new THREE.Mesh(new THREE.ConeGeometry(1.6,3.5,8),gold);cone.position.y=14;marker.add(cone);
-            const light=new THREE.PointLight(0xffb943,2.2,26);light.position.y=7;marker.add(light);
+            const marker=new THREE.Group(),gold=new THREE.MeshBasicMaterial({color:0xffc451});
+            const ring=new THREE.Mesh(new THREE.TorusGeometry(4.2,.25,8,28),new THREE.MeshBasicMaterial({color:0xffd36c}));ring.rotation.x=Math.PI/2;ring.position.y=.45;marker.add(ring);
+            const beam=new THREE.Mesh(new THREE.CylinderGeometry(.25,.85,15,10,1,true),new THREE.MeshBasicMaterial({color:0xffd36c,transparent:true,opacity:.25,side:THREE.DoubleSide,depthWrite:false}));beam.position.y=7.5;marker.add(beam);
+            const cone=new THREE.Mesh(new THREE.ConeGeometry(1.8,4,8),gold);cone.position.y=15;marker.add(cone);
             marker.position.copy(farmGuideTarget);scene.add(marker);farmGuideMarker=marker;
             const ui=document.getElementById('storyGuide');if(ui)ui.style.display='flex';
         }
         function updateFarmGuide(){
             const ui=document.getElementById('storyGuide');
-            if(!ui||!storyModeActive||!farmGuideTarget||storyStage>=4){if(ui)ui.style.display='none';return;}
-            ui.style.display='flex';const dx=farmGuideTarget.x-character.position.x,dz=farmGuideTarget.z-character.position.z;
-            const relative=Math.atan2(dx,dz)-cameraTheta,arrow=document.getElementById('storyGuideArrow');
-            if(arrow)arrow.style.transform='rotate('+(-relative*180/Math.PI)+'deg)';
+            if(!ui||!storyModeActive||!farmGuideTarget||!character){if(ui)ui.style.display='none';return;}
+            ui.style.display='flex';
+            const dx=farmGuideTarget.x-character.position.x,dz=farmGuideTarget.z-character.position.z;
+            const toTarget=new THREE.Vector3(dx,0,dz),forward=new THREE.Vector3();camera.getWorldDirection(forward);forward.y=0;
+            if(forward.lengthSq()<.0001)forward.set(0,0,-1);forward.normalize();
+            const right=new THREE.Vector3().crossVectors(forward,new THREE.Vector3(0,1,0)).normalize();
+            const angle=Math.atan2(toTarget.dot(right),toTarget.dot(forward)),arrow=document.getElementById('storyGuideArrow');
+            if(arrow)arrow.style.transform='rotate('+(angle*180/Math.PI)+'deg)';
             const text=document.getElementById('storyGuideText');if(text)text.textContent=farmGuideLabel+' · '+Math.round(Math.hypot(dx,dz))+' m';
             if(farmGuideMarker){farmGuideMarker.position.y=farmGroundAt(farmGuideTarget.x,farmGuideTarget.z)+Math.sin(performance.now()*.002)*.35;farmGuideMarker.rotation.y+=.012;}
         }
-        function farmDefaultGoods(){return {maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0};}
-        function farmTotalGoods(obj){return Object.values(obj||{}).reduce((sum,n)=>sum+(Number(n)||0),0);}
-        function farmTotalFood(obj){return Object.keys(FARM_GOODS).reduce((sum,key)=>sum+(FARM_GOODS[key].food?(Number(obj&&obj[key])||0):0),0);}
-        function farmTakeItem(type,amount=1){
-            let left=amount,take=Math.min(Number(farmCarriedGoods[type])||0,left);
-            farmCarriedGoods[type]=(Number(farmCarriedGoods[type])||0)-take;left-=take;
-            if(left>0){const stored=Math.min(Number(farmWarehouseStock[type])||0,left);farmWarehouseStock[type]=(Number(farmWarehouseStock[type])||0)-stored;left-=stored;}
-            storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);refreshFarmStorageVisuals();return left===0;
-        }
-        function farmUpdateBenjaHud(){
-            const hud=document.getElementById('farmBenjaHud'),fill=document.getElementById('farmBenjaHealthFill'),label=document.getElementById('farmBenjaHealthText');
-            if(hud)hud.style.display=storyModeActive?'flex':'none';
-            if(fill){fill.style.width=Math.max(0,Math.min(100,farmBenjaHealth))+'%';fill.style.background=farmBenjaHealth<35?'linear-gradient(90deg,#a92121,#ff6868)':'linear-gradient(90deg,#54c953,#bcf46b)';}
-            if(label)label.textContent=Math.round(farmBenjaHealth)+'%';
-        }
-        function farmUpdateInventoryPanel(){
-            const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
-            const mode=farmInventoryPanelMode,buttons=document.getElementById('farmInventoryButtons');
-            const carried=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmCarriedGoods[k]||0)).join(' · ');
-            const stored=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmWarehouseStock[k]||0)).join(' · ');
-            const money=document.getElementById('farmInventoryMoney'),summary=document.getElementById('farmInventorySummary'),title=document.getElementById('farmInventoryTitle');
-            if(money)money.textContent='Dinero disponible: $'+storyMoney;
-            if(summary)summary.textContent='EN TU CARGA\n'+carried+'\n\nGUARDADO EN EL ALMACEN\n'+stored;
-            if(title)title.textContent=mode==='shop'?'PUESTO DE SUMINISTROS':'ALMACEN DE LA GRANJA';
-            if(!buttons)return;let html='';
-            if(mode==='shop'){
-                ['maiz','trigo','zanahoria','heno','pienso','madera'].forEach(type=>{const g=FARM_GOODS[type],price=type==='madera'?9:g.price;html+='<button type="button" data-farm-action="buy" data-good="'+type+'">Comprar '+g.label+' · $'+price+'</button>';});
-                html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
-            }else{
-                html+='<button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button>';
-                Object.keys(FARM_GOODS).forEach(type=>{const g=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">Sacar 1 '+g.label+' ('+(farmWarehouseStock[type]||0)+')</button>';});
-                html+='<button type="button" class="primary" data-farm-action="close">CERRAR ALMACEN</button>';
-            }
-            buttons.innerHTML=html;
-            if(!farmInventoryPanelBound){
-                panel.addEventListener('click',event=>{
-                    const button=event.target.closest('button[data-farm-action]');if(!button)return;
-                    const action=button.dataset.farmAction,type=button.dataset.good;
-                    if(action==='close'){panel.style.display='none';return;}
-                    if(action==='buy'){
-                        const g=FARM_GOODS[type],price=type==='madera'?9:g&&g.price;
-                        if(!g||storyMoney<price){showToast('no tienes suficiente dinero');return;}
-                        storyMoney-=price;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
-                        storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
-                        updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('compraste '+g.label+'. puedes guardarlo en el almacen.');
-                    }else if(action==='store'){
-                        const moved=farmTotalGoods(farmCarriedGoods);if(!moved){showToast('no llevas nada para guardar');return;}
-                        Object.keys(FARM_GOODS).forEach(k=>{farmWarehouseStock[k]=(farmWarehouseStock[k]||0)+(farmCarriedGoods[k]||0);farmCarriedGoods[k]=0;});
-                        storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
-                        refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
-                        showToast('guardaste '+moved+' productos. el stock se acumulo.');
-                        if(farmMissionId==='warehouse')farmCompleteMission('ALMACEN ORGANIZADO','todo quedo guardado. ahora ya tenemos existencias para los siguientes encargos.','🏠');
-                    }else if(action==='withdraw'){
-                        if(!type||!(farmWarehouseStock[type]>0)){showToast('no hay unidades de ese producto');return;}
-                        farmWarehouseStock[type]--;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
-                        storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
-                        refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
-                    }
-                });farmInventoryPanelBound=true;
-            }
-        }
-        function openFarmInventoryPanel(mode){
-            const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
-            farmInventoryPanelMode=mode||'warehouse';farmUpdateInventoryPanel();panel.style.display='block';
-        }
-        function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
+                function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
         function getStoryMissionProgress(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).progress;}
         function saveStoryProgress(){
             if(!storyModeActive||!character)return;
