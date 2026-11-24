@@ -7,13 +7,19 @@ window.CUIDA_BENJA_FARM_MAP = {
   flatRadius: 245,
   tv: { x: -414, z: -365 },
   radio: { x: -400, z: -356 },
+  waterStorage: { x: -435, z: -470 },
+  ponds: [
+    { id: "laguna-grande", x: -270, z: -242, radius: 22, depth: 0.9 },
+    { id: "laguna-pequena", x: -465, z: -255, radius: 13, depth: 0.55 }
+  ],
   ambientZones: [
-    { id: "patio-central", x: -354, z: -322, radius: 96, insects: true },
-    { id: "huerto", x: -220, z: -250, radius: 88, insects: true },
-    { id: "arboleda", x: -266, z: -284, radius: 84, insects: true },
-    { id: "camino-tractor", x: -448, z: -286, radius: 86, insects: true },
-    { id: "sendero-norte", x: -320, z: -242, radius: 76, insects: true },
-    { id: "pozo", x: -390, z: -440, radius: 66, insects: false }
+    { id: "patio-central", x: -354, z: -322, radius: 128, insects: true },
+    { id: "pocilga-benja", x: -286, z: -354, radius: 108, insects: true },
+    { id: "huerto", x: -220, z: -250, radius: 98, insects: true },
+    { id: "arboleda", x: -266, z: -284, radius: 104, insects: true },
+    { id: "camino-tractor", x: -448, z: -286, radius: 110, insects: true },
+    { id: "sendero-norte", x: -320, z: -242, radius: 94, insects: true },
+    { id: "pozo-y-agua", x: -410, z: -450, radius: 92, insects: true }
   ],
   pig: { x: -286, z: -354 },
   work: { x: -388, z: -302 },
