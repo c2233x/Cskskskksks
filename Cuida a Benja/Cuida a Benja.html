@@ -814,15 +814,15 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 (function installCuidaTemporaryLogs(){
  const KEY='cuida_benja_temp_logs_v1',MAX=1400,MAX_CHARS=420000;let records=[];
  try{const saved=sessionStorage.getItem(KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))records=parsed.slice(-MAX);}}catch(_){}
- const safe=v=>{try{if(v instanceof Error)return v.name+': '+v.message+(v.stack?'\\n'+v.stack:'');if(typeof v==='string')return v;if(v&&typeof v==='object')return JSON.stringify(v);return String(v);}catch(_){return String(v);}};
+ const safe=v=>{try{if(v instanceof Error)return v.name+': '+v.message+(v.stack?'\n'+v.stack:'');if(typeof v==='string')return v;if(v&&typeof v==='object')return JSON.stringify(v);return String(v);}catch(_){return String(v);}};
  window.cuidaAddLog=function(level,message){
   const line='['+new Date().toISOString()+'] ['+String(level||'INFO').toUpperCase()+'] '+safe(message);
   records.push(line);if(records.length>MAX)records=records.slice(-MAX);
   let total=records.reduce((n,x)=>n+x.length,0);while(total>MAX_CHARS&&records.length>20)total-=records.shift().length;
   try{sessionStorage.setItem(KEY,JSON.stringify(records));}catch(_){}
-  const out=document.getElementById('cuidaLogsOutput');if(out&&document.getElementById('cuidaLogsPanel')?.style.display!=='none'){out.textContent=records.join('\\n');out.scrollTop=out.scrollHeight;}
+  const out=document.getElementById('cuidaLogsOutput');if(out&&document.getElementById('cuidaLogsPanel')?.style.display!=='none'){out.textContent=records.join('\n');out.scrollTop=out.scrollHeight;}
  };
- window.cuidaGetLogs=()=>records.join('\\n');
+ window.cuidaGetLogs=()=>records.join('\n');
  window.cuidaAddLog('INFO','Diagnóstico iniciado. URL: '+location.href.split('?')[0]+' | navegador: '+navigator.userAgent);
  window.addEventListener('error',e=>{
   const target=e.target;if(target&&target!==window){window.cuidaAddLog('RESOURCE_ERROR',(target.tagName||'recurso')+' '+(target.src||target.href||'sin URL'));return;}
@@ -855,7 +855,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
  document.getElementById('cuidaLogsClear').addEventListener('click',()=>{records=[];try{sessionStorage.removeItem(KEY);}catch(_){}window.cuidaAddLog('INFO','Registro limpiado manualmente.');output.textContent=window.cuidaGetLogs();});
  window.cuidaAddLog('INFO','Interfaz de logs preparada.');
 })();
-\n// Cuida a Benja - datos del mapa de la granja.// Cuida a Benja - datos del mapa de la granja.
+// Cuida a Benja - datos del mapa de la granja.// Cuida a Benja - datos del mapa de la granja.
 // El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
 window.CUIDA_BENJA_FARM_MAP = {
   id: "granja",
