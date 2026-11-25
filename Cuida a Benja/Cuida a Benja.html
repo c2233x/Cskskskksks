@@ -6102,7 +6102,7 @@ function setupFarmTVControls(){
  if(noSignalToggle)noSignalToggle.addEventListener('click',()=>{farmTVShowNoSignal=!farmTVShowNoSignal;noSignalToggle.textContent=farmTVShowNoSignal?'OCULTAR CANALES SIN SEÑAL':'MOSTRAR CANALES SIN SEÑAL';renderFarmTVChannels();});
  if(open)open.addEventListener('click',()=>{const url=open.dataset.url;if(url)window.open(url,'_blank','noopener');});
  if(!farmTVCurrentChannel)farmTVCurrentChannel=FARM_TV_CHANNELS[0];
- updateFarmTVPanelStatus();updateFarmTVScreenVisual();farmTVPanelBound=true;
+ updateFarmTVPanelStatus();updateFarmTVScreenVisual();farmTVPanelBound=true;if(farmTVPowerOn)loadFarmTVChannel();
 }
 function updateFarmRadioPanel(){
  const status=document.getElementById('farmRadioStatus'),power=document.getElementById('farmRadioPowerBtn'),label=document.getElementById('farmRadioPowerLabel'),volume=document.getElementById('farmRadioVolume'),value=document.getElementById('farmRadioVolumeValue');
@@ -6137,6 +6137,7 @@ function attemptFarmRadioStream(token){
 }
 function setFarmRadioPower(on){
  farmRadioPowerOn=!!on;
+ if(storyModeActive&&character)saveStoryProgress();
  const token=++farmRadioGeneration;
  if(!farmRadioPowerOn){
   try{farmRadioAudio.pause();farmRadioAudio.removeAttribute('src');farmRadioAudio.load();}catch(_){}
@@ -6147,6 +6148,7 @@ function setFarmRadioPower(on){
 function selectFarmRadioStation(index){
  if(!Number.isFinite(index)||index<0||index>=FARM_RADIO_STATIONS.length)return;
  const wasOn=farmRadioPowerOn;farmRadioStationIndex=index;
+ if(storyModeActive&&character)saveStoryProgress();
  if(wasOn)setFarmRadioPower(true);else updateFarmRadioPanel();
 }
 function renderFarmRadioStations(){
@@ -6202,7 +6204,7 @@ function setupFarmRadioControls(){
  if(up)up.addEventListener('click',()=>setFarmRadioVolume(Math.round(farmRadioVolume*100)+5));
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-farm-radio]');if(b)selectFarmRadioStation(Number(b.dataset.farmRadio));});
  if(scanStart)scanStart.addEventListener('click',startFarmRadioScan);if(scanStop)scanStop.addEventListener('click',stopFarmRadioScan);
- updateFarmRadioPanel();farmRadioPanelBound=true;if(farmRadioPowerOn){farmRadioAudio.volume=farmRadioVolume;}
+ updateFarmRadioPanel();farmRadioPanelBound=true;if(farmRadioPowerOn){farmRadioAudio.volume=farmRadioVolume;attemptFarmRadioStream(++farmRadioGeneration);}
 }
 
 function createCityJobBoard(){
@@ -6467,8 +6469,8 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 farmRaidKillCarry=Math.max(0,Number(d.raidKillCarry)||0);farmRaidKillsTotal=Math.max(0,Number(d.raidKillsTotal)||0);
                 farmRaidTriggered=!!d.raidTriggered;farmRaidActive=false;farmCityMode=false;storyStage=4;
                 if(Number.isFinite(d.timeOfDay))timeOfDay=((d.timeOfDay%1)+1)%1;
-                if(d.tv){farmTVPowerOn=!!d.tv.on;farmTVVolume=Math.max(0,Math.min(1,Number(d.tv.volume)||.55));const savedTv=FARM_TV_CHANNELS.find(c=>c.id===d.tv.channel);if(savedTv)farmTVCurrentChannel=savedTv;}
-                if(d.radio){farmRadioPowerOn=!!d.radio.on;farmRadioStationIndex=Math.max(0,Math.min(FARM_RADIO_STATIONS.length-1,Number(d.radio.station)||0));farmRadioVolume=Math.max(0,Math.min(1,Number(d.radio.volume)||.55));}
+                if(d.tv){farmTVPowerOn=!!d.tv.on;farmTVVolume=Math.max(0,Math.min(1,Number.isFinite(Number(d.tv.volume))?Number(d.tv.volume):.55));const savedTv=FARM_TV_CHANNELS.find(c=>c.id===d.tv.channel);if(savedTv)farmTVCurrentChannel=savedTv;}
+                if(d.radio){farmRadioPowerOn=!!d.radio.on;farmRadioStationIndex=Math.max(0,Math.min(FARM_RADIO_STATIONS.length-1,Number(d.radio.station)||0));farmRadioVolume=Math.max(0,Math.min(1,Number.isFinite(Number(d.radio.volume))?Number(d.radio.volume):.55));}
                 if(character&&Number.isFinite(d.x)&&Number.isFinite(d.z))character.position.set(Number(d.x),farmGroundAt(Number(d.x),Number(d.z)),Number(d.z));
                 storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
                 refreshFarmStorageVisuals();updateFarmCarryVisual(true);return true;
