@@ -1,8 +1,17 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.3",
+  "version": "1.7.4",
   "updates": [
+    {
+      "version": "1.7.4",
+      "title": "Corrección del inicio en Android",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "El cargador de recursos se inicia antes de solicitar pantalla completa para que los WebView Android no se queden en Iniciando si bloquean esa solicitud.",
+        "Los errores o rechazos de pantalla completa ya no detienen la carga del juego."
+      ]
+    },
     {
       "version": "1.7.3",
       "title": "Huerto y cosecha de manzanas",
