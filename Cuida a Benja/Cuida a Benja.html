@@ -4707,7 +4707,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const post=new THREE.Mesh(new THREE.BoxGeometry(.55*scale,2.3*scale,.55*scale),fenceMat);post.position.set(x+side*fx,y+1.15*scale,z+side*fz);farmGroup.add(post);
                 const sideRail=new THREE.Mesh(new THREE.BoxGeometry(.35*scale,.35*scale,2*fz),fenceMat);sideRail.position.set(x+side*fx,y+railY-y,z);farmGroup.add(sideRail);
             }
-            farmGroup.add(createFarmSign(label,x,y+12*scale,z-d*.65));
+            
             return house;
         }
         function deformFarmTerrain(){
@@ -4827,7 +4827,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
             storage.position.set(FARM_STORAGE_POS.x,storageY,FARM_STORAGE_POS.z);farmGroup.add(storage);
             addFarmCollider(FARM_STORAGE_POS.x-23,FARM_STORAGE_POS.z,1.9,36,0,'storage-left');addFarmCollider(FARM_STORAGE_POS.x+23,FARM_STORAGE_POS.z,1.9,36,0,'storage-right');addFarmCollider(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z-17,46,1.9,0,'storage-back');addFarmCollider(FARM_STORAGE_POS.x-14,FARM_STORAGE_POS.z+17,20,1.9,0,'storage-front-left');addFarmCollider(FARM_STORAGE_POS.x+14,FARM_STORAGE_POS.z+17,20,1.9,0,'storage-front-right');
-            farmGroup.add(createFarmSign('ALMACEN GRANDE',FARM_STORAGE_POS.x,storageY+19,FARM_STORAGE_POS.z-4));
+            
             const itemGeometry={
                 maiz:new THREE.CylinderGeometry(.22,.34,1.35,7),
                 trigo:new THREE.ConeGeometry(.38,1.55,6),
@@ -4916,12 +4916,12 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 }
             }
             for(const mesh of [wheatStem,wheatHead,wheatGrains,wheatLeaves]){mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=!IS_MOBILE_DEVICE;mesh.receiveShadow=false;mesh.frustumCulled=false;farmGroup.add(mesh);}
-            farmGroup.add(createFarmSign('CULTIVO',FARM_CROP_POS.x,fieldY+8,FARM_CROP_POS.z-22));
+            
             const coopY=farmGroundAt(FARM_COOP_POS.x,FARM_COOP_POS.z),coop=new THREE.Group();
             makeFarmBox(coop,0,0,0,12,6,9,new THREE.MeshLambertMaterial({color:0xd1b38a}));
             const coopRoof=new THREE.Mesh(new THREE.ConeGeometry(8,3.5,4),roof);coopRoof.position.y=7.5;coopRoof.rotation.y=Math.PI/4;coop.add(coopRoof);
             const coopDoor=new THREE.Mesh(new THREE.BoxGeometry(3,4,.25),darkWood);coopDoor.position.set(0,2,4.6);coop.add(coopDoor);
-            coop.position.set(FARM_COOP_POS.x,coopY,FARM_COOP_POS.z);farmGroup.add(coop);addFarmCollider(FARM_COOP_POS.x,FARM_COOP_POS.z,12.8,9.8,0,'farm-coop');farmGroup.add(createFarmSign('GALLINERO',FARM_COOP_POS.x,coopY+10,FARM_COOP_POS.z-7));
+            coop.position.set(FARM_COOP_POS.x,coopY,FARM_COOP_POS.z);farmGroup.add(coop);addFarmCollider(FARM_COOP_POS.x,FARM_COOP_POS.z,12.8,9.8,0,'farm-coop');
             const eggs=new THREE.InstancedMesh(new THREE.SphereGeometry(.38,9,7),new THREE.MeshLambertMaterial({color:0xf4e9d0}),8);
             for(let i=0;i<8;i++){dummy.position.set(FARM_COOP_POS.x-4+(i%4)*2.5,coopY+1.3,FARM_COOP_POS.z+7+Math.floor(i/4)*1.2);dummy.scale.set(1,.78,1);dummy.updateMatrix();eggs.setMatrixAt(i,dummy.matrix);}
             eggs.instanceMatrix.needsUpdate=true;eggs.frustumCulled=false;farmGroup.add(eggs);
@@ -4931,16 +4931,16 @@ function removeCarRadioStation(index, reason='Sin señal'){
             for(const side of [-1,1]){const post=new THREE.Mesh(new THREE.BoxGeometry(.55,8,.55),wood);post.position.set(side*4.8,4,0);well.add(post);}
             const beam=new THREE.Mesh(new THREE.BoxGeometry(10,.6,.7),wood);beam.position.y=8;well.add(beam);
             const wellRoof=new THREE.Mesh(new THREE.ConeGeometry(7,3.5,4),roof);wellRoof.position.y=10;wellRoof.rotation.y=Math.PI/4;well.add(wellRoof);
-            well.position.set(FARM_WELL_POS.x,wellY,FARM_WELL_POS.z);farmGroup.add(well);addFarmCollider(FARM_WELL_POS.x,FARM_WELL_POS.z,9.5,9.5,0,'farm-well');farmGroup.add(createFarmSign('POZO',FARM_WELL_POS.x,wellY+13,FARM_WELL_POS.z-5));
+            well.position.set(FARM_WELL_POS.x,wellY,FARM_WELL_POS.z);farmGroup.add(well);addFarmCollider(FARM_WELL_POS.x,FARM_WELL_POS.z,9.5,9.5,0,'farm-well');
             const tractorY=farmGroundAt(FARM_TRACTOR_POS.x,FARM_TRACTOR_POS.z),tractor=new THREE.Group();
             const body=new THREE.Mesh(new THREE.BoxGeometry(7,2.7,10),new THREE.MeshLambertMaterial({color:0x3d8c48}));body.position.y=2.7;tractor.add(body);
             const cab=new THREE.Mesh(new THREE.BoxGeometry(4.5,4.3,4.5),new THREE.MeshLambertMaterial({color:0x8ec8d7}));cab.position.set(0,5.8,-1);tractor.add(cab);
             for(const side of [-1,1])for(const z of [-3.2,3.2]){const radius=z>0?2.2:1.45,wheel=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,1.15,10),new THREE.MeshLambertMaterial({color:0x222222}));wheel.rotation.z=Math.PI/2;wheel.position.set(side*3.7,z>0?2.2:1.55,z);tractor.add(wheel);}
-            tractor.position.set(FARM_TRACTOR_POS.x,tractorY,FARM_TRACTOR_POS.z);farmGroup.add(tractor);addFarmCollider(FARM_TRACTOR_POS.x,FARM_TRACTOR_POS.z,8.6,11.5,0,'farm-tractor');farmGroup.add(createFarmSign('TRACTOR',FARM_TRACTOR_POS.x,tractorY+10,FARM_TRACTOR_POS.z-7));
+            tractor.position.set(FARM_TRACTOR_POS.x,tractorY,FARM_TRACTOR_POS.z);farmGroup.add(tractor);addFarmCollider(FARM_TRACTOR_POS.x,FARM_TRACTOR_POS.z,8.6,11.5,0,'farm-tractor');
             const deliveryY=farmGroundAt(FARM_DELIVERY_POS.x,FARM_DELIVERY_POS.z),delivery=new THREE.Group();
             const deliveryPost=new THREE.Mesh(new THREE.BoxGeometry(.45,5,.45),wood);deliveryPost.position.y=2.5;delivery.add(deliveryPost);
             const board=new THREE.Mesh(new THREE.BoxGeometry(9,2.7,.5),new THREE.MeshLambertMaterial({color:0xe0bd7a}));board.position.set(0,5.4,0);delivery.add(board);
-            delivery.position.set(FARM_DELIVERY_POS.x,deliveryY,FARM_DELIVERY_POS.z);farmGroup.add(delivery);farmGroup.add(createFarmSign('ENTREGAS',FARM_DELIVERY_POS.x,deliveryY+10,FARM_DELIVERY_POS.z-3));
+            delivery.position.set(FARM_DELIVERY_POS.x,deliveryY,FARM_DELIVERY_POS.z);farmGroup.add(delivery);
         }
         function createFarmTelevision(){
             if(!farmGroup)return;
@@ -4972,14 +4972,15 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const hitTarget=new THREE.Mesh(new THREE.BoxGeometry(2.6,1.9,1.15),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
                 hitTarget.position.set(x,1.62,2.05);hitTarget.userData.tvChannelAction=action;tv.add(hitTarget);farmTVPhysicalHitTargets.push(hitTarget);
             }
-            makeChannelButton(-1.22,'◀','prev',0x446078);
-            makeChannelButton(1.22,'▶','next',0x467e5a);
+            makeChannelButton(-1.55,'◀','prev',0x446078);
+            makeChannelButton(0,'⏻','power',0x9b6338);
+            makeChannelButton(1.55,'▶','next',0x467e5a);
             for(const side of [-1,1]){
                 const leg=new THREE.Mesh(new THREE.BoxGeometry(.8,1,.8),new THREE.MeshStandardMaterial({color:0x252525}));leg.position.set(side*2.8,2.1,1.3);tv.add(leg);
             }
             farmTVPointLight=new THREE.PointLight(0x74c8ff,0,20,2);farmTVPointLight.position.set(0,6.2,3.2);tv.add(farmTVPointLight);
             tv.position.set(p.x,y,p.z);tv.rotation.y=-.25;tv.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(tv);farmTVProp=tv;addFarmCollider(p.x,p.z,10.5,4.8,-.25,'farm-tv');
-            farmGroup.add(createFarmSign('TELEVISION',p.x,y+10,p.z-2));updateFarmTVScreenVisual();
+            updateFarmTVScreenVisual();
         }
         function createFarmRadio(){
             if(!farmGroup)return;
@@ -5001,7 +5002,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.MeshStandardMaterial({color:0x9aa5a4,metalness:.7,roughness:.3}));
             antenna.position.set(2.8,5.8,-.2);antenna.rotation.z=-.22;radio.add(antenna);
             radio.position.set(p.x,y,p.z);radio.rotation.y=-.18;radio.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(radio);farmRadioProp=radio;addFarmCollider(p.x,p.z,7.8,3.1,-.18,'farm-radio');
-            farmGroup.add(createFarmSign('RADIO',p.x,y+5.8,p.z-2));
+            
         }
         function createFarmDefensiveCorral(){
             clearFarmColliders('farm-defense');
@@ -5122,7 +5123,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
             farmPigstyGroup.position.set(x,y,z);farmPigstyGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
             farmGroup.add(createFarmSign('TU POCILGA BASE · NIVEL '+level,x,y+10,z-9));
-            if(level>=2)farmGroup.add(createFarmSign('ENTRADA',x,y+3,z+9));
+            if(level>=2)
         }
         function createFarmPonds(){
             if(!farmGroup)return;
@@ -5176,7 +5177,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             farmWaterStorageGroup.position.set(p.x,y,p.z);farmWaterStorageGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
             addFarmCollider(p.x,p.z,13.4,13.4,0,'farm-water-storage',11);
             farmUpdateWaterTankVisual();
-            farmGroup.add(createFarmSign('DEPOSITO DE AGUA',p.x,y+12,p.z-8));
+            
         }
         function farmUpdateWaterTankVisual(){
             if(!farmWaterTankWater||!farmWaterStorageGroup)return;
@@ -5246,12 +5247,12 @@ function removeCarRadioStation(index, reason='Sin señal'){
             for(let i=0;i<3;i++){const crate=makeFarmBox(farmGroup,wx-5+i*4,wy,wz-5,3,2.8,3,crateMat);crate.rotation.y=(i-1)*.2;addFarmCollider(crate.position.x,crate.position.z,3.2,3.2,crate.rotation.y,'farm-order-crate');
                 const veg=new THREE.Mesh(new THREE.SphereGeometry(.72,8,7),new THREE.MeshStandardMaterial({color:[0x6aa341,0xd56d42,0xd7b34b][i],roughness:.9}));
                 veg.position.set(crate.position.x,wy+3.05,crate.position.z);farmGroup.add(veg);}
-            farmGroup.add(createFarmSign('PEDIDOS',wx,wy+5,wz-7));
+            
             const sx=FARM_SHOP_POS.x,sz=FARM_SHOP_POS.z,sy=farmGroundAt(sx,sz),stall=new THREE.Group();
             makeFarmBox(stall,0,0,0,13,5,8,wood);
             const canopy=new THREE.Mesh(new THREE.BoxGeometry(15,1,10),new THREE.MeshStandardMaterial({color:0xb44f37,roughness:.88}));canopy.position.set(0,6,0);stall.add(canopy);
             const awning=new THREE.Mesh(new THREE.BoxGeometry(15,.4,2.4),cream);awning.position.set(0,4.8,4);stall.add(awning);
-            stall.position.set(sx,sy,sz);farmGroup.add(stall);addFarmCollider(sx,sz,13.5,8.5,0,'farm-shop');farmGroup.add(createFarmSign('ALIMENTO',sx,sy+8,sz-5));
+            stall.position.set(sx,sy,sz);farmGroup.add(stall);addFarmCollider(sx,sz,13.5,8.5,0,'farm-shop');
             const sackMat=new THREE.MeshStandardMaterial({color:0xc7a66c,roughness:1});
             for(let i=0;i<3;i++){const sack=new THREE.Mesh(new THREE.SphereGeometry(1.25,10,8),sackMat);sack.scale.set(.85,1.1,.75);sack.position.set(sx-3+i*3,sy+1.5,sz+1);sack.castShadow=true;farmGroup.add(sack);addFarmCollider(sack.position.x,sack.position.z,2.1,2.1,0,'farm-feed-sack',2.8);}
             const hayMat=new THREE.MeshStandardMaterial({color:0xc9a34d,roughness:1});
@@ -5280,7 +5281,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
             addOrchardTree(tx-13,tz+8,.78);addOrchardTree(tx+13,tz-8,.78);
             addFarmCollider(tx,tz,2.1,2.1,0,'farm-fruit-tree',12);
-            farmGroup.add(createFarmSign('HUERTO',tx,ty+19,tz+11));
+            
             createBenjaPig();farmRestorePlacedBuilds();
         }
         function removeFarmGuideMarker(){if(farmGuideMarker&&farmGuideMarker.parent)farmGuideMarker.parent.remove(farmGuideMarker);farmGuideMarker=null;}
@@ -5860,17 +5861,35 @@ function cycleFarmTVChannel(direction){
  const next=((current<0?0:current)+Math.sign(direction||1)+total)%total;
  selectFarmTVChannel(FARM_TV_CHANNELS[next].id);
 }
+
+function showFarmTVWorldChannelZap(index,name){
+ if(!farmTVScreenMaterial||!farmTVProp)return;
+ const canvas=document.createElement('canvas');canvas.width=512;canvas.height=160;
+ const c=canvas.getContext('2d');c.clearRect(0,0,512,160);
+ c.fillStyle='rgba(0,0,0,.78)';c.fillRect(12,12,290,118);
+ c.fillStyle='#fff';c.font='bold 66px Arial';c.fillText(String(index).padStart(2,'0'),34,92);
+ c.font='bold 25px Arial';c.fillStyle='#f2dca7';c.fillText((name||'CANAL').slice(0,22),155,91);
+ const tex=new THREE.CanvasTexture(canvas);tex.needsUpdate=true;
+ if(window.__farmTVWorldZapTexture)window.__farmTVWorldZapTexture.dispose();
+ window.__farmTVWorldZapTexture=tex;
+ let mesh=farmTVProp.getObjectByName('farmTVWorldZap');
+ if(!mesh){mesh=new THREE.Mesh(new THREE.PlaneGeometry(4.2,1.3),new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false}));mesh.name='farmTVWorldZap';mesh.position.set(-1.65,7.95,1.82);farmTVProp.add(mesh);}
+ else{mesh.material.map=tex;mesh.material.needsUpdate=true;}
+ mesh.visible=farmTVPowerOn;
+ if(window.__farmTVWorldZapTimer)clearTimeout(window.__farmTVWorldZapTimer);
+ window.__farmTVWorldZapTimer=setTimeout(()=>{if(mesh)mesh.visible=false;},2400);
+}
 function selectFarmTVChannel(id){
  const channel=FARM_TV_CHANNELS.find(x=>x.id===id);if(!channel)return;
  const channelIndex=FARM_TV_CHANNELS.findIndex(x=>x.id===id)+1,zap=document.getElementById('farmTVChannelZap');
  if(zap){zap.textContent='CH '+String(channelIndex).padStart(2,'0')+' · '+channel.name;zap.classList.add('show');if(window.farmTVZapTimer)clearTimeout(window.farmTVZapTimer);window.farmTVZapTimer=setTimeout(()=>zap.classList.remove('show'),2600);}
  const changed=!farmTVCurrentChannel||farmTVCurrentChannel.id!==channel.id;
- farmTVCurrentChannel=channel;
+ farmTVCurrentChannel=channel;showFarmTVWorldChannelZap(channelIndex,channel.name);
  const link=document.getElementById('farmTVOpenOfficial'),hint=document.getElementById('farmTVHint');
  if(link){link.textContent='ABRIR '+channel.name.toUpperCase()+' EN SU SITIO OFICIAL';link.dataset.url=channel.url;}
  if(hint)hint.textContent=channel.name+' · '+channel.region+'. Las emisiones pueden estar fuera del aire; abre el canal oficial si no hay señal.';
  if(farmTVPowerOn&&changed)loadFarmTVChannel();
- updateFarmTVPanelStatus();
+ updateFarmTVPanelStatus();if(storyModeActive&&character)saveStoryProgress();
 }
 function ensureFarmHlsLibrary(){
  if(window.Hls)return Promise.resolve(window.Hls);
@@ -5992,7 +6011,7 @@ function setFarmTVPower(on){
   if(!farmTVCurrentChannel)farmTVCurrentChannel=FARM_TV_CHANNELS[0];
   loadFarmTVChannel();
  }else clearFarmTVPlayback();
- updateFarmTVScreenVisual();updateFarmTVPanelStatus();
+ updateFarmTVScreenVisual();updateFarmTVPanelStatus();if(storyModeActive&&character)saveStoryProgress();
 }
 function setFarmTVVolume(value){
  farmTVVolume=Math.max(0,Math.min(1,Number(value)/100));
@@ -6061,7 +6080,8 @@ function setupFarmTVPhysicalControls(){
   const ray=new THREE.Raycaster();ray.setFromCamera(pointer,camera);
   const hit=ray.intersectObjects(farmTVPhysicalHitTargets,false)[0];if(!hit)return;
   event.preventDefault();const action=hit.object.userData.tvChannelAction;
-  if(action==='prev'||action==='next'){cycleFarmTVChannel(action==='next'?1:-1);if(!farmTVPowerOn)setFarmTVPower(true);showToast(action==='next'?'siguiente canal':'canal anterior');}
+  if(action==='power'){setFarmTVPower(!farmTVPowerOn);showToast(farmTVPowerOn?'televisor encendido':'televisor apagado');}
+  else if(action==='prev'||action==='next'){cycleFarmTVChannel(action==='next'?1:-1);if(!farmTVPowerOn)setFarmTVPower(true);showToast(action==='next'?'siguiente canal':'canal anterior');}
  },{capture:true});
  farmTVPhysicalControlsBound=true;
 }
@@ -6098,7 +6118,7 @@ function updateFarmRadioPanel(){
 function setFarmRadioVolume(value){
  farmRadioVolume=Math.max(0,Math.min(1,Number(value)/100));
  if(farmRadioAudio)farmRadioAudio.volume=farmRadioVolume;
- updateFarmRadioPanel();
+ updateFarmRadioPanel();if(storyModeActive&&character)saveStoryProgress();
 }
 function attemptFarmRadioStream(token){
  if(token!==farmRadioGeneration||!farmRadioPowerOn)return;
@@ -6182,7 +6202,7 @@ function setupFarmRadioControls(){
  if(up)up.addEventListener('click',()=>setFarmRadioVolume(Math.round(farmRadioVolume*100)+5));
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-farm-radio]');if(b)selectFarmRadioStation(Number(b.dataset.farmRadio));});
  if(scanStart)scanStart.addEventListener('click',startFarmRadioScan);if(scanStop)scanStop.addEventListener('click',stopFarmRadioScan);
- updateFarmRadioPanel();farmRadioPanelBound=true;
+ updateFarmRadioPanel();farmRadioPanelBound=true;if(farmRadioPowerOn){farmRadioAudio.volume=farmRadioVolume;}
 }
 
 function createCityJobBoard(){
@@ -6358,7 +6378,7 @@ async function travelToFarm(){
 async function enterCityMap(){
  if(!storyModeActive||farmCityMode)return;
  if(!cityWorldLoaded)await ensureCityWorldLoaded();
- farmCityMode=true;farmRaidActive=false;stopFarmAmbience();setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();farmClearNPCs(true);
+ farmCityMode=true;const usePromptCity=document.getElementById('interactionPrompt');if(usePromptCity)usePromptCity.style.display='none';farmRaidActive=false;stopFarmAmbience();setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();farmClearNPCs(true);
  if(farmGroup)farmGroup.visible=false;if(benjaPig)benjaPig.visible=false;
  if(cityWorldGroup){cityWorldGroup.visible=true;if(cityWorldGroup.parent!==scene)scene.add(cityWorldGroup);}
  if(farmGuideMarker)farmGuideMarker.visible=false;
@@ -6385,17 +6405,17 @@ function returnToFarmMap(){
 function updateCityMapMode(now){
  const spawn=CITY_MAP_CONFIG.spawn||{x:0,z:0};
  if(Math.hypot(character.position.x-spawn.x,character.position.z-spawn.z)>(Number(CITY_MAP_CONFIG.exitRadius)||345)){travelToFarm();return;}
- let prompt='ve al tablero de trabajos para elegir un encargo.';
+ let prompt='';
  const dBoard=cityJobBoard?Math.hypot(character.position.x-cityJobBoard.position.x,character.position.z-cityJobBoard.position.z):999;
- if(dBoard<20)prompt='pulsa TRABAJOS para aceptar un encargo.';
+ if(dBoard<20)prompt='';
  if(cityActiveJob){
   const j=cityActiveJob,d=Math.hypot(character.position.x-j.target.x,character.position.z-j.target.z);
-  prompt=d<18?'pulsa ATACAR para terminar: '+j.title.toLowerCase():j.detail+' · '+Math.round(d)+' m';
+  prompt='';
   if(d<18&&isAttacking&&now>storyInteractAfter){
    storyInteractAfter=now+1500;storyMoney+=j.reward;cityActiveJob=null;updateFarmMoneyLabel();saveStoryProgress();farmGuideTarget=null;removeFarmGuideMarker();updateMissionUI();showToast('trabajo terminado: +$'+j.reward);speakFarmLine('narrador','buen trabajo. ya te pagaron el encargo.');
   }
  }
- if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',prompt);interactionPrompt.title=prompt;}else interactionPrompt.style.display='none';
+ if(prompt&&!farmCityMode){interactionPrompt.style.display='block';interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',prompt);interactionPrompt.title=prompt;}else interactionPrompt.style.display='none';
  if(timeOfDay>=.68&&timeOfDay<.73&&!cityNightWarningDone){cityNightWarningDone=true;speakFarmLine('benja','ya casi es de noche, por cierto. apurate con tus trabajos y vuelve a la granja.');}
  if(timeOfDay<.24)cityNightWarningDone=false;
 }
@@ -6414,7 +6434,7 @@ function setupFarmUiControls(){
  if(go)go.remove();
  if(close)close.addEventListener('click',()=>{const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';});
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-city-job]');if(b)startCityJob(b.dataset.cityJob);});
- setupFarmTVControls();setupFarmTVPhysicalControls();setupFarmRadioControls();
+ setupFarmTVControls();setupFarmTVPhysicalControls();setupFarmRadioControls();if(farmTVPowerOn){updateFarmTVScreenVisual();}if(farmRadioPowerOn){updateFarmRadioPanel();}
 }
 function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).title.toLowerCase();}
         function getStoryMissionProgress(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MISSION_DATA.harvest).progress;}
@@ -6424,7 +6444,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 stage:storyStage,money:storyMoney,pigWeight:storyPigWeight,feed:storyFeedInventory,workCount:storyWorkCount,feedings:storyFeedingCount,
                 carried:farmCarriedGoods,warehouse:farmWarehouseStock,missionOrder:farmMissionOrder,missionIndex:farmMissionIndex,missionCycle:farmMissionCycle,missionId:farmMissionId,
                 defenseLevel:farmDefenseLevel,pigstyLevel:farmPigstyLevel,waterStorageLevel:farmWaterStorageLevel,benjaCleanliness:farmBenjaCleanliness,benjaHealth:farmBenjaHealth,benjaHunger:farmBenjaHunger,raidKillCarry:farmRaidKillCarry,raidKillsTotal:farmRaidKillsTotal,raidTriggered:farmRaidTriggered,
-                x:character.position.x,y:character.position.y,z:character.position.z,savedAt:Date.now()
+                x:character.position.x,y:character.position.y,z:character.position.z,timeOfDay:timeOfDay,tv:{on:farmTVPowerOn,channel:farmTVCurrentChannel?.id||'',volume:farmTVVolume},radio:{on:farmRadioPowerOn,station:farmRadioStationIndex,volume:farmRadioVolume},savedAt:Date.now()
             }));}catch(e){}
         }
         function loadStoryProgress(){
@@ -6446,6 +6466,9 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 farmBenjaHunger=Math.max(0,Math.min(100,d.benjaHunger===0?0:(Number(d.benjaHunger)||85)));
                 farmRaidKillCarry=Math.max(0,Number(d.raidKillCarry)||0);farmRaidKillsTotal=Math.max(0,Number(d.raidKillsTotal)||0);
                 farmRaidTriggered=!!d.raidTriggered;farmRaidActive=false;farmCityMode=false;storyStage=4;
+                if(Number.isFinite(d.timeOfDay))timeOfDay=((d.timeOfDay%1)+1)%1;
+                if(d.tv){farmTVPowerOn=!!d.tv.on;farmTVVolume=Math.max(0,Math.min(1,Number(d.tv.volume)||.55));const savedTv=FARM_TV_CHANNELS.find(c=>c.id===d.tv.channel);if(savedTv)farmTVCurrentChannel=savedTv;}
+                if(d.radio){farmRadioPowerOn=!!d.radio.on;farmRadioStationIndex=Math.max(0,Math.min(FARM_RADIO_STATIONS.length-1,Number(d.radio.station)||0));farmRadioVolume=Math.max(0,Math.min(1,Number(d.radio.volume)||.55));}
                 if(character&&Number.isFinite(d.x)&&Number.isFinite(d.z))character.position.set(Number(d.x),farmGroundAt(Number(d.x),Number(d.z)),Number(d.z));
                 storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
                 refreshFarmStorageVisuals();updateFarmCarryVisual(true);return true;
@@ -7497,6 +7520,7 @@ function startProtestMission() {
             const t = timeOfDay;
             if(performance.now()-farmClockLastUi>800){
                 farmClockLastUi=performance.now();
+                if(storyModeActive&&character&&Date.now()-(window.__cuidaLastAutosave||0)>12000){window.__cuidaLastAutosave=Date.now();saveStoryProgress();}
                 const clock=document.getElementById('farmClockHud');
                 if(clock){
                     const mins=Math.floor((t%1)*1440),hh=String(Math.floor(mins/60)).padStart(2,'0'),mm=String(mins%60).padStart(2,'0');
