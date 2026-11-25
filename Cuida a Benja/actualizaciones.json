@@ -1,8 +1,19 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.5",
+  "version": "1.7.6",
   "updates": [
+    {
+      "version": "1.7.6",
+      "title": "Cargador original restaurado",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Se restauró en Cuida a Benja el bloque original de carga de recursos de Salva a Cornatan, adaptando la carpeta raíz al directorio Cuida a Benja.",
+        "Se recuperaron el listado de archivos por Git Trees y Contents API, la caché IndexedDB, la descarga y reintentos, el modo sin conexión y el respaldo ZIP.",
+        "Se restauraron las dependencias Three.js r128 y JSZip usadas por el juego original.",
+        "Los manifiestos y la versión local usan claves separadas para no mezclar el caché con El Bromas."
+      ]
+    },
     {
       "version": "1.7.5",
       "title": "Inicio WebView y audio ambiente",
