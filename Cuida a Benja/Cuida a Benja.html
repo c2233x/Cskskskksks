@@ -7892,21 +7892,61 @@ function startProtestMission() {
 
 
         // FIX 1.8.0: cámara táctil global compartida entre scripts.
+
+        // FIX 1.8.3: pellizco real mediante Pointer Events (dos dedos sobre la cámara).
+        window.__cuidaCameraPointers=new Map();
         window.__cuidaCameraPointerId=null;
+        let cuidaPinchStart=0,cuidaPinchDistance=25;
+        const cuidaPointerGap=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+        const cuidaCameraTouchTarget=e=>{
+            const t=e.target;
+            if(!t)return false;
+            return !!(t.closest&&t.closest('#joystickArea,#actionButtons,#flightControls,#interactionPrompt,#cameraZoomControls,button,a,input,select,textarea,[role="dialog"],[role="button"],.modal,.panel'));
+        };
         document.addEventListener('pointerdown',e=>{
-            if(e.pointerType!=='touch'||!gameStarted||isCinematic||isDead||isDriving)return;
-            if(e.target&&e.target.closest&&e.target.closest('button,a,input,select,textarea,[role="dialog"],[role="button"],#joystickArea,#actionButtons,#flightControls,#interactionPrompt'))return;
-            window.__cuidaCameraPointerId=e.pointerId;
-            lastTouchX=e.clientX;lastTouchY=e.clientY;isCameraTouch=true;isZooming=false;
+            if(e.pointerType!=='touch'||!gameStarted||isCinematic||isDead||isDriving||cuidaCameraTouchTarget(e))return;
+            const pts=window.__cuidaCameraPointers;
+            pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+            if(pts.size===1){
+                window.__cuidaCameraPointerId=e.pointerId;
+                lastTouchX=e.clientX;lastTouchY=e.clientY;
+                isCameraTouch=true;isZooming=false;
+            }else if(pts.size===2){
+                const pair=[...pts.values()];
+                cuidaPinchStart=cuidaPointerGap(pair[0],pair[1]);
+                cuidaPinchDistance=cameraDistance;
+                window.__cuidaCameraPointerId=null;
+                isCameraTouch=false;isZooming=true;
+            }
         },true);
         document.addEventListener('pointermove',e=>{
-            if(e.pointerType!=='touch'||window.__cuidaCameraPointerId!==e.pointerId||isCinematic)return;
-            cameraTheta-=(e.clientX-lastTouchX)*0.012;
-            cameraPhi=Math.max(0.12,Math.min(Math.PI/2+0.18,cameraPhi-(e.clientY-lastTouchY)*0.012));
-            lastTouchX=e.clientX;lastTouchY=e.clientY;
+            const pts=window.__cuidaCameraPointers;
+            if(e.pointerType!=='touch'||!pts.has(e.pointerId)||isCinematic)return;
+            pts.set(e.pointerId,{x:e.clientX,y:e.clientY});
+            if(pts.size>=2){
+                const pair=[...pts.values()];
+                const gap=Math.max(1,cuidaPointerGap(pair[0],pair[1]));
+                if(cuidaPinchStart>0)cameraDistance=Math.max(9,Math.min(42,cuidaPinchDistance*(cuidaPinchStart/gap)));
+                isZooming=true;isCameraTouch=false;
+            }else if(pts.size===1&&window.__cuidaCameraPointerId===e.pointerId&&!isZooming){
+                cameraTheta-=(e.clientX-lastTouchX)*0.012;
+                cameraPhi=Math.max(0.12,Math.min(Math.PI/2+0.18,cameraPhi-(e.clientY-lastTouchY)*0.012));
+                lastTouchX=e.clientX;lastTouchY=e.clientY;
+            }
         },true);
         const finishCuidaCamera=e=>{
-            if(window.__cuidaCameraPointerId===e.pointerId){window.__cuidaCameraPointerId=null;if(!joystickActive)isCameraTouch=false;}
+            const pts=window.__cuidaCameraPointers;
+            if(!pts.has(e.pointerId))return;
+            pts.delete(e.pointerId);
+            if(pts.size===1){
+                const [id,pt]=[...pts.entries()][0];
+                window.__cuidaCameraPointerId=id;
+                lastTouchX=pt.x;lastTouchY=pt.y;
+                isCameraTouch=true;isZooming=false;
+            }else if(pts.size===0){
+                window.__cuidaCameraPointerId=null;
+                isCameraTouch=false;isZooming=false;cuidaPinchStart=0;
+            }
         };
         document.addEventListener('pointerup',finishCuidaCamera,true);
         document.addEventListener('pointercancel',finishCuidaCamera,true);
