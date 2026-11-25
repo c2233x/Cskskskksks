@@ -2,11 +2,12 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.7.3**
+**Version actual: 1.7.4**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
 ## Inicio
+El cargador se inicia independientemente de la solicitud de pantalla completa; los rechazos de fullscreen en Android/WebView no bloquean la descarga de recursos.
 El juego carga directamente, sin pedir código de acceso. Three.js r128 se sirve desde `three.min.js` en esta misma carpeta para evitar que una dependencia externa bloquee la pantalla inicial. Si GitHub no responde, intenta usar recursos guardados y permite entrar en modo local.
 
 ## Mapas separados
