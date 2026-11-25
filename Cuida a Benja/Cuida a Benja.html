@@ -6651,7 +6651,7 @@ function returnToFarmMap(keepPickup=false){
    farmPickupVehicle.visible=true;drivenCar=farmPickupVehicle;isDriving=true;
    character.position.copy(farmPickupVehicle.position);character.visible=false;
   }else{
-   const home=farmPickupHomePose||{x:FARM_TRACTOR_POS.x+17,y:farmGroundAt(FARM_TRACTOR_POS.x+17,FARM_TRACTOR_POS.z+3)+.12,z:FARM_TRACTOR_POS.z+3,rotationY:Math.PI/2};
+   const home=farmPickupHomePose||{x:FARM_TRACTOR_POS.x+21,y:farmGroundAt(FARM_TRACTOR_POS.x+21,FARM_TRACTOR_POS.z-4)+.12,z:FARM_TRACTOR_POS.z-4,rotationY:Math.PI/2};
    farmPickupVehicle.position.set(home.x,home.y,home.z);farmPickupVehicle.rotation.set(0,home.rotationY||0,0);farmPickupVehicle.visible=true;
   }
   farmPickupInCity=false;farmPickupHomePose=null;
@@ -8358,7 +8358,7 @@ function createFarmPickupVehicle(){
   const h=new THREE.Mesh(new THREE.CylinderGeometry(.62,.62,1.2,12),new THREE.MeshStandardMaterial({color:0xaab0ad,metalness:.45,roughness:.42}));h.rotation.z=Math.PI/2;h.frustumCulled=false;holder.add(h);
   pickupWheels.push({wheel:w,holder,front});
  }
- const x=FARM_TRACTOR_POS.x+17,z=FARM_TRACTOR_POS.z+3;t.position.set(x,farmGroundAt(x,z)+.12,z);t.rotation.y=Math.PI/2;t.name='Pickup de la granja';
+ const x=FARM_TRACTOR_POS.x+21,z=FARM_TRACTOR_POS.z-4;t.position.set(x,farmGroundAt(x,z)+.12,z);t.rotation.y=Math.PI/2;t.name='Pickup de la granja';
  const pickupLabelCanvas=document.createElement('canvas');pickupLabelCanvas.width=384;pickupLabelCanvas.height=96;
  const pickupLabelCtx=pickupLabelCanvas.getContext('2d');pickupLabelCtx.fillStyle='rgba(20,47,28,.92)';pickupLabelCtx.fillRect(0,0,384,96);pickupLabelCtx.fillStyle='#fff2ba';pickupLabelCtx.font='bold 44px Arial';pickupLabelCtx.textAlign='center';pickupLabelCtx.textBaseline='middle';pickupLabelCtx.fillText('CAMIONETA',192,48);
  const pickupLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(pickupLabelCanvas),transparent:true,depthWrite:false}));pickupLabel.position.set(0,9.8,0);pickupLabel.scale.set(12,3,1);pickupLabel.frustumCulled=false;t.add(pickupLabel);t.visible=true;t.frustumCulled=false;t.userData={speed:0,steer:0,maxSpeed:.50,accel:.026,driftGrip:.28,collisionRadius:5.4,isFarmPickup:true,wheels:pickupWheels,suspension:0,lastTerrainX:99999,lastTerrainZ:99999,terrainFront:4.1,terrainRear:-4.2,terrainHalfTrack:3.9,exitDistance:8.1,exitSide:5.2};t.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});farmGroup.add(t);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmPickup);drivableCars.push(t);farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,3.05,-2.65);farmPickupCargoGroup.frustumCulled=false;t.add(farmPickupCargoGroup);farmPickupVehicle=t;farmPickupRefreshVisual();
