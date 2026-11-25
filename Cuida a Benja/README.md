@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.10.1**
+**Version actual: 1.10.2**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -177,3 +177,11 @@ El botón flotante `Logs` abre el panel de diagnóstico con la contraseña `pipi
 - El martillo permite elegir cualquier estructura colocada para moverla o destruirla.
 - El inventario se simplifica a tarjetas de artículos, sin saldo ni textos adicionales.
 - La TV muestra un pollito dando vueltas mientras carga el canal.
+
+
+## Actualización 1.10.2 · Balde, subtítulos y mejoras visuales
+- La misión del bebedero detecta el balde en mochila o almacén y al comprarlo dirige al pozo.
+- Se quitaron las etiquetas y espirales del tractor y la camioneta.
+- Los diálogos aparecen como subtítulos; la cinemática avanza automáticamente.
+- Se retiró el reinicio manual de la interfaz.
+- Se añadieron detalles estructurales al almacén, tarimas y mochila, además de modelos diferenciados para los artículos transportados.
