@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.4",
+  "version": "1.9.5",
   "updates": [
+    {
+      "version": "1.9.5",
+      "title": "TV estable al tocar la pantalla y limpieza de voz",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "Se retiraron los botones, paneles y registros temporales de diagnóstico de voz; se conserva la narración y los subtítulos.",
+        "Se corrigió la causa del apagón de la TV: el desbloqueo global de audio volvía a cargar el canal y destruía la textura de video en cada toque de la pantalla.",
+        "Los toques normales ya no reinician la emisión; si el video queda pausado, se intenta reanudarlo sin borrar el flujo.",
+        "Los botones 3D de TV y radio ahora exigen que el jugador esté junto al aparato y que el rayo toque la hitbox física del botón.",
+        "Se eliminaron las solicitudes repetidas de pantalla completa/orientación en cada toque."
+      ]
+    },
     {
       "version": "1.9.4",
       "title": "Controles de TV y compatibilidad de voz",
