@@ -490,6 +490,9 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
  #farmSubtitles{bottom:10px;font-size:11px;width:84vw}
  #cityJobPanel{top:5%;max-height:84vh;max-height:84dvh;padding:10px}
 }
+#farmSubtitles{z-index:1900;bottom:24px;width:min(760px,90vw);padding:12px 18px;border:1px solid rgba(255,214,137,.72);border-bottom:3px solid rgba(196,143,76,.9);border-radius:8px 8px 15px 15px;background:linear-gradient(180deg,rgba(12,19,22,.9),rgba(3,7,10,.94));box-shadow:0 8px 24px rgba(0,0,0,.42);font-size:14px;letter-spacing:.01em;animation:subtitleFade .25s ease-out}
+@keyframes subtitleFade{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
+#storyDialog,#sysRestartBtn,#restartModal{display:none!important}
 </style>
 </head>
 <body>
@@ -686,15 +689,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 </div>
 <div id="carEnterHint">🚗 ENTRAR AL CARRO</div>
 
-<div id="sysRestartBtn">🔄</div>
-<div id="restartModal">
-<h3>Reiniciar mundo</h3>
-<p>Vuelve todo como antes después de reiniciar.</p>
-<div style="display: flex; justify-content: space-between; gap: 10px;">
-<button class="modalBtn" id="btnRestartNo">No</button>
-<button class="modalBtn" id="btnRestartYes">Sí</button>
-</div>
-</div>
+
 
 <div id="storyDialog">
   <div class="storyCard">
@@ -1474,9 +1469,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
         });
         startupRefreshButton.addEventListener('click', () => refreshGitHubIfNeeded());
         playOfflineBtn.addEventListener('click', () => playWithoutDownload());
-        sysRestartBtn.addEventListener('click', () => { restartModal.style.display = 'block'; });
-        btnRestartNo.addEventListener('click', () => { restartModal.style.display = 'none'; });
-        btnRestartYes.addEventListener('click', fullRestartGame);
+        /* reinicio manual retirado */
 
         // El selector local queda desactivado: los recursos vienen del repositorio GitHub.
         folderInput.addEventListener('change', (e) => e.preventDefault());
@@ -4621,13 +4614,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
             if(progress)progress.textContent='Carteles intactos: '+postersIntact+'/'+totalPosters;
         }
-                function showStoryDialog(title,text,icon){
-            const p=document.getElementById('storyDialog');if(!p)return;
-            document.getElementById('storyDialogTitle').textContent=title||'';
-            document.getElementById('storyDialogText').textContent=text||'';
-            document.getElementById('storyDialogIcon').textContent=icon||'📜';p.style.display='flex';
-            speakFarmLine(title||'NARRADOR',text||'');
-        }
+                function showStoryDialog(title,text,icon){speakFarmLine(title||'NARRADOR',text||'');}
         function startFarmIntroCinematic(){
             if(!camera||!character)return;
             storyCinematicPlaying=true;storyCinematicStep=0;storyCinematicFrame=0;storyCinematicFrom=camera.position.clone();
@@ -4655,7 +4642,7 @@ function updateFarmCinematic(){
             else{cam=new THREE.Vector3(character.position.x+17,8,character.position.z+21);look=new THREE.Vector3(FARM_PIG_POS.x,2,FARM_PIG_POS.z);}
             const t=Math.min(1,storyCinematicFrame/165),ease=t*t*(3-2*t);
             camera.position.lerpVectors(storyCinematicFrom||camera.position,cam,ease*.12+.01);camera.lookAt(look);
-            if(storyCinematicFrame>220)storyCinematicFrame=220;
+            if(storyCinematicFrame>=220){storyCinematicFrame=220;advanceFarmCinematic();}
         }
         function playBenjaGrunt(force=false){
             if(!benjaSoundPlayers.length)return;const now=performance.now();if(!force&&now<benjaSoundNextAt)return;
@@ -4895,6 +4882,10 @@ function updateFarmCinematic(){
                 rackPost.position.set(x,4.1,0);storage.add(rackPost);
                 const lamp=new THREE.PointLight(0xffd99a,.42,34,2);lamp.position.set(x,13,0);storage.add(lamp);
             }
+            const roofRidge=new THREE.Mesh(new THREE.BoxGeometry(92,.9,1.1),new THREE.MeshStandardMaterial({color:0x443027,roughness:.92}));roofRidge.position.set(0,13.1,0);roofRidge.castShadow=true;storage.add(roofRidge);
+            for(let side=-1;side<=1;side+=2){for(let z=-34;z<=34;z+=17){const brace=new THREE.Mesh(new THREE.BoxGeometry(.42,7.2,.42),new THREE.MeshStandardMaterial({color:0x65432d,roughness:.9}));brace.position.set(side*42,4.1,z);brace.castShadow=true;storage.add(brace);const foot=new THREE.Mesh(new THREE.BoxGeometry(1.2,.35,1.2),new THREE.MeshStandardMaterial({color:0x3b3027,roughness:.85}));foot.position.set(side*42,.25,z);storage.add(foot);}}
+            for(let z=-34;z<=34;z+=17){const beam=new THREE.Mesh(new THREE.BoxGeometry(84,.5,.55),new THREE.MeshStandardMaterial({color:0x68472e,roughness:.92}));beam.position.set(0,7.1,z);beam.castShadow=true;storage.add(beam);}
+            const warmFill=new THREE.PointLight(0xffd39a,.85,92,1.7);warmFill.position.set(0,10,0);storage.add(warmFill);
             storage.position.set(FARM_STORAGE_POS.x,storageY,FARM_STORAGE_POS.z);farmGroup.add(storage);
             addFarmCollider(FARM_STORAGE_POS.x-43,FARM_STORAGE_POS.z,1.9,84,0,'storage-left',16);
             addFarmCollider(FARM_STORAGE_POS.x+43,FARM_STORAGE_POS.z,1.9,84,0,'storage-right',16);
@@ -4941,8 +4932,10 @@ function updateFarmCinematic(){
             types.forEach((type,index)=>{
               try{
                 const col=index%4,row=Math.floor(index/4),lx=shelfXs[col],lz=shelfZs[row];
-                const pallet=new THREE.Mesh(new THREE.BoxGeometry(11,.55,10),darkWood);
-                pallet.position.set(lx,.34,lz);pallet.castShadow=true;storage.add(pallet);
+                const pallet=new THREE.Group();pallet.position.set(lx,.34,lz);pallet.frustumCulled=false;storage.add(pallet);
+                const palletTop=new THREE.Mesh(new THREE.BoxGeometry(11,.28,9.7),darkWood);palletTop.castShadow=true;palletTop.receiveShadow=true;pallet.add(palletTop);
+                for(let px=-4.3;px<=4.4;px+=2.15){const slat=new THREE.Mesh(new THREE.BoxGeometry(1.75,.18,9.6),wood);slat.position.set(px,.22,0);slat.castShadow=true;pallet.add(slat);}
+                for(let pz=-3.7;pz<=3.8;pz+=3.7){const runner=new THREE.Mesh(new THREE.BoxGeometry(10.7,.42,.62),darkWood);runner.position.set(0,-.34,pz);runner.castShadow=true;pallet.add(runner);}
                 for(const side of [-1,1]){
                     const upright=new THREE.Mesh(new THREE.BoxGeometry(.35,5.5,.35),wood);
                     upright.position.set(lx+side*5.1,3.05,lz-3.9);storage.add(upright);
@@ -5035,10 +5028,8 @@ function updateFarmCinematic(){
                 tractorWheels.push({wheel,holder,front});
             }
             tractor.position.set(FARM_TRACTOR_POS.x,tractorY+.12,FARM_TRACTOR_POS.z);tractor.name='Tractor de la granja';
-            const tractorRing=new THREE.Mesh(new THREE.RingGeometry(6.4,7.2,32),new THREE.MeshBasicMaterial({color:0xffc84a,transparent:true,opacity:.48,side:THREE.DoubleSide,depthWrite:false}));tractorRing.rotation.x=-Math.PI/2;tractorRing.position.y=.1;tractorRing.frustumCulled=false;tractor.add(tractorRing);
-            const tractorLabelCanvas=document.createElement('canvas');tractorLabelCanvas.width=384;tractorLabelCanvas.height=96;
-            const tractorLabelCtx=tractorLabelCanvas.getContext('2d');tractorLabelCtx.fillStyle='rgba(20,47,28,.92)';tractorLabelCtx.fillRect(0,0,384,96);tractorLabelCtx.fillStyle='#fff2ba';tractorLabelCtx.font='bold 48px Arial';tractorLabelCtx.textAlign='center';tractorLabelCtx.textBaseline='middle';tractorLabelCtx.fillText('TRACTOR',192,48);
-            const tractorLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(tractorLabelCanvas),transparent:true,depthWrite:false}));tractorLabel.position.set(0,12.8,0);tractorLabel.scale.set(15,3.6,1);tractorLabel.frustumCulled=false;tractor.add(tractorLabel);
+            /* marcador retirado */
+            /* etiqueta retirada */
             tractor.userData={speed:0,steer:0,maxSpeed:.44,accel:.022,driftGrip:.24,collisionRadius:5.0,isFarmTractor:true,wheels:tractorWheels,suspension:0,lastTerrainX:99999,lastTerrainZ:99999,terrainFront:3.2,terrainRear:-3.2,terrainHalfTrack:3.7,exitDistance:6.8,exitSide:4.8};tractor.visible=true;tractor.traverse(o=>{o.visible=true;if(o.isMesh){o.frustumCulled=false;o.castShadow=true;}});farmGroup.add(tractor);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmTractor);drivableCars.push(tractor);createFarmPickupVehicle();
             const deliveryY=farmGroundAt(FARM_DELIVERY_POS.x,FARM_DELIVERY_POS.z),delivery=new THREE.Group();
             const deliveryPost=new THREE.Mesh(new THREE.BoxGeometry(.45,5,.45),wood);deliveryPost.position.y=2.5;delivery.add(deliveryPost);
@@ -5574,11 +5565,12 @@ function farmBuildSaveKey(){return STORY_SAVE_KEY+'_placed_builds';}
             if(cancel)cancel.addEventListener('click',cancelFarmBuildPlacement);
             farmBuildPanelBound=true;
         }
-        function farmCollectWaterWithBucket(completeMission=false){
+        function farmHasBucket(){return (Number(farmCarriedGoods&&farmCarriedGoods.balde)||0)+(Number(farmWarehouseStock&&farmWarehouseStock.balde)||0)>=1;}
+function farmCollectWaterWithBucket(completeMission=false){
             if(!storyModeActive||farmCityMode||!character)return false;
             const d=Math.hypot(character.position.x-FARM_WELL_POS.x,character.position.z-FARM_WELL_POS.z);
             if(d>22){showToast('acércate al pozo para recoger agua');setFarmGuideTarget(FARM_WELL_POS.x,FARM_WELL_POS.z,'ve al pozo');return false;}
-            const hasBucket=(Number(farmCarriedGoods.balde)||0)+(Number(farmWarehouseStock.balde)||0)>0;
+            const hasBucket=farmHasBucket();
             if(!hasBucket){showToast('necesitas comprar un balde en suministros');setFarmGuideTarget(FARM_SHOP_POS.x,FARM_SHOP_POS.z,'compra un balde');return false;}
             farmCarriedGoods.agua=(Number(farmCarriedGoods.agua)||0)+5;
             if(completeMission){storyMoney+=10;updateFarmMoneyLabel();farmCompleteMission('BEBEDERO LLENO','llenaste el balde en el pozo y llevaste agua limpia a la granja.','💧');}
@@ -5692,6 +5684,7 @@ function farmUpdateBenjaHud(){
     storyMoney-=price;farmCarriedGoods[type]=(Number(farmCarriedGoods[type])||0)+1;
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
     updateFarmCarryVisual(true);updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+    if(type==='balde'&&farmMissionId==='water'){setFarmGuideTarget(FARM_WELL_POS.x,FARM_WELL_POS.z,'ve al pozo y llena el balde');showToast('balde comprado y detectado. ahora ve al pozo.');}
     if(good.buildable){panel.style.display='none';startFarmBuildPlacement(type);}
     else if(type==='balde')showToast('compraste 1 balde reutilizable. ve al pozo y pulsa USAR para llenarlo con 5 litros.');
     else showToast('compraste '+good.label+'. puedes guardarlo en el almacen.');
@@ -6906,7 +6899,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
         }
                 function farmStartMission(id){
             farmMissionId=FARM_MISSION_DATA[id]?id:'harvest';storyStage=4;
-            const m=FARM_MISSION_DATA[farmMissionId];setFarmGuideTarget(m.target.x,m.target.z,m.label);
+            const m=FARM_MISSION_DATA[farmMissionId];if(farmMissionId==='water'&&farmHasBucket())setFarmGuideTarget(FARM_WELL_POS.x,FARM_WELL_POS.z,'ve al pozo y llena el balde');else setFarmGuideTarget(m.target.x,m.target.z,m.label);
             updateMissionUI();updateFarmMoneyLabel();saveStoryProgress();
         }
         function farmShuffleMissionDeck(){
@@ -6918,7 +6911,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
                 function farmCompleteMission(title,dialog,icon){
             farmMissionIndex++;if(farmMissionIndex>=farmMissionOrder.length)farmShuffleMissionDeck();
             farmMissionId=farmMissionOrder[farmMissionIndex]||'harvest';const m=FARM_MISSION_DATA[farmMissionId];
-            setFarmGuideTarget(m.target.x,m.target.z,m.label);updateMissionUI();updateFarmMoneyLabel();saveStoryProgress();
+            if(farmMissionId==='water'&&farmHasBucket())setFarmGuideTarget(FARM_WELL_POS.x,FARM_WELL_POS.z,'ve al pozo y llena el balde');else setFarmGuideTarget(m.target.x,m.target.z,m.label);updateMissionUI();updateFarmMoneyLabel();saveStoryProgress();
             if(title)showStoryDialog(title,dialog||'listo, vamos con el siguiente encargo.',icon||'✅');
         }
         function startStoryCampaign(reset){
@@ -8476,10 +8469,8 @@ function createFarmPickupVehicle(){
   pickupWheels.push({wheel:w,holder,front});
  }
  const x=FARM_TRACTOR_POS.x+21,z=FARM_TRACTOR_POS.z-4;t.position.set(x,farmGroundAt(x,z)+.12,z);t.rotation.y=Math.PI/2;t.name='Pickup de la granja';
- const pickupRing=new THREE.Mesh(new THREE.RingGeometry(6.4,7.2,32),new THREE.MeshBasicMaterial({color:0x54b9ff,transparent:true,opacity:.52,side:THREE.DoubleSide,depthWrite:false}));pickupRing.rotation.x=-Math.PI/2;pickupRing.position.y=.12;pickupRing.frustumCulled=false;t.add(pickupRing);
- const pickupLabelCanvas=document.createElement('canvas');pickupLabelCanvas.width=384;pickupLabelCanvas.height=96;
- const pickupLabelCtx=pickupLabelCanvas.getContext('2d');pickupLabelCtx.fillStyle='rgba(20,47,28,.92)';pickupLabelCtx.fillRect(0,0,384,96);pickupLabelCtx.fillStyle='#fff2ba';pickupLabelCtx.font='bold 44px Arial';pickupLabelCtx.textAlign='center';pickupLabelCtx.textBaseline='middle';pickupLabelCtx.fillText('CAMIONETA',192,48);
- const pickupLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(pickupLabelCanvas),transparent:true,depthWrite:false}));pickupLabel.position.set(0,9.8,0);pickupLabel.scale.set(12,3,1);pickupLabel.frustumCulled=false;t.add(pickupLabel);t.visible=true;t.frustumCulled=false;t.userData={speed:0,steer:0,maxSpeed:.50,accel:.026,driftGrip:.28,collisionRadius:5.4,isFarmPickup:true,wheels:pickupWheels,suspension:0,lastTerrainX:99999,lastTerrainZ:99999,terrainFront:4.1,terrainRear:-4.2,terrainHalfTrack:3.9,exitDistance:8.1,exitSide:5.2};t.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});farmGroup.add(t);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmPickup);drivableCars.push(t);farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,3.05,-2.65);farmPickupCargoGroup.frustumCulled=false;t.add(farmPickupCargoGroup);farmPickupVehicle=t;farmPickupRefreshVisual();
+ /* marcador retirado */
+ /* etiqueta retirada */t.visible=true;t.frustumCulled=false;t.userData={speed:0,steer:0,maxSpeed:.50,accel:.026,driftGrip:.28,collisionRadius:5.4,isFarmPickup:true,wheels:pickupWheels,suspension:0,lastTerrainX:99999,lastTerrainZ:99999,terrainFront:4.1,terrainRear:-4.2,terrainHalfTrack:3.9,exitDistance:8.1,exitSide:5.2};t.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});farmGroup.add(t);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmPickup);drivableCars.push(t);farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,3.05,-2.65);farmPickupCargoGroup.frustumCulled=false;t.add(farmPickupCargoGroup);farmPickupVehicle=t;farmPickupRefreshVisual();
 }function farmPickupTransfer(load){
  if(!farmPickupVehicle||!character)return;
  const d=Math.hypot(character.position.x-farmPickupVehicle.position.x,character.position.z-farmPickupVehicle.position.z);
