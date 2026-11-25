@@ -987,7 +987,7 @@ let farmWaterStorageGroup=null,farmPigstyGroup=null,farmPondWaterMeshes=[],farmP
 let farmBenjaFenceGroup=null;
 let farmWaterTankWater=null,farmWaterTankLabel=null,farmWaterTankLabelTexture=null;
 let farmPlacedBuildGroup=null,farmPlacedBuilds=[],farmBuildPreview=null,farmBuildType=null,farmBuildRotation=0,farmBuildPanelBound=false;
-let farmTorchLights=[],farmCityLampPool=[],farmCityLampUpdateAt=0,farmTorchUpdateAt=0,farmTVPointLight=null;
+let farmTorchLights=[],farmCityLampPool=[],farmCityLampUpdateAt=0,farmTorchUpdateAt=0,farmTVPointLight=null,farmTVPowerButtonMaterial=null,farmTVPowerLedMaterial=null,farmRadioPowerButtonMaterial=null,farmRadioPowerLedMaterial=null,farmTVSignalTexture=null;
 let farmTVPhysicalButtons=[],farmTVPhysicalHitTargets=[],farmTVPhysicalControlsBound=false,farmRadioPhysicalHitTargets=[],farmRadioPhysicalControlsBound=false,farmClockLastUi=0;
 let farmTVShowNoSignal=false;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
@@ -5004,12 +5004,16 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const controlPlate=new THREE.Mesh(new THREE.BoxGeometry(4.9,.78,.18),new THREE.MeshStandardMaterial({color:0x302319,roughness:.86}));
             controlPlate.position.set(0,1.62,1.96);tv.add(controlPlate);
             function makeChannelButton(x,label,action,color){
-                const base=new THREE.Mesh(new THREE.CylinderGeometry(.46,.46,.2,14),new THREE.MeshStandardMaterial({color,metalness:.18,roughness:.55}));
+                const baseMat=new THREE.MeshStandardMaterial({color:action==='power'?0x982126:color,metalness:.2,roughness:.5});
+                const base=new THREE.Mesh(new THREE.CylinderGeometry(.52,.52,.22,16),baseMat);
                 base.rotation.x=Math.PI/2;base.position.set(x,1.62,2.12);base.userData.tvChannelAction=action;base.userData.isTVChannelButton=true;tv.add(base);
-                const cap=new THREE.Mesh(new THREE.CylinderGeometry(.32,.34,.09,14),new THREE.MeshStandardMaterial({color:0xd7c49c,roughness:.5}));
-                cap.rotation.x=Math.PI/2;cap.position.set(x,1.62,2.29);cap.userData.tvChannelAction=action;cap.userData.isTVChannelButton=true;tv.add(cap);
+                const capColor=action==='power'?(farmTVPowerOn?0x27e36b:0xe52d32):0xd7c49c;
+                const capMat=new THREE.MeshStandardMaterial({color:capColor,emissive:action==='power'?capColor:0x000000,emissiveIntensity:action==='power'?.35:0,roughness:.48,metalness:.12});
+                const cap=new THREE.Mesh(new THREE.CylinderGeometry(.36,.38,.1,16),capMat);
+                cap.rotation.x=Math.PI/2;cap.position.set(x,1.62,2.31);cap.userData.tvChannelAction=action;cap.userData.isTVChannelButton=true;tv.add(cap);
+                if(action==='power')farmTVPowerButtonMaterial=capMat;
                 const labelCanvas=document.createElement('canvas');labelCanvas.width=256;labelCanvas.height=96;const lc=labelCanvas.getContext('2d');
-                lc.fillStyle='#f3dfb7';lc.fillRect(0,0,256,96);lc.fillStyle='#34251a';lc.font='bold 45px Arial';lc.textAlign='center';lc.textBaseline='middle';lc.fillText(label,128,49);
+                lc.clearRect(0,0,256,96);lc.fillStyle='#fff0cf';lc.font='bold 68px Arial';lc.textAlign='center';lc.textBaseline='middle';lc.fillText(label,128,49);
                 const labelMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.42),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,side:THREE.DoubleSide}));
                 labelMesh.position.set(x,2.12,2.2);tv.add(labelMesh);
                 farmTVPhysicalButtons.push(base,cap);
@@ -5019,12 +5023,16 @@ function removeCarRadioStation(index, reason='Sin señal'){
             makeChannelButton(-1.55,'◀','prev',0x446078);
             makeChannelButton(0,'⏻','power',0x9b6338);
             makeChannelButton(1.55,'▶','next',0x467e5a);
+            const tvLedHousing=new THREE.Mesh(new THREE.CylinderGeometry(.23,.25,.12,14),new THREE.MeshStandardMaterial({color:0x171717,roughness:.7}));
+            tvLedHousing.position.set(0,.92,2.18);tvLedHousing.rotation.x=Math.PI/2;tv.add(tvLedHousing);
+            farmTVPowerLedMaterial=new THREE.MeshStandardMaterial({color:farmTVPowerOn?0x27e36b:0xe52d32,emissive:farmTVPowerOn?0x27e36b:0xe52d32,emissiveIntensity:farmTVPowerOn?1.35:.55,roughness:.25});
+            const tvLed=new THREE.Mesh(new THREE.SphereGeometry(.13,12,8),farmTVPowerLedMaterial);tvLed.position.set(0,.92,2.29);tv.add(tvLed);
             for(const side of [-1,1]){
                 const leg=new THREE.Mesh(new THREE.BoxGeometry(.8,1,.8),new THREE.MeshStandardMaterial({color:0x252525}));leg.position.set(side*2.8,2.1,1.3);tv.add(leg);
             }
             farmTVPointLight=new THREE.PointLight(0x74c8ff,0,20,2);farmTVPointLight.position.set(0,6.2,3.2);tv.add(farmTVPointLight);
             tv.position.set(p.x,y,p.z);tv.rotation.y=-.25;tv.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(tv);farmTVProp=tv;addFarmCollider(p.x,p.z,10.5,4.8,-.25,'farm-tv');
-            updateFarmTVScreenVisual();
+            updateFarmTVScreenVisual();updateFarmPhysicalPowerLEDs();
         }
         function createFarmRadio(){
             if(!farmGroup)return;
@@ -5044,17 +5052,25 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 knob.rotation.x=Math.PI/2;knob.position.set(x,1.3,1.45);radio.add(knob);
             }
             function radioButton(x,label,action){
- const knob=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.24,14),new THREE.MeshStandardMaterial({color:0xd8bd83,metalness:.2,roughness:.5}));
+ const initial=action==='power'?(farmRadioPowerOn?0x27e36b:0xe52d32):0xd8bd83;
+ const knobMat=new THREE.MeshStandardMaterial({color:initial,emissive:action==='power'?initial:0x000000,emissiveIntensity:action==='power'?.35:0,metalness:.2,roughness:.5});
+ const knob=new THREE.Mesh(new THREE.CylinderGeometry(.31,.31,.26,16),knobMat);
  knob.rotation.x=Math.PI/2;knob.position.set(x,.72,1.55);radio.add(knob);
- const hit=new THREE.Mesh(new THREE.BoxGeometry(.8,.85,.75),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
+ if(action==='power')farmRadioPowerButtonMaterial=knobMat;
+ const hit=new THREE.Mesh(new THREE.BoxGeometry(.95,.95,.9),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
  hit.position.set(x,.72,1.65);hit.userData.radioAction=action;radio.add(hit);farmRadioPhysicalHitTargets.push(hit);
- const canvas=document.createElement('canvas');canvas.width=160;canvas.height=64;const c=canvas.getContext('2d');c.fillStyle='#f3dfb7';c.fillRect(0,0,160,64);c.fillStyle='#34251a';c.font='bold 28px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(label,80,32);
- const plate=new THREE.Mesh(new THREE.PlaneGeometry(.7,.28),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas),transparent:true,side:THREE.DoubleSide}));plate.position.set(x,1.18,1.56);radio.add(plate);
+ const canvas=document.createElement('canvas');canvas.width=160;canvas.height=64;const c=canvas.getContext('2d');c.clearRect(0,0,160,64);c.fillStyle='#fff0cf';c.font='bold 39px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(label,80,32);
+ const plate=new THREE.Mesh(new THREE.PlaneGeometry(.82,.34),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas),transparent:true,side:THREE.DoubleSide}));plate.position.set(x,1.18,1.56);radio.add(plate);
+ if(action==='power'){
+  const housing=new THREE.Mesh(new THREE.CylinderGeometry(.18,.2,.1,12),new THREE.MeshStandardMaterial({color:0x171717,roughness:.7}));housing.rotation.x=Math.PI/2;housing.position.set(x,.25,1.55);radio.add(housing);
+  farmRadioPowerLedMaterial=new THREE.MeshStandardMaterial({color:farmRadioPowerOn?0x27e36b:0xe52d32,emissive:farmRadioPowerOn?0x27e36b:0xe52d32,emissiveIntensity:farmRadioPowerOn?1.35:.55,roughness:.25});
+  const led=new THREE.Mesh(new THREE.SphereGeometry(.11,12,8),farmRadioPowerLedMaterial);led.position.set(x,.25,1.64);radio.add(led);
+ }
 }
-radioButton(-2.2,'−','prev');radioButton(-.8,'⏻','power');radioButton(.7,'+','next');
+radioButton(-2.2,'◀','prev');radioButton(-.8,'⏻','power');radioButton(.7,'▶','next');
 const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.MeshStandardMaterial({color:0x9aa5a4,metalness:.7,roughness:.3}));
             antenna.position.set(2.8,5.8,-.2);antenna.rotation.z=-.22;radio.add(antenna);
-            radio.position.set(p.x,y,p.z);radio.rotation.y=-.18;radio.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(radio);farmRadioProp=radio;addFarmCollider(p.x,p.z,7.8,3.1,-.18,'farm-radio');
+            radio.position.set(p.x,y,p.z);radio.rotation.y=-.18;radio.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(radio);farmRadioProp=radio;addFarmCollider(p.x,p.z,7.8,3.1,-.18,'farm-radio');updateFarmPhysicalPowerLEDs();
             
         }
         function createFarmDefensiveCorral(){
@@ -5249,7 +5265,7 @@ const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.
             farmPondRippleMeshes.forEach((r,i)=>{r.scale.setScalar(.96+((Math.sin(t+i*1.7)+1)*.035));r.material.opacity=.14+((Math.sin(t+i*1.3)+1)*.07);});
         }
         function createFarmWorld(){
-            farmTVPhysicalButtons=[];farmTVPhysicalHitTargets=[];farmRadioPhysicalHitTargets=[];farmTVProp=null;farmRadioProp=null;
+            farmTVPhysicalButtons=[];farmTVPhysicalHitTargets=[];farmRadioPhysicalHitTargets=[];farmTVProp=null;farmRadioProp=null;farmTVPowerButtonMaterial=null;farmTVPowerLedMaterial=null;farmRadioPowerButtonMaterial=null;farmRadioPowerLedMaterial=null;
             deformFarmTerrain();clearFarmColliders();
             if(farmGroup&&farmGroup.parent)farmGroup.parent.remove(farmGroup);
             farmGroup=new THREE.Group();scene.add(farmGroup);
@@ -5588,10 +5604,11 @@ function farmUpdateBenjaHud(){
    if(action==='buy'){
     const good=FARM_GOODS[type],price=type==='madera'?9:(good&&good.price);
     if(!good||storyMoney<price){showToast('no tienes suficiente dinero');return;}
-    storyMoney-=price;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
+    storyMoney-=price;farmCarriedGoods[type]=(Number(farmCarriedGoods[type])||0)+1;
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
-    updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+    updateFarmCarryVisual(true);updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
     if(good.buildable){panel.style.display='none';startFarmBuildPlacement(type);}
+    else if(type==='balde')showToast('compraste 1 balde reutilizable. ve al pozo y pulsa USAR para llenarlo con 5 litros.');
     else showToast('compraste '+good.label+'. puedes guardarlo en el almacen.');
    }else if(action==='store'){
     const moved=farmTotalGoods(farmCarriedGoods);if(!moved){showToast('no llevas nada para guardar');return;}
@@ -5631,8 +5648,16 @@ function updateFarmCarryVisual(force=false){
  if(farmCarryVisualGroup&&farmCarryVisualGroup.parent)farmCarryVisualGroup.parent.remove(farmCarryVisualGroup);
  farmCarryVisualGroup=new THREE.Group();const wood=new THREE.MeshLambertMaterial({color:0x76502f}),crate=new THREE.Mesh(new THREE.BoxGeometry(1.8,1.05,.85),wood);
  crate.position.y=.35;farmCarryVisualGroup.add(crate);farmCarryVisualGroup.visible=farmCountCarried()>0;
- const types=[];Object.keys(FARM_GOODS).forEach(k=>{for(let i=0;i<Math.min(12,Number(farmCarriedGoods[k])||0);i++)types.push(k);});
+ const types=[];Object.keys(FARM_GOODS).forEach(k=>{if(k==='balde')return;for(let i=0;i<Math.min(12,Number(farmCarriedGoods[k])||0);i++)types.push(k);});
  types.slice(0,8).forEach((k,i)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(.42,.38,.42),new THREE.MeshLambertMaterial({color:FARM_GOODS[k].color}));m.position.set(-.62+(i%4)*.42,.95+Math.floor(i/4)*.3,-.2);farmCarryVisualGroup.add(m);});
+ if((Number(farmCarriedGoods.balde)||0)>0){
+  const bucket=new THREE.Group(),metal=new THREE.MeshStandardMaterial({color:0x879aa2,metalness:.42,roughness:.48});
+  const body=new THREE.Mesh(new THREE.CylinderGeometry(.34,.43,.72,12,1,true),metal);body.position.y=.55;bucket.add(body);
+  const base=new THREE.Mesh(new THREE.CylinderGeometry(.43,.43,.09,12),new THREE.MeshStandardMaterial({color:0x40515a,metalness:.3,roughness:.7}));base.position.y=.19;bucket.add(base);
+  const rim=new THREE.Mesh(new THREE.TorusGeometry(.35,.045,6,18),metal);rim.rotation.x=Math.PI/2;rim.position.y=.92;bucket.add(rim);
+  const handle=new THREE.Mesh(new THREE.TorusGeometry(.31,.035,6,16,Math.PI),metal);handle.rotation.x=Math.PI;handle.position.y=.94;bucket.add(handle);
+  bucket.position.set(1.08,.45,-.12);bucket.scale.setScalar(.9);farmCarryVisualGroup.add(bucket);
+ }
  farmCarryVisualGroup.position.set(0,3.55,-.78);character.add(farmCarryVisualGroup);character.userData.farmCarryGroup=farmCarryVisualGroup;
 }
 function speakFarmLine(speaker,line){
@@ -5641,13 +5666,18 @@ function speakFarmLine(speaker,line){
  if(box){box.textContent=(speaker?String(speaker).toUpperCase()+': ':'')+line;box.style.display='block';}
  if('speechSynthesis'in window&&typeof SpeechSynthesisUtterance!=='undefined'){
   try{
-   const synth=window.speechSynthesis;
-   synth.cancel();synth.resume();
+   const synth=window.speechSynthesis;synth.cancel();synth.resume();
    const u=new SpeechSynthesisUtterance(line);
-   u.lang='es-MX';u.rate=.91;u.pitch=.92;u.volume=1;
+   const isNarrator=String(speaker||'').toLowerCase().includes('narrador');
+   u.lang='es-MX';u.rate=isNarrator?.88:.91;u.pitch=isNarrator?.72:.92;u.volume=1;
    const voices=synth.getVoices?synth.getVoices():[];
-   const spanish=voices.filter(x=>/^es([-_]|$)/i.test(x.lang));
-   const voice=spanish.find(x=>/es-MX|es-US|es-419/i.test(x.lang))||spanish[0];
+   const spanish=voices.filter(v=>/^es([-_]|$)/i.test(String(v.lang||'')));
+   const maleNames=/male|mascul|hombre|jorge|pablo|diego|carlos|raul|raúl|miguel|juan|antonio|enrique|alvaro|álvaro|andres|andrés|felipe|sergio|manuel|javier|roberto|pedro|david|daniel|luis|hector|héctor|mario|fernando|gabriel|gonzalo|eduardo|mateo|alonso|alejandro|oscar|óscar|rafael|ruben|rubén/i;
+   const femaleNames=/female|femenin|mujer|monica|mónica|paulina|sabina|elena|laura|lucia|lucía|maria|maría|valentina|sofia|sofía|helena|ines|inés|carmen|ana|andrea|isabel|beatriz|camila|claudia|cristina|dolores|julia|rosa/i;
+   const maleSpanish=spanish.filter(v=>(String(v.gender||'').toLowerCase()==='male'||maleNames.test(v.name||''))&&!femaleNames.test(v.name||''));
+   const preferred=maleSpanish.find(v=>/es-MX|es-US|es-419/i.test(v.lang||''))||maleSpanish[0];
+   const fallback=spanish.find(v=>!femaleNames.test(v.name||''))||spanish[0];
+   const voice=isNarrator?(preferred||fallback):(spanish.find(v=>/es-MX|es-US|es-419/i.test(v.lang||''))||spanish[0]);
    if(voice)u.voice=voice;
    synth.speak(u);
   }catch(e){}
@@ -5978,8 +6008,29 @@ function ensureFarmHlsLibrary(){
  }).catch(error=>{farmTVHlsScriptPromise=null;throw error;});
  return farmTVHlsScriptPromise;
 }
+function showFarmTVNoSignalScreen(channel){
+ if(!farmTVScreenMaterial)return;
+ if(farmTVSignalTexture){try{farmTVSignalTexture.dispose();}catch(_){}farmTVSignalTexture=null;}
+ const canvas=document.createElement('canvas');canvas.width=512;canvas.height=288;
+ const ctx=canvas.getContext('2d');ctx.fillStyle='#050505';ctx.fillRect(0,0,512,288);
+ for(let i=0;i<6200;i++){
+  const shade=75+Math.floor(Math.random()*160),alpha=.18+Math.random()*.55;
+  ctx.fillStyle='rgba('+shade+','+shade+','+shade+','+alpha+')';
+  ctx.fillRect(Math.random()*512,Math.random()*288,1+Math.random()*4,1+Math.random()*2);
+ }
+ for(let y=0;y<288;y+=4){ctx.fillStyle='rgba(0,0,0,.18)';ctx.fillRect(0,y,512,1);}
+ ctx.fillStyle='rgba(0,0,0,.72)';ctx.fillRect(22,88,468,112);
+ ctx.strokeStyle='rgba(255,255,255,.52)';ctx.lineWidth=2;ctx.strokeRect(22,88,468,112);
+ ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillStyle='#f4f4f4';ctx.font='900 42px Arial';ctx.fillText('SIN SEÑAL',256,130);
+ ctx.fillStyle='#d2d2d2';ctx.font='bold 18px Arial';ctx.fillText('NO HAY TRANSMISION',256,165);
+ ctx.fillStyle='#e6e6e6';ctx.font='bold 13px Arial';ctx.textAlign='left';ctx.fillText(String(channel&&channel.name||'TELEVISOR').toUpperCase().slice(0,42),24,263);
+ const tex=new THREE.CanvasTexture(canvas);tex.needsUpdate=true;farmTVSignalTexture=tex;
+ farmTVScreenMaterial.map=tex;farmTVScreenMaterial.emissiveMap=tex;farmTVScreenMaterial.color.setHex(0xffffff);
+ farmTVScreenMaterial.emissive.setHex(0xffffff);farmTVScreenMaterial.emissiveIntensity=.10;farmTVScreenMaterial.needsUpdate=true;
+}
 function restoreFarmTVScreenTexture(){
  if(farmTVVideoTexture){try{farmTVVideoTexture.dispose();}catch(_){}farmTVVideoTexture=null;}
+ if(farmTVSignalTexture){try{farmTVSignalTexture.dispose();}catch(_){}farmTVSignalTexture=null;}
  if(farmTVScreenMaterial){
   farmTVScreenMaterial.map=farmTVPlaceholderTexture;
   farmTVScreenMaterial.emissiveMap=farmTVPlaceholderTexture;
@@ -6021,7 +6072,7 @@ function startFarmTVIframeFallback(channel,token){
  const video=document.getElementById('farmTVWorldVideo'),frame=document.getElementById('farmTVWorldFrame');
  if(video){try{video.pause();video.removeAttribute('src');video.load();}catch(_){}video.style.display='block';}
  if(frame){frame.src='about:blank';frame.style.display='none';}
- farmTVIframeFallback=false;restoreFarmTVScreenTexture();
+ farmTVIframeFallback=false;showFarmTVNoSignalScreen(channel);
  const hint=document.getElementById('farmTVHint'),status=document.getElementById('farmTVPlayerStatus');
  if(hint)hint.textContent=channel.name+' no entregó una señal HLS reproducible en este navegador. Puedes abrir su sitio oficial.';
  if(status)status.textContent='Sin señal directa para la pantalla 3D · '+channel.name;
@@ -6036,7 +6087,7 @@ async function loadFarmTVChannel(){
   if(link){link.dataset.url=channel.url;link.textContent='ABRIR '+channel.name.toUpperCase()+' EN PLUTO TV';}
   if(hint)hint.textContent='Esta señal se abre en el reproductor oficial de Pluto TV. El catálogo y los canales disponibles pueden variar por país.';
   if(status)status.textContent='📡 '+channel.name+' · ABRE EL SITIO OFICIAL PARA REPRODUCIR';
-  restoreFarmTVScreenTexture();return;
+  showFarmTVNoSignalScreen(channel);return;
  }
  if(!channel.hls){startFarmTVIframeFallback(channel,token);return;}
  frame.style.display='none';video.style.display='block';video.volume=farmTVVolume;video.muted=false;video.playsInline=true;attachFarmTVVideoTexture(video);
@@ -6103,9 +6154,10 @@ function updateFarmTVScreenVisual(){
  if(farmTVScreenMaterial){
   farmTVScreenMaterial.color.setHex(farmTVPowerOn?0xffffff:0x000000);
   farmTVScreenMaterial.emissive.setHex(farmTVPowerOn?0x17212b:0x000000);
-  farmTVScreenMaterial.emissiveIntensity=farmTVPowerOn ? .6 : 0;
+  farmTVScreenMaterial.emissiveIntensity=farmTVPowerOn?(farmTVSignalTexture ? .10 : .6):0;
   farmTVScreenMaterial.needsUpdate=true;
  }
+ updateFarmPhysicalPowerLEDs();
 }
 function updateFarmTVScreenOverlay(){
  const overlay=document.getElementById('farmTVScreenOverlay');
@@ -6145,49 +6197,52 @@ function closeFarmTV(){
 }
 function setupFarmTVPhysicalControls(){
  if(farmTVPhysicalControlsBound||!renderer||!renderer.domElement)return;
- let lastPhysicalActionAt=0;
- const canvas=renderer.domElement;
- const activateAt=(event)=>{
-  if(event.target!==canvas||!storyModeActive||farmCityMode||!character||event.isPrimary===false)return;
-  if(event.type==='click'&&Date.now()-lastPhysicalActionAt<380)return;
-  if(event.pointerType==='mouse'&&event.button!==undefined&&event.button!==0)return;
-  const tvDistance=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
-  const radioDistance=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
-  const tvNear=tvDistance<=24,radioNear=radioDistance<=21;
-  if(!tvNear&&!radioNear)return;
+ const canvas=renderer.domElement,pointers=new Map();let lastActionAt=0;
+ const fromCanvas=e=>{const path=typeof e.composedPath==='function'?e.composedPath():[];return e.target===canvas||path.includes(canvas);};
+ const nearDevice=()=>!!(character&&storyModeActive&&!farmCityMode);
+ const begin=e=>{
+  if(!e||e.isPrimary===false||!fromCanvas(e)||!nearDevice())return;
+  const tvD=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
+  const radioD=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
+  if(tvD>32&&radioD>32)return;
+  pointers.set(e.pointerId,{x:e.clientX,y:e.clientY,time:performance.now()});
+ };
+ const finish=e=>{
+  if(!e)return;
+  const start=pointers.get(e.pointerId);pointers.delete(e.pointerId);
+  if(!start||!nearDevice()||Math.hypot(e.clientX-start.x,e.clientY-start.y)>36)return;
+  const now=performance.now();if(now-lastActionAt<320)return;
   const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
+  const tvD=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
+  const radioD=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
   camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);
-  const maxPixels=event.pointerType==='mouse'?38:76;
-  const projectedHit=(targets,maxDistance)=>{
-   let best=null,bestD=Infinity;
-   for(const target of (targets||[])){
-    if(!target||!target.visible)continue;
-    const p=target.getWorldPosition(new THREE.Vector3()).project(camera);
-    if(p.z< -1||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1)continue;
-    const sx=rect.left+(p.x+1)*.5*rect.width,sy=rect.top+(1-p.y)*.5*rect.height;
-    const d=Math.hypot(event.clientX-sx,event.clientY-sy);
-    if(d<=maxDistance&&d<bestD){best=target;bestD=d;}
-   }
-   return best;
-  };
-  const tvHit=tvNear?projectedHit(farmTVPhysicalHitTargets,maxPixels):null;
-  const radioHit=(!tvHit&&radioNear)?projectedHit(farmRadioPhysicalHitTargets,maxPixels):null;
-  if(!tvHit&&!radioHit)return;
-  lastPhysicalActionAt=Date.now();
-  event.preventDefault();event.stopPropagation();if(event.stopImmediatePropagation)event.stopImmediatePropagation();
-  if(radioHit){
-   const action=radioHit.userData.radioAction;
+  const targets=[];
+  if(tvD<=32)farmTVPhysicalHitTargets.forEach(target=>targets.push({target,kind:'tv'}));
+  if(radioD<=32)farmRadioPhysicalHitTargets.forEach(target=>targets.push({target,kind:'radio'}));
+  const radius=e.pointerType==='mouse'?48:90;let best=null,bestD=Infinity;
+  for(const item of targets){
+   const target=item.target;if(!target||!target.visible)continue;
+   const p=target.getWorldPosition(new THREE.Vector3()).project(camera);
+   if(p.z< -1||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1)continue;
+   const sx=rect.left+(p.x+1)*.5*rect.width,sy=rect.top+(1-p.y)*.5*rect.height;
+   const d=Math.hypot(e.clientX-sx,e.clientY-sy);
+   if(d<=radius&&d<bestD){best=item;bestD=d;}
+  }
+  if(!best)return;
+  lastActionAt=now;if(e.cancelable)e.preventDefault();e.stopPropagation();
+  if(best.kind==='radio'){
+   const action=best.target.userData.radioAction;
    if(action==='power')setFarmRadioPower(!farmRadioPowerOn);
    else{const next=(farmRadioStationIndex+(action==='next'?1:-1)+FARM_RADIO_STATIONS.length)%FARM_RADIO_STATIONS.length;selectFarmRadioStation(next);if(!farmRadioPowerOn)setFarmRadioPower(true);}
    showToast(action==='power'?'radio encendida/apagada':action==='next'?'siguiente emisora':'emisora anterior');return;
   }
-  const action=tvHit.userData.tvChannelAction;
+  const action=best.target.userData.tvChannelAction;
   if(action==='power'){const next=!farmTVPowerOn;setFarmTVPower(next);showToast(next?'televisor encendido':'televisor apagado');}
   else if(action==='prev'||action==='next'){cycleFarmTVChannel(action==='next'?1:-1);if(!farmTVPowerOn)setFarmTVPower(true);showToast(action==='next'?'siguiente canal':'canal anterior');}
  };
- // pointerup works better with Android touch WebViews; click remains as fallback.
- document.addEventListener('pointerup',activateAt,true);
- document.addEventListener('click',activateAt,true);
+ document.addEventListener('pointerdown',begin,true);
+ document.addEventListener('pointerup',finish,true);
+ document.addEventListener('pointercancel',e=>pointers.delete(e.pointerId),true);
  farmTVPhysicalControlsBound=true;farmRadioPhysicalControlsBound=true;
 }
 function setupFarmTVControls(){
@@ -6209,6 +6264,14 @@ function setupFarmTVControls(){
  if(!farmTVCurrentChannel)farmTVCurrentChannel=FARM_TV_CHANNELS[0];
  updateFarmTVPanelStatus();updateFarmTVScreenVisual();farmTVPanelBound=true;if(farmTVPowerOn)loadFarmTVChannel();
 }
+function updateFarmPhysicalPowerLEDs(){
+ const tvColor=farmTVPowerOn?0x27e36b:0xe52d32;
+ if(farmTVPowerButtonMaterial){farmTVPowerButtonMaterial.color.setHex(tvColor);farmTVPowerButtonMaterial.emissive.setHex(tvColor);farmTVPowerButtonMaterial.emissiveIntensity=farmTVPowerOn?.48:.18;farmTVPowerButtonMaterial.needsUpdate=true;}
+ if(farmTVPowerLedMaterial){farmTVPowerLedMaterial.color.setHex(tvColor);farmTVPowerLedMaterial.emissive.setHex(tvColor);farmTVPowerLedMaterial.emissiveIntensity=farmTVPowerOn?1.35:.55;farmTVPowerLedMaterial.needsUpdate=true;}
+ const radioColor=farmRadioPowerOn?0x27e36b:0xe52d32;
+ if(farmRadioPowerButtonMaterial){farmRadioPowerButtonMaterial.color.setHex(radioColor);farmRadioPowerButtonMaterial.emissive.setHex(radioColor);farmRadioPowerButtonMaterial.emissiveIntensity=farmRadioPowerOn?.48:.18;farmRadioPowerButtonMaterial.needsUpdate=true;}
+ if(farmRadioPowerLedMaterial){farmRadioPowerLedMaterial.color.setHex(radioColor);farmRadioPowerLedMaterial.emissive.setHex(radioColor);farmRadioPowerLedMaterial.emissiveIntensity=farmRadioPowerOn?1.35:.55;farmRadioPowerLedMaterial.needsUpdate=true;}
+}
 function updateFarmRadioPanel(){
  const status=document.getElementById('farmRadioStatus'),power=document.getElementById('farmRadioPowerBtn'),label=document.getElementById('farmRadioPowerLabel'),volume=document.getElementById('farmRadioVolume'),value=document.getElementById('farmRadioVolumeValue');
  const station=FARM_RADIO_STATIONS[farmRadioStationIndex];
@@ -6219,6 +6282,7 @@ function updateFarmRadioPanel(){
  if(value)value.textContent=Math.round(farmRadioVolume*100)+'%';
  const list=document.getElementById('farmRadioStations');
  if(list)list.querySelectorAll('button[data-farm-radio]').forEach(b=>b.classList.toggle('active',Number(b.dataset.farmRadio)===farmRadioStationIndex));
+ updateFarmPhysicalPowerLEDs();
 }
 function setFarmRadioVolume(value){
  farmRadioVolume=Math.max(0,Math.min(1,Number(value)/100));
@@ -6241,7 +6305,7 @@ function attemptFarmRadioStream(token){
  }catch(error){if(error&&error.name==='NotAllowedError')return;attemptFarmRadioStream(token);}
 }
 function setFarmRadioPower(on){
- farmRadioPowerOn=!!on;
+ farmRadioPowerOn=!!on;updateFarmPhysicalPowerLEDs();
  if(storyModeActive&&character)saveStoryProgress();
  const token=++farmRadioGeneration;
  if(!farmRadioPowerOn){
@@ -6700,7 +6764,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
   if(tvDist<18&&tvDist<=radioDist&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
   else if(radioDist<16&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
-  if(wellDist<22&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;farmCollectWaterWithBucket();}
+  if(wellDist<22&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;farmCollectWaterWithBucket(farmMissionId==='water');}
   if(tvDist<18&&tvDist<=radioDist)prompt='pulsa ATACAR para cambiar el canal o encender/apagar la televisión.';
   else if(radioDist<16)prompt='pulsa ATACAR para elegir una emisora y encender/apagar la radio.';
   else if(shopDist<19)prompt='pulsa ATACAR para entrar al puesto y comprar suministros.';
