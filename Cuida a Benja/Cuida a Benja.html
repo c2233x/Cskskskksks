@@ -2429,12 +2429,34 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         }
 
         function forceHudVisible() {
-            // El HUD base nunca debe depender de abrir Ajustes para hacerse visible.
-            // Solo los botones especiales (vuelo/mortero/tubo) mantienen su visibilidad propia.
-            const sb = document.getElementById('settingsBtn');
-            if (joystickArea) { joystickArea.style.display = 'block'; joystickArea.style.visibility = 'visible'; }
-            if (actionButtons) { actionButtons.style.display = 'flex'; actionButtons.style.visibility = 'visible'; }
-            if (sb) { sb.style.display = 'flex'; sb.style.visibility = 'visible'; }
+            // Restaurar siempre los controles esenciales del juego, incluso si el
+            // WebView conserva estilos inline antiguos o reglas de ocultación.
+            const show = (id, display) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                el.style.setProperty('display', display, 'important');
+                el.style.setProperty('visibility', 'visible', 'important');
+                el.style.setProperty('opacity', '1', 'important');
+                el.style.setProperty('pointer-events', 'auto', 'important');
+            };
+            show('settingsBtn', 'flex');
+            show('joystickArea', 'block');
+            show('actionButtons', 'flex');
+            show('jumpBtn', 'flex');
+            show('runBtn', 'flex');
+            show('attackBtn', 'flex');
+            show('playerHealthBar', 'block');
+            show('playerHealthLabel', 'block');
+            show('auraBarContainer', 'block');
+            show('auraLabel', 'block');
+            show('mudBar', 'block');
+            show('mudLabel', 'block');
+            if (storyModeActive) {
+                show('missionUI', 'block');
+                show('farmBenjaHud', 'flex');
+                show('farmClockHud', 'block');
+                show('storyGuide', 'block');
+            }
             if (typeof updateButtonsState === 'function') updateButtonsState();
         }
 
