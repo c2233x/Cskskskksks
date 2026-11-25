@@ -2510,6 +2510,18 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 requestAnimationFrame(restoreHud);
                 setTimeout(restoreHud, 350);
                 setTimeout(restoreHud, 1200);
+                // Respaldo continuo para WebView Android: algunas capas del host o
+                // scripts tardíos vuelven a aplicar display:none después del arranque.
+                // Reafirmamos el HUD mientras se juega, sin interferir con vehículos
+                // ni con el estado de muerte.
+                if (!window.__cuidaBenjaHudWatchdog) {
+                    window.__cuidaBenjaHudWatchdog = window.setInterval(() => {
+                        if (!gameStarted || isDriving || isDead) return;
+                        try { restoreHud(); } catch (hudError) {
+                            console.warn('No se pudo restaurar el HUD:', hudError);
+                        }
+                    }, 900);
+                }
             } catch (error) {
                 gameStarted = false;
                 console.error('Error al iniciar Cuida a Benja:', error);
