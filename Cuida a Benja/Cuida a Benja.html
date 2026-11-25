@@ -1676,10 +1676,11 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
                     if (data.truncated) throw new Error('Árbol de GitHub truncado');
+                    // Descargar el proyecto completo: Cuida a Benja y TODO El Bromas,
+                    // incluida la base HTML, scripts, sonidos, texturas y futuras carpetas.
                     const prefixes = [
                         `${GITHUB_FOLDER}/`,
-                        'El Bromas/Sonidos/',
-                        'El Bromas/Textura/'
+                        'El Bromas/'
                     ];
                     const entries = (Array.isArray(data.tree) ? data.tree : [])
                         .filter(x => x.type === 'blob' && prefixes.some(prefix => x.path.startsWith(prefix)))
@@ -1927,7 +1928,8 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         async function loadCachedGameFiles() {
             const meta = await cacheGet(`meta:${currentGameVersion}`);
-            if (!meta || !Array.isArray(meta.paths) || !meta.paths.length) return null;
+            if (!meta || meta.complete !== true || !Array.isArray(meta.paths) || !meta.paths.length) return null;
+            if (Number(meta.total) !== meta.paths.length) return null;
             const files = [];
             for (const path of meta.paths) {
                 const rec = await cacheGet(`file:${currentGameVersion}:${path}`);
@@ -1936,6 +1938,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 const file = makeLoadedFile(rec.blob, path, rec.type, rec.lastModified);
                 files.push(file);
             }
+            if (files.length !== meta.paths.length) return null;
             return files;
         }
 
@@ -2031,7 +2034,14 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             // en el siguiente inicio, sin volver a descargar ni reconstruirlos.
             try {
                 const paths = virtualFiles.map(f => f.webkitRelativePath || f.name).filter(Boolean);
-                await cachePut({ key: `meta:${currentGameVersion}`, version: currentGameVersion, paths, savedAt: Date.now() });
+                if (autoStart && !failedDownloadEntries.length) {
+                    await cachePut({ key: `meta:${currentGameVersion}`, version: currentGameVersion, paths, total: paths.length, complete: true, savedAt: Date.now() });
+                    saveDownloadManifest(currentGameVersion, paths.length);
+                    githubLogMsg(`💾 Caché completo verificado: ${paths.length} archivos.`, 'ok');
+                } else {
+                    await cachePut({ key: `meta:${currentGameVersion}`, version: currentGameVersion, paths: [], total: 0, complete: false, savedAt: Date.now() });
+                    githubLogMsg('⚠️ Descarga parcial: no se marcará como caché completo.', 'error');
+                }
             } catch (cacheError) {
                 console.warn('No se pudo guardar el índice del caché:', cacheError);
             }
@@ -2119,9 +2129,9 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             githubLogMsg('📦 Abriendo ZIP...');
             const zip = await JSZip.loadAsync(zipBlob);
             const prefix = `${GITHUB_REPO}-${GITHUB_BRANCH}/`;
-            const targetPrefix = `${prefix}${GITHUB_FOLDER}/`;
+            const targetPrefixes = [`${prefix}${GITHUB_FOLDER}/`, `${prefix}El Bromas/`];
             const zipEntries = Object.values(zip.files).filter(entry =>
-                !entry.dir && entry.name.startsWith(targetPrefix)
+                !entry.dir && targetPrefixes.some(targetPrefix => entry.name.startsWith(targetPrefix))
             );
 
             if (!zipEntries.length) {
@@ -2227,9 +2237,8 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     // No se usa el ZIP completo ni se mezclan los archivos de El Bromas.
                     entries = [];
                     await githubCollectFiles(GITHUB_FOLDER, entries, []);
-                    await githubCollectFiles('El Bromas/Sonidos', entries, []);
-                    await githubCollectFiles('El Bromas/Textura', entries, []);
-                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos del juego y sus recursos compartidos.');
+                    await githubCollectFiles('El Bromas', entries, []);
+                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos del juego y la base original.');
                     githubLogMsg(`Listado alternativo obtenido con Contents API: ${entries.length} archivos.`, 'ok');
                 }
                 const stored = await getStoredCountForVersion(oldVersion || currentGameVersion);
@@ -2295,7 +2304,8 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     githubLogMsg(`Git Trees no respondió: ${treeError.message}. Probando Contents API...`, 'error');
                     entries = [];
                     await githubCollectFiles(GITHUB_FOLDER, entries, []);
-                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos en /' + GITHUB_FOLDER + '/.');
+                    await githubCollectFiles('El Bromas', entries, []);
+                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos de Cuida a Benja y El Bromas.');
                     githubLogMsg(`Listado alternativo de Contents API: ${entries.length} archivos.`, 'ok');
                 }
                 entriesTotalForUI = entries.length;
@@ -2481,6 +2491,25 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 try { if (audioPlayer) { audioPlayer.pause(); audioPlayer.currentTime = 0; } } catch (_) {}
                 initGame();
                 forceHudVisible();
+                // WebView Android puede aplicar estilos del canvas después de initGame.
+                // Reafirmar el HUD tras los primeros frames evita que quede oculto.
+                const restoreHud = () => {
+                    if (!gameStarted || isDriving || isCinematic || isDead) return;
+                    forceHudVisible();
+                    const canvas = renderer && renderer.domElement;
+                    if (canvas) {
+                        canvas.style.position = 'fixed';
+                        canvas.style.left = '0';
+                        canvas.style.top = '0';
+                        canvas.style.width = '100vw';
+                        canvas.style.height = '100vh';
+                        canvas.style.zIndex = '0';
+                        canvas.style.pointerEvents = 'none';
+                    }
+                };
+                requestAnimationFrame(restoreHud);
+                setTimeout(restoreHud, 350);
+                setTimeout(restoreHud, 1200);
             } catch (error) {
                 gameStarted = false;
                 console.error('Error al iniciar Cuida a Benja:', error);
