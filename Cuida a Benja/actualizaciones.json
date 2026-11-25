@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.8",
+  "version": "1.9.2",
   "updates": [
+    {
+      "version": "1.9.2",
+      "title": "Pickup, martillo y correcciones de granja",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "El tractor de la granja ahora se puede conducir con los controles de vehículos existentes.",
+        "Se amplió la entrada frontal del almacén y se corrigieron sus colisiones para dejar un acceso más despejado.",
+        "Los controles físicos de TV solo aceptan toques iniciados sobre el lienzo del juego y detienen la propagación del evento para evitar activaciones accidentales.",
+        "Se añadió una pickup conducible con paila para cargar y descargar productos; la carga se guarda localmente y vuelve a aparecer al reabrir el juego.",
+        "Se añadió un martillo comprable en suministros para mover estructuras construidas o desarmarlas y recuperar materiales y parte de su valor."
+      ]
+    },
     {
       "version": "1.7.8",
       "title": "Registro temporal de diagnóstico",
