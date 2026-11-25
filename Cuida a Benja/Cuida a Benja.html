@@ -7763,10 +7763,26 @@ function startProtestMission() {
         // El código de acceso se pide antes de ejecutar el cargador del juego.
         // 
         window.addEventListener('DOMContentLoaded', () => {
-            enterFullscreen();
-            setTimeout(() => enterFullscreen(), 350);
-            const accessGate=document.getElementById('accessGate');if(accessGate)accessGate.remove();
-            setTimeout(() => loadGitHubAssets(), 120);
+            // Arrancar el cargador ANTES de intentar pantalla completa.
+            // En algunos WebView Android requestFullscreen lanza/rechaza la promesa
+            // si no hay un gesto del usuario; eso no debe impedir que cargue el juego.
+            const accessGate = document.getElementById('accessGate');
+            if (accessGate) accessGate.remove();
+            setTimeout(() => {
+                try {
+                    Promise.resolve(loadGitHubAssets()).catch(error => {
+                        console.error('No se pudo iniciar el cargador:', error);
+                        showStartupError(error);
+                    });
+                } catch (error) {
+                    console.error('Error al arrancar el cargador:', error);
+                    showStartupError(error);
+                }
+            }, 80);
+            try { Promise.resolve(enterFullscreen()).catch(() => {}); } catch (_) {}
+            setTimeout(() => {
+                try { Promise.resolve(enterFullscreen()).catch(() => {}); } catch (_) {}
+            }, 350);
             let audioPoolsPrepared = false;
             const unlockAudio = () => {
                 enterFullscreen();
