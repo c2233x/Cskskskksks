@@ -6853,13 +6853,17 @@ async function enterCityMap(arrivedInPickup=false){
  cityTravelRetryAt=0;const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='none';
  const p=CITY_MAP_CONFIG.spawn||{x:0,z:0};
  if(arrivedInPickup&&farmPickupVehicle){
+  // La pickup se conserva como objeto independiente del grupo de ciudad y el jugador viaja dentro.
   if(farmPickupVehicle.parent!==scene)scene.add(farmPickupVehicle);
-  farmPickupVehicle.userData.speed=0;farmPickupVehicle.userData.steer=0;carInput={steer:0,throttle:0,reverse:0};
+  farmPickupInCity=true;farmPickupVehicle.visible=true;farmPickupVehicle.userData.speed=0;farmPickupVehicle.userData.steer=0;
+  carInput={steer:0,throttle:0,reverse:0};
   const candidates=[[-22,18],[22,18],[-22,-18],[22,-18],[0,30]];
   let spot=candidates[0];
   for(const c of candidates){if(!checkCollision(p.x+c[0],p.z+c[1])){spot=c;break;}}
-  farmPickupVehicle.position.set(p.x+spot[0],farmGroundAt(p.x+spot[0],p.z+spot[1])+.12,p.z+spot[1]);
-  farmPickupVehicle.rotation.set(0,0,0);farmPickupVehicle.visible=true;
+  const vx=p.x+spot[0],vz=p.z+spot[1];
+  farmPickupVehicle.position.set(vx,getTerrainY(vx,vz,null)+.12,vz);
+  farmPickupVehicle.rotation.set(0,0,0);farmPickupVehicle.frustumCulled=false;
+  farmPickupVehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});
   drivenCar=farmPickupVehicle;isDriving=true;character.position.copy(farmPickupVehicle.position);character.visible=false;
   const buttons=document.getElementById('carDrivingButtons'),hud=document.getElementById('carDriveHud');if(buttons)buttons.classList.add('active');if(hud)hud.classList.add('active');
   const radio=document.getElementById('carRadioPanel');if(radio)radio.classList.add('active');
@@ -6881,20 +6885,22 @@ function returnToFarmMap(keepPickup=false){
  unloadCityWorld();cityLootObjects=[];
  if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
  const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};
+ // Al salir de ciudad, aparcar SIEMPRE la pickup en la granja; nunca dejarla dentro del mapa descargado.
  if(farmPickupInCity&&farmPickupVehicle){
   if(farmPickupVehicle.parent!==farmGroup)farmGroup.add(farmPickupVehicle);
+  const x=p.x+22,z=p.z+8;
+  farmPickupVehicle.position.set(x,farmGroundAt(x,z)+.12,z);
+  farmPickupVehicle.rotation.set(0,Math.PI/2,0);farmPickupVehicle.visible=true;farmPickupVehicle.frustumCulled=false;
+  farmPickupVehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});
   if(keep){
-   const x=p.x+22,z=p.z+8;
-   farmPickupVehicle.position.set(x,farmGroundAt(x,z)+.12,z);farmPickupVehicle.rotation.set(0,Math.PI/2,0);
-   farmPickupVehicle.visible=true;drivenCar=farmPickupVehicle;isDriving=true;
-   character.position.copy(farmPickupVehicle.position);character.visible=false;
+   drivenCar=farmPickupVehicle;isDriving=true;character.position.copy(farmPickupVehicle.position);character.visible=false;
+   const buttons=document.getElementById('carDrivingButtons'),hud=document.getElementById('carDriveHud');if(buttons)buttons.classList.add('active');if(hud)hud.classList.add('active');
   }else{
-   const home=farmPickupHomePose||{x:FARM_TRACTOR_POS.x+21,y:farmGroundAt(FARM_TRACTOR_POS.x+21,FARM_TRACTOR_POS.z-4)+.12,z:FARM_TRACTOR_POS.z-4,rotationY:Math.PI/2};
-   farmPickupVehicle.position.set(home.x,home.y,home.z);farmPickupVehicle.rotation.set(0,home.rotationY||0,0);farmPickupVehicle.visible=true;
+   if(isDriving&&drivenCar===farmPickupVehicle)removeDrivenCarState();
+   character.position.set(x+8,farmGroundAt(x+8,z),z);character.visible=true;character.rotation.set(0,0,0);
   }
   farmPickupInCity=false;farmPickupHomePose=null;
- }
- if(!keep){character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.visible=true;character.rotation.set(0,0,0);}
+ }else if(!keep){character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.visible=true;character.rotation.set(0,0,0);}
  cameraTheta=0;cameraDistance=26;
  cityActiveJob=null;const jobs=document.getElementById('farmQuickJobs');if(jobs)jobs.style.display='none';
  const cityPanel=document.getElementById('cityJobPanel');if(cityPanel)cityPanel.style.display='none';
@@ -6959,6 +6965,11 @@ function cityLootCollectNearest(now){
 function updateCityMapMode(now){
  const spawn=CITY_MAP_CONFIG.spawn||{x:0,z:0};
  const actor=(isDriving&&drivenCar&&drivenCar.position)?drivenCar.position:character.position;
+ if(farmPickupInCity&&farmPickupVehicle){
+  if(farmPickupVehicle.parent!==scene)scene.add(farmPickupVehicle);
+  farmPickupVehicle.visible=true;
+  if(isDriving&&drivenCar===farmPickupVehicle)character.position.copy(farmPickupVehicle.position);
+ }
  if(Math.hypot(actor.x-spawn.x,actor.z-spawn.z)>(Number(CITY_MAP_CONFIG.exitRadius)||345)){travelToFarm();return;}
  let prompt='';
  if(cityActiveJob){
@@ -7204,6 +7215,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
    }else if(farmMissionId==='feed')prompt='ACERCATE A BENJA · '+Math.round(dist)+' m';
   }
  }
+ if(farmCityMode)return;
  const travelActor=(isDriving&&drivenCar&&drivenCar.position)?drivenCar:character;
  const distanceFromFarm=Math.hypot(travelActor.position.x-FARM_CENTER.x,travelActor.position.z-FARM_CENTER.z),beyondFarmLimit=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235);
  const cityRetryButton=document.getElementById('farmGoCity');if(cityRetryButton)cityRetryButton.style.display='none';
