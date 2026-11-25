@@ -1,8 +1,19 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.6",
+  "version": "1.7.7",
   "updates": [
+    {
+      "version": "1.7.7",
+      "title": "Lectura del repositorio y arranque móvil",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Three.js se carga desde el archivo local del proyecto y JSZip deja de bloquear el análisis inicial del HTML.",
+        "La consulta de versión, Git Trees, Contents API, descargas de archivos e inicio de IndexedDB tienen límites de espera.",
+        "Si Git Trees no responde, el cargador recorre la carpeta Cuida a Benja mediante Contents API antes de usar el respaldo ZIP.",
+        "La carga de recursos permanece limitada a Cuida a Benja; los archivos de El Bromas no se mezclan con este juego."
+      ]
+    },
     {
       "version": "1.7.6",
       "title": "Cargador original restaurado",
