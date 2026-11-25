@@ -6892,7 +6892,7 @@ async function travelToFarm(){
  const panel=document.getElementById('cityJobPanel');if(panel)panel.style.display='none';
  showMapTravelOverlay('REGRESANDO A LA GRANJA','Los trabajos de ciudad se cancelarán al regresar…');
  await new Promise(resolve=>setTimeout(resolve,850));stopStoryBackgroundMusic();
- returnToFarmMap(!!(isDriving&&drivenCar===farmPickupVehicle&&farmPickupInCity));
+ returnToFarmMap(!!(isDriving&&cityTravelVehicle&&drivenCar===cityTravelVehicle));
  showMapTravelOverlay('DE VUELTA CON BENJA','La misión de la granja continúa.');
  await new Promise(resolve=>setTimeout(resolve,450));hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;
 }
