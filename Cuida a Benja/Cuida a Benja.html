@@ -820,7 +820,30 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
    .catch(error=>{window.cuidaAddLog('FETCH_FAILED',url+' | '+error.name+': '+error.message+' | '+(Date.now()-started)+'ms');throw error;});
  };
  ['error','warn'].forEach(level=>{const original=console[level].bind(console);console[level]=(...args)=>{window.cuidaAddLog('CONSOLE_'+level,args.map(safe).join(' '));original(...args);};});
- window.cuidaAddLog('INFO','Diagnostico interno activo; panel visual deshabilitado.');
+
+ function installVisibleLogPanel(){
+  if(document.getElementById('cuidaLogsPanel'))return;
+  const style=document.createElement('style');style.textContent=`
+   #cuidaLogsToggle{position:fixed;right:12px;bottom:12px;z-index:2147483000;border:1px solid #36d7a0;border-radius:22px;background:#09251f;color:#dffff3;padding:10px 15px;font:800 13px Arial;box-shadow:0 3px 16px #0009;touch-action:manipulation}
+   #cuidaLogsPanel{position:fixed;z-index:2147483001;right:10px;bottom:58px;width:min(94vw,620px);height:min(62vh,480px);background:#07111c;border:1px solid #35c99b;border-radius:12px;box-shadow:0 8px 32px #000c;display:none;flex-direction:column;padding:10px;color:#e8fff7}
+   #cuidaLogsPanel header{display:flex;align-items:center;gap:7px;margin-bottom:8px;font:800 14px Arial}
+   #cuidaLogsPanel header button{background:#203449;color:white;border:1px solid #49677e;border-radius:7px;padding:7px 10px}
+   #cuidaLogsOutput{flex:1;min-height:0;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#02070d;border-radius:7px;padding:9px;color:#a9f4c9;font:10px/1.45 monospace;user-select:text}
+  `;document.head.appendChild(style);
+  const panel=document.createElement('section');panel.id='cuidaLogsPanel';panel.innerHTML='<header><span style="flex:1">REGISTRO DE ERRORES</span><button id="cuidaLogsCopy">Copiar</button><button id="cuidaLogsClear">Limpiar</button><button id="cuidaLogsClose">Cerrar</button></header><pre id="cuidaLogsOutput"></pre>';
+  const toggle=document.createElement('button');toggle.id='cuidaLogsToggle';toggle.type='button';toggle.textContent='📋 Logs';
+  document.body.appendChild(panel);document.body.appendChild(toggle);
+  const output=panel.querySelector('#cuidaLogsOutput');
+  const refresh=()=>{output.textContent=records.join('\\n');output.scrollTop=output.scrollHeight;};
+  toggle.addEventListener('click',()=>{panel.style.display=panel.style.display==='flex'?'none':'flex';if(panel.style.display==='flex')refresh();});
+  panel.querySelector('#cuidaLogsClose').addEventListener('click',()=>panel.style.display='none');
+  panel.querySelector('#cuidaLogsClear').addEventListener('click',()=>{records=[];try{sessionStorage.removeItem(KEY);}catch(_){}refresh();window.cuidaAddLog('INFO','Registro limpiado manualmente.');});
+  panel.querySelector('#cuidaLogsCopy').addEventListener('click',async()=>{const value=records.join('\\n');try{await navigator.clipboard.writeText(value);}catch(_){const ta=document.createElement('textarea');ta.value=value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}});
+  refresh();
+ }
+ if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installVisibleLogPanel,{once:true});else installVisibleLogPanel();
+ window.cuidaAddLog('INFO','Panel visual de logs habilitado.');
+
 })();
 // Cuida a Benja - datos del mapa de la granja.// Cuida a Benja - datos del mapa de la granja.
 // El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
