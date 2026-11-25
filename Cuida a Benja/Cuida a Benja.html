@@ -650,7 +650,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 #carReverseBtn{background:rgba(85,55,15,.92)}
 #carAccelBtn{background:linear-gradient(180deg,rgba(0,170,88,.96),rgba(0,105,55,.96));border-color:#72ffb0}
 #carDriveHud .carDriveBtn:active{filter:brightness(1.18)}
-#carCameraControls{position:absolute;top:14px;right:14px;display:grid;grid-template-columns:repeat(2,48px);gap:7px;pointer-events:auto}
+#carCameraControls{position:absolute;top:14px;right:14px;display:grid;grid-template-columns:repeat(2,48px);gap:7px;pointer-events:auto;z-index:8;touch-action:none}#carDrivingButtons.active #carCameraControls,#carDriveHud.active #carCameraControls{display:grid;visibility:visible;opacity:1;pointer-events:auto}
 #carCameraControls button{height:44px;border:2px solid #b9dfff;border-radius:12px;background:rgba(5,25,42,.9);color:#fff;font-size:19px;font-weight:1000;box-shadow:0 4px 14px #0008;touch-action:manipulation}
 #carCameraControls button:active{transform:scale(.92);background:#17628a}
 #carCameraLabel{grid-column:1/-1;color:#fff;text-align:center;font-size:9px;font-weight:900;text-shadow:0 2px 4px #000;}
@@ -3623,10 +3623,11 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 if(joystickKnob) joystickKnob.style.transform='translate(-50%,-50%)';
             },{passive:false});
             const camLeft=document.getElementById('carCamLeft'),camRight=document.getElementById('carCamRight'),zoomOut=document.getElementById('carZoomOut'),zoomIn=document.getElementById('carZoomIn');
-            if(camLeft)camLeft.addEventListener('click',()=>{if(isDriving)cameraTheta-=.32;});
-            if(camRight)camRight.addEventListener('click',()=>{if(isDriving)cameraTheta+=.32;});
-            if(zoomOut)zoomOut.addEventListener('click',()=>{if(isDriving)cameraDistance=Math.min(42,cameraDistance+3);});
-            if(zoomIn)zoomIn.addEventListener('click',()=>{if(isDriving)cameraDistance=Math.max(9,cameraDistance-3);});
+            const bindCameraControl=(el,action)=>{if(!el)return;const run=e=>{if(e){e.preventDefault();e.stopPropagation();}if(!isDriving||!drivenCar)return;action();};el.addEventListener('pointerdown',run,{passive:false});el.addEventListener('click',run);el.addEventListener('contextmenu',e=>e.preventDefault());el.style.touchAction='none';el.style.pointerEvents='auto';};
+            bindCameraControl(camLeft,()=>{cameraTheta-=.32;});
+            bindCameraControl(camRight,()=>{cameraTheta+=.32;});
+            bindCameraControl(zoomOut,()=>{cameraDistance=Math.min(48,cameraDistance+3);});
+            bindCameraControl(zoomIn,()=>{cameraDistance=Math.max(7,cameraDistance-3);});
             const sportBtn=document.getElementById('carSportBtn');
             if(sportBtn) sportBtn.addEventListener('pointerdown',e=>{
                 e.preventDefault(); e.stopPropagation();
@@ -7075,7 +7076,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   const tvDist=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
   const radioDist=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
   const wellDist=Math.hypot(character.position.x-FARM_WELL_POS.x,character.position.z-FARM_WELL_POS.z);
-  if(shopDist<19&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
+  if(shopDist<19&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');if(farmMissionId==='restock'){farmCompleteMission('PUESTO VISITADO','ya llegamos al puesto. revisa los productos y prepara la despensa para Benja.','🛒');}}
   if(storeDist<21&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
   if(tvDist<18&&tvDist<=radioDist&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
   else if(radioDist<16&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
@@ -7104,7 +7105,8 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
    }else if(farmMissionId==='feed')prompt='ACERCATE A BENJA · '+Math.round(dist)+' m';
   }
  }
- const distanceFromFarm=Math.hypot(character.position.x-FARM_CENTER.x,character.position.z-FARM_CENTER.z),beyondFarmLimit=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235);
+ const travelActor=(isDriving&&drivenCar&&drivenCar.position)?drivenCar:character;
+ const distanceFromFarm=Math.hypot(travelActor.position.x-FARM_CENTER.x,travelActor.position.z-FARM_CENTER.z),beyondFarmLimit=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235);
  const cityRetryButton=document.getElementById('farmGoCity');if(cityRetryButton)cityRetryButton.style.display='none';
  if(!farmRaidActive&&beyondFarmLimit&&Date.now()>=cityTravelRetryAt){travelToCity();return;}
  if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=farmMissionId==='meetBenja'?'ACERCATE':'USAR';interactionPrompt.setAttribute('aria-label',prompt);interactionPrompt.title=prompt;}
