@@ -1,8 +1,23 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.9",
+  "version": "1.10.0",
   "updates": [
+    {
+      "version": "1.10.0",
+      "title": "Inventario, Benja interactivo y mejoras visuales de la granja",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "El almacén recibe un suelo sólido, opaco y elevado ligeramente para evitar que el terreno lo atraviese o produzca parpadeos.",
+        "Se quita el cartel flotante de TU POCILGA BASE sin eliminar ni modificar la pocilga.",
+        "La acción USAR acepta pointerup y click con protección contra dobles toques; un pulso de seguridad libera el estado de ataque para evitar que el botón quede bloqueado.",
+        "Al acercarse a Benja durante su misión aparece USAR para lanzarle comida; si la comida está guardada, se retira una porción del almacén automáticamente.",
+        "Se añade INVENTARIO en pantalla con objetos de la mochila, herramientas, acceso al martillo, colocación de piezas y acciones de cuidado/mejora.",
+        "El tractor y la camioneta se acercan a la pocilga; el tractor tiene pintura más visible, luces, baliza y rótulo elevado.",
+        "El charco y las salpicaduras usan materiales no emisivos para que el barro deje de parecer fluorescente.",
+        "Las transiciones del cielo usan interpolación suave y un oscurecimiento nocturno más consistente durante el ciclo."
+      ]
+    },
     {
       "version": "1.9.9",
       "title": "Tractor junto a la casa, controles invisibles y misión del almacén",
