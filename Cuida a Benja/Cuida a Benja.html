@@ -4282,7 +4282,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             renderer.domElement.addEventListener('pointerup',releaseCameraPointer);
             renderer.domElement.addEventListener('pointercancel',releaseCameraPointer);
             renderer.domElement.addEventListener('touchstart', (e) => {
-                e.preventDefault(); if(isCinematic) return;
+                e.preventDefault(); if(cameraPointerId!==null)return; if(isCinematic) return;
                 // Si el joystick está siendo usado, el otro dedo controla la cámara al mismo tiempo.
                 if (joystickActive) {
                     const camTouch = Array.from(e.touches).find(t => t.identifier !== joystickTouchId);
@@ -4293,7 +4293,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 else if (e.touches.length === 2) { isCameraTouch = false; isZooming = true; const t1 = e.touches[0], t2 = e.touches[1]; initialPinchDistance = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY); initialCameraDistance = cameraDistance; }
             });
             renderer.domElement.addEventListener('touchmove', (e) => {
-                e.preventDefault(); if(isCinematic) return;
+                e.preventDefault(); if(cameraPointerId!==null)return; if(isCinematic) return;
                 if (joystickActive && cameraTouchId !== null) {
                     const t = Array.from(e.touches).find(t => t.identifier === cameraTouchId);
                     if (t) { cameraTheta -= (t.clientX - lastTouchX) * 0.008; cameraPhi = Math.max(0.1, Math.min(Math.PI / 2 + 0.2, cameraPhi - (t.clientY - lastTouchY) * 0.008)); lastTouchX=t.clientX; lastTouchY=t.clientY; }
@@ -6436,7 +6436,7 @@ function setupFarmUiControls(){
   useButton.dataset.useBound='1';useButton.setAttribute('role','button');useButton.setAttribute('tabindex','0');
   const activate=()=>{if(!gameStarted||isDead||isCinematic||isDriving)return;isAttacking=true;attackPhase=2;setTimeout(()=>{isAttacking=false;attackPhase=0;},180);};
   useButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();activate();});
-  useButton.addEventListener('touchstart',e=>{e.preventDefault();e.stopPropagation();activate();},{passive:false});
+  // El navegador genera click tras el toque; evitamos ejecutar dos veces la misma accion.
   useButton.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
  }
  const jobs=document.getElementById('farmQuickJobs'),go=document.getElementById('farmGoCity'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
@@ -6892,14 +6892,14 @@ function startProtestMission() {
             for (let stand of lifeCardStands) {
                 if (stand.userData.cards < stand.userData.maxCards) { stand.userData.respawnTimer--; if (stand.userData.respawnTimer <= 0) { stand.userData.cards++; stand.userData.respawnTimer = 600; if (stand.userData.cards === stand.userData.maxCards) stand.userData.signMesh.material.emissive.setHex(0x00ff00); } }
                 if (!isDead && character.position.distanceTo(stand.position) < 8) {
-                    interactionPrompt.style.display = 'block'; interactionPrompt.textContent = `Tarjetas de vida: ${stand.userData.cards} (100 aura cada una)`;
+                    interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Tarjetas de vida: ${stand.userData.cards} (100 aura cada una)`);
                     if (isAttacking && attackPhase === 2 && playerAura >= 100 && stand.userData.cards > 0) { playerAura -= 100; playerHealth = Math.min(playerMaxHealth, playerHealth + 30); stand.userData.cards--; updatePlayerHealth(); updateAuraUI(); changeAura(-100); playPumSound(); }
                 } else if (character.position.distanceTo(stand.position) < 12) { interactionPrompt.style.display = 'none'; }
             }
             
             for (let bath of bathZones) {
                 if (!isDead && character.position.distanceTo(bath.position) < 8) {
-                    interactionPrompt.style.display = 'block'; interactionPrompt.textContent = `Baño: ${bath.userData.cost} aura para limpiar mud`;
+                    interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Baño: ${bath.userData.cost} aura para limpiar mud`);
                     if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
