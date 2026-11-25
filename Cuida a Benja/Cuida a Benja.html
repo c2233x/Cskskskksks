@@ -1716,13 +1716,13 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         function saveFailedManifest(entries) {
             try {
                 const compact = (entries || []).map(e => ({ path:e.path, size:Number(e.size)||0, error:e.error||'Error desconocido', stack:e.stack||'', time:e.time||Date.now() }));
-                localStorage.setItem('ElBromas_FailedDownloads', JSON.stringify({version:currentGameVersion, entries:compact, savedAt:Date.now()}));
+                localStorage.setItem('ElBromas2_FailedDownloads', JSON.stringify({version:currentGameVersion, entries:compact, savedAt:Date.now()}));
             } catch (_) {}
         }
 
         function readFailedManifest(version) {
             try {
-                const raw = localStorage.getItem('ElBromas_FailedDownloads');
+                const raw = localStorage.getItem('ElBromas2_FailedDownloads');
                 const data = raw ? JSON.parse(raw) : null;
                 if (!data || data.version !== version || !Array.isArray(data.entries)) return [];
                 return data.entries.map(e => ({
@@ -1737,7 +1737,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         }
 
         function clearFailedManifest() {
-            try { localStorage.removeItem('ElBromas_FailedDownloads'); } catch (_) {}
+            try { localStorage.removeItem('ElBromas2_FailedDownloads'); } catch (_) {}
         }
 
         async function clearAllGameCache() {
@@ -1751,7 +1751,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     });
                 }
             } catch (_) {}
-            try { localStorage.removeItem('ElBromas_GameVersion'); } catch (_) {}
+            try { localStorage.removeItem('ElBromas2_GameVersion'); } catch (_) {}
             try {
                 for (const track of musicTracks) if (track && track.url) URL.revokeObjectURL(track.url);
             } catch (_) {}
@@ -1809,7 +1809,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         async function getGameVersion() {
             const remote = await fetchVersionDirect();
-            const saved = localStorage.getItem('ElBromas_GameVersion');
+            const saved = localStorage.getItem('ElBromas2_GameVersion');
             if (startupLatestVersion) startupLatestVersion.textContent = remote || '-';
             if (startupCurrentVersion) startupCurrentVersion.textContent = saved || '-';
             if (remote) {
@@ -1822,7 +1822,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 } else {
                     githubLogMsg(`🆕 Versión detectada: ${remote}.`, 'ok');
                 }
-                localStorage.setItem('ElBromas_GameVersion', remote);
+                localStorage.setItem('ElBromas2_GameVersion', remote);
                 if (startupCurrentVersion) startupCurrentVersion.textContent = remote;
             } else {
                 currentGameVersion = saved || 'sin-version';
@@ -2103,7 +2103,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             if (githubLoader.dataset.loading === '1') return;
             startupRefreshButton.disabled = true;
             try {
-                const oldVersion = localStorage.getItem('ElBromas_GameVersion') || '';
+                const oldVersion = localStorage.getItem('ElBromas2_GameVersion') || '';
                 const remote = await fetchVersionDirect();
                 if (startupLatestVersion) startupLatestVersion.textContent = remote || '-';
                 if (!remote) {
@@ -2113,7 +2113,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
                 if (remote !== oldVersion) {
                     // Cambió la versión: se limpia la versión anterior y se descargan sus recursos.
-                    localStorage.setItem('ElBromas_GameVersion', remote);
+                    localStorage.setItem('ElBromas2_GameVersion', remote);
                     currentGameVersion = remote;
                     await cacheClearOldVersions(remote);
                     if (startupCurrentVersion) startupCurrentVersion.textContent = remote;
