@@ -2494,7 +2494,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 // WebView Android puede aplicar estilos del canvas después de initGame.
                 // Reafirmar el HUD tras los primeros frames evita que quede oculto.
                 const restoreHud = () => {
-                    if (!gameStarted || isDriving || isCinematic || isDead) return;
+                    if (!gameStarted || isDriving || isDead) return;
                     forceHudVisible();
                     const canvas = renderer && renderer.domElement;
                     if (canvas) {
