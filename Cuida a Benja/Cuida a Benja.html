@@ -650,6 +650,10 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 #carReverseBtn{background:rgba(85,55,15,.92)}
 #carAccelBtn{background:linear-gradient(180deg,rgba(0,170,88,.96),rgba(0,105,55,.96));border-color:#72ffb0}
 #carDriveHud .carDriveBtn:active{filter:brightness(1.18)}
+#carCameraControls{position:absolute;top:14px;right:14px;display:grid;grid-template-columns:repeat(2,48px);gap:7px;pointer-events:auto}
+#carCameraControls button{height:44px;border:2px solid #b9dfff;border-radius:12px;background:rgba(5,25,42,.9);color:#fff;font-size:19px;font-weight:1000;box-shadow:0 4px 14px #0008;touch-action:manipulation}
+#carCameraControls button:active{transform:scale(.92);background:#17628a}
+#carCameraLabel{grid-column:1/-1;color:#fff;text-align:center;font-size:9px;font-weight:900;text-shadow:0 2px 4px #000;}
 #carDriftBtn{position:absolute;left:50%;bottom:112px;transform:translateX(-50%);width:112px;height:42px;border-radius:14px;background:rgba(100,55,180,.94);border:2px solid #d0a8ff;color:#fff;font-size:10px;font-weight:1000;pointer-events:auto;touch-action:none;box-shadow:0 7px 20px rgba(0,0,0,.38)}
 #carDriftBtn.on{background:linear-gradient(145deg,#ff7a00,#b62b00);border-color:#ffd08a;box-shadow:0 0 18px rgba(255,120,20,.65)}
 #carSteerPad.driftHidden{display:none!important}
@@ -686,6 +690,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
     <button id="carDriftBtn" aria-label="Alternar modo drift">DRIFT: NO</button>
     <button id="carSportBtn" aria-label="Alternar modo sport">SPORT: NO</button>
   </div>
+  <div id="carCameraControls" aria-label="Cámara de la camioneta"><button id="carCamLeft" aria-label="Girar cámara a la izquierda">↶</button><button id="carCamRight" aria-label="Girar cámara a la derecha">↷</button><button id="carZoomOut" aria-label="Alejar cámara">−</button><button id="carZoomIn" aria-label="Acercar cámara">＋</button><div id="carCameraLabel">CÁMARA</div></div>
 </div>
 <div id="carEnterHint">🚗 ENTRAR AL CARRO</div>
 
@@ -3617,6 +3622,11 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 joystickActive=false; joystickVector={x:0,y:0};
                 if(joystickKnob) joystickKnob.style.transform='translate(-50%,-50%)';
             },{passive:false});
+            const camLeft=document.getElementById('carCamLeft'),camRight=document.getElementById('carCamRight'),zoomOut=document.getElementById('carZoomOut'),zoomIn=document.getElementById('carZoomIn');
+            if(camLeft)camLeft.addEventListener('click',()=>{if(isDriving)cameraTheta-=.32;});
+            if(camRight)camRight.addEventListener('click',()=>{if(isDriving)cameraTheta+=.32;});
+            if(zoomOut)zoomOut.addEventListener('click',()=>{if(isDriving)cameraDistance=Math.min(42,cameraDistance+3);});
+            if(zoomIn)zoomIn.addEventListener('click',()=>{if(isDriving)cameraDistance=Math.max(9,cameraDistance-3);});
             const sportBtn=document.getElementById('carSportBtn');
             if(sportBtn) sportBtn.addEventListener('pointerdown',e=>{
                 e.preventDefault(); e.stopPropagation();
@@ -8501,11 +8511,14 @@ function farmPickupCargoCount(){
 function farmPickupRefreshVisual(){
  if(!farmPickupCargoGroup)return;
  while(farmPickupCargoGroup.children.length){const o=farmPickupCargoGroup.children[farmPickupCargoGroup.children.length-1];farmPickupCargoGroup.remove(o);if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());}}
- const list=[];Object.keys(FARM_GOODS).forEach(k=>{for(let i=0;i<Math.min(18,Number(farmPickupCargo[k])||0);i++)list.push(FARM_GOODS[k].color||0x98734b);});
- (Array.isArray(farmPickupCargo.cityLoot)?farmPickupCargo.cityLoot:[]).forEach(item=>list.push(Number(item.color)||0xa47744));
- list.slice(0,18).forEach((color,i)=>{
-  const m=new THREE.Mesh(new THREE.BoxGeometry(1.05,.72,.92),new THREE.MeshStandardMaterial({color,roughness:.9}));
-  m.position.set(-2.6+(i%5)*1.25,.35+Math.floor(i/5)*.78,-1.15);m.castShadow=!IS_MOBILE_DEVICE;farmPickupCargoGroup.add(m);
+ const entries=[];Object.keys(FARM_GOODS).forEach(k=>{const q=Math.max(0,Number(farmPickupCargo[k])||0);if(q)entries.push({key:k,label:FARM_GOODS[k].label||k,qty:q,color:FARM_GOODS[k].color||0x98734b});});
+ const lootGroups=new Map();(Array.isArray(farmPickupCargo.cityLoot)?farmPickupCargo.cityLoot:[]).forEach(item=>{const key=String(item.label||item.id||'Objeto');const rec=lootGroups.get(key)||{key,label:key,qty:0,color:Number(item.color)||0xa47744};rec.qty++;lootGroups.set(key,rec);});entries.push(...lootGroups.values());
+ entries.forEach((entry,i)=>{
+  const col=i%4,row=Math.floor(i/4)%3,layer=Math.floor(i/12),x=-2.75+col*1.82,z=-1.9+row*1.75,y=.35+layer*.9;
+  const crate=new THREE.Mesh(new THREE.BoxGeometry(1.5,.72,1.35),new THREE.MeshStandardMaterial({color:entry.color,roughness:.88}));crate.position.set(x,y,z);crate.castShadow=!IS_MOBILE_DEVICE;crate.receiveShadow=true;farmPickupCargoGroup.add(crate);
+  const band=new THREE.Mesh(new THREE.BoxGeometry(1.53,.12,1.38),new THREE.MeshStandardMaterial({color:0x493321,roughness:.95}));band.position.set(x,y+.18,z);farmPickupCargoGroup.add(band);
+  const cv=document.createElement('canvas');cv.width=256;cv.height=96;const cx=cv.getContext('2d');cx.fillStyle='rgba(12,20,18,.88)';cx.fillRect(0,0,256,96);cx.strokeStyle='#f0d59a';cx.lineWidth=6;cx.strokeRect(4,4,248,88);cx.fillStyle='#fff4d7';cx.font='bold 28px Arial';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(entry.label.slice(0,16),128,34);cx.font='bold 34px Arial';cx.fillText('×'+entry.qty,128,69);
+  const tex=new THREE.CanvasTexture(cv),sprite=new THREE.Sprite(new THREE.SpriteMaterial({map:tex,transparent:true,depthWrite:false}));sprite.scale.set(1.55,.58,1);sprite.position.set(x,y+.82,z);farmPickupCargoGroup.add(sprite);
  });
 }
 function createFarmPickupVehicle(){
@@ -8595,6 +8608,31 @@ function farmEnsureVehiclesVisible(now=performance.now()){
  if(tractor){if(tractor.parent!==farmGroup&&!isDriving)farmGroup.add(tractor);if(!isDriving)tractor.visible=true;tractor.frustumCulled=false;tractor.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});if(!drivableCars.includes(tractor))drivableCars.push(tractor);}
  if(farmPickupVehicle&&!isDriving){if(farmPickupVehicle.parent!==farmGroup)farmGroup.add(farmPickupVehicle);farmPickupVehicle.visible=true;farmPickupVehicle.frustumCulled=false;farmPickupVehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});if(!drivableCars.includes(farmPickupVehicle))drivableCars.push(farmPickupVehicle);}
 }
+function farmEnsureWaterTankControls(){
+ if(document.getElementById('farmWaterTankControls'))return;
+ const p=document.createElement('div');p.id='farmWaterTankControls';p.style.cssText='position:fixed;left:50%;top:16%;transform:translateX(-50%);z-index:1950;display:none;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;padding:10px 12px;border:2px solid #7bd9f4;border-radius:13px;background:rgba(5,28,42,.94);color:#fff;font-weight:900;max-width:94vw;pointer-events:auto;box-shadow:0 8px 24px #0009;';
+ p.innerHTML='<span id="farmTankStockLabel" style="width:100%;text-align:center;font-size:12px">💧 TANQUE</span><button type="button" id="farmTankStoreBtn" style="padding:10px;border:1px solid #a8eaff;border-radius:9px;background:#17627a;color:#fff;font-weight:900">⬆ GUARDAR AGUA</button><button type="button" id="farmTankTakeBtn" style="padding:10px;border:1px solid #a8eaff;border-radius:9px;background:#17627a;color:#fff;font-weight:900">⬇ SACAR 5 L</button>';
+ document.body.appendChild(p);
+ document.getElementById('farmTankStoreBtn').addEventListener('click',()=>{
+  const capacity=farmWaterCapacity(),room=Math.max(0,capacity-farmWaterStock()),have=Math.max(0,Number(farmCarriedGoods.agua)||0),n=Math.min(room,have);
+  if(!n){showToast(room<=0?'el tanque está lleno':'no llevas agua para guardar');return;}
+  farmCarriedGoods.agua-=n;farmWarehouseStock.agua=(Number(farmWarehouseStock.agua)||0)+n;farmUpdateWaterTankVisual();updateFarmCarryVisual(true);updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('guardaste '+n+' litros en el tanque');
+ });
+ document.getElementById('farmTankTakeBtn').addEventListener('click',()=>{
+  const available=farmWaterStock(),room=Math.max(0,60-(Number(farmCarriedGoods.agua)||0)),n=Math.min(5,available,room);
+  if(!n){showToast(available<=0?'el tanque está vacío':'no tienes espacio para llevar más agua');return;}
+  farmWarehouseStock.agua-=n;farmCarriedGoods.agua=(Number(farmCarriedGoods.agua)||0)+n;farmUpdateWaterTankVisual();updateFarmCarryVisual(true);updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('sacaste '+n+' litros del tanque');
+ });
+}
+function farmUpdateWaterTankControls(){
+ farmEnsureWaterTankControls();const p=document.getElementById('farmWaterTankControls');if(!p)return;
+ const near=!!(storyModeActive&&!farmCityMode&&!isDriving&&character&&farmWaterStorageGroup&&Math.hypot(character.position.x-farmWaterStorageGroup.position.x,character.position.z-farmWaterStorageGroup.position.z)<22);
+ p.style.display=near?'flex':'none';
+ const label=document.getElementById('farmTankStockLabel');if(label)label.textContent='💧 TANQUE: '+farmWaterStock()+' / '+farmWaterCapacity()+' L';
+ const store=document.getElementById('farmTankStoreBtn'),take=document.getElementById('farmTankTakeBtn');
+ if(store)store.textContent='⬆ GUARDAR AGUA ('+(farmCarriedGoods.agua||0)+' L)';
+ if(take)take.textContent='⬇ SACAR 5 L';
+}
 function farmPatchUiTick(){
  farmEnsurePickupControls();const p=document.getElementById('farmPickupControls');if(!p)return;
  const vehicleAvailable=!!(farmPickupVehicle&&farmPickupVehicle.visible&&(!farmCityMode||farmPickupInCity));
@@ -8605,7 +8643,7 @@ function farmPatchUiTick(){
  if(unload)unload.textContent='📤 BAJAR '+farmPickupCargoCount();
 }
 try{farmHammerOwned=localStorage.getItem(STORY_SAVE_KEY+'_hammer')==='1';farmPickupLoadCargo();cityLootLoadCarried();}catch(_){}
-setInterval(()=>{try{farmPatchUiTick();}catch(e){console.warn('pickup controls',e);}},450);
+setInterval(()=>{try{farmPatchUiTick();farmUpdateWaterTankControls();}catch(e){console.warn('farm proximity controls',e);}},450);
 </script>
 </body>
 </html>
