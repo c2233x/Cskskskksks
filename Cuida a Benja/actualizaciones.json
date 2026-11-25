@@ -1,8 +1,19 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.7",
+  "version": "1.7.8",
   "updates": [
+    {
+      "version": "1.7.8",
+      "title": "Registro temporal de diagnóstico",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "Botón flotante Logs disponible durante el inicio y dentro del juego.",
+        "Acceso al panel protegido por la contraseña pipi.",
+        "Captura temporal de pasos del cargador, peticiones fetch y estados HTTP, errores JavaScript, promesas rechazadas, recursos fallidos y avisos de consola.",
+        "Los logs se guardan solo en sessionStorage durante la sesión, con límite de tamaño, y se pueden copiar al portapapeles o limpiar."
+      ]
+    },
     {
       "version": "1.7.7",
       "title": "Lectura del repositorio y arranque móvil",
