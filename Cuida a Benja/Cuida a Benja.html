@@ -5772,8 +5772,9 @@ function farmThrowFood(){
  const storedType=foodTypes.find(k=>FARM_GOODS[k]&&FARM_GOODS[k].food&&(farmWarehouseStock[k]||0)>0);
  const type=carriedType||storedType;
  if(!type){showToast('no queda comida. compra en el puesto o consigue comida en el almacén.');return true;}
- if(carriedType)farmCarriedGoods[type]--;else farmWarehouseStock[type]--;
+ if(carriedType)farmCarriedGoods[type]--;else{farmWarehouseStock[type]--;refreshFarmStorageVisuals();}
  storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+ updateFarmCarryVisual(true);farmUpdateInventoryPanel();
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(.62,9,7),new THREE.MeshStandardMaterial({color:FARM_GOODS[type].color,roughness:.9}));
  const from=character.position.clone();from.y+=4.2;from.x+=Math.sin(character.rotation.y)*1.8;from.z+=Math.cos(character.rotation.y)*1.8;const target=benjaPig.position.clone();target.y+=2.55;
  mesh.position.copy(from);scene.add(mesh);farmThrownFood.push({mesh,start:from.clone(),target,type,progress:0});updateFarmMoneyLabel();saveStoryProgress();playPumSound();showToast('le lanzaste '+FARM_GOODS[type].label.toLowerCase()+' a benja.');return true;
@@ -6796,7 +6797,7 @@ function setupFarmUiControls(){
    const now=performance.now();if(now-farmLastUsePulse<260)return;
    farmLastUsePulse=now;farmUsePending=true;farmUsePendingAt=now;farmUsePulseUntil=now+340;
    isAttacking=true;attackPhase=2;
-   setTimeout(()=>{if(farmLastUsePulse===now){isAttacking=false;attackPhase=0;farmUsePulseUntil=0;}},360);
+   setTimeout(()=>{if(farmLastUsePulse===now){if(attackPhase===2){isAttacking=false;attackPhase=0;}farmUsePulseUntil=0;}},360);
   };
   const useEvent=e=>{e.preventDefault();e.stopPropagation();activate();};
   useButton.addEventListener('pointerup',useEvent);
