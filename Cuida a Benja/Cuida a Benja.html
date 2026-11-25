@@ -1595,6 +1595,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         }
 
         function githubLogMsg(message, type='info') {
+            if (window.cuidaAddLog) window.cuidaAddLog('STARTUP_' + String(type || 'info').toUpperCase(), message);
             const stamp = new Date().toLocaleTimeString();
             const prefix = type === 'error' ? '❌' : type === 'ok' ? '✅' : 'ℹ️';
             const line = `[${stamp}] ${prefix} ${message}`;
