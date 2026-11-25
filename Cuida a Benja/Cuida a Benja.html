@@ -1005,6 +1005,7 @@ let farmRadioScanToken=0,farmRadioScanActive=false,farmRadioScanAudio=null,farmR
         let farmThrownFood=[],farmCarryVisualHash='',farmCarryVisualGroup=null,farmLastSubtitleAt=0;
         let farmMissionHintWasVisible=false;
         let farmStorageVisuals={},farmStorageBins={},farmMissionDecor=[];
+let farmPickupVehicle=null,farmPickupCargoGroup=null,farmPickupCargo={},farmHammerOwned=false,farmHammerPanel=null;
         let farmMissionOrder=FARM_MISSION_ORDER.slice(),farmMissionIndex=0,farmMissionCycle=0,farmMissionId='harvest';
         let farmCarriedGoods={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:0,manzanas:0};
         let farmWarehouseStock={maiz:0,trigo:0,zanahoria:0,heno:0,pienso:0,huevos:0,agua:0,madera:6,manzanas:0};
@@ -4829,8 +4830,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
             makeFarmBox(storage,23,0,0,1.7,13,36,wood);
             makeFarmBox(storage,0,0,-17,46,13,1.7,wood);
             // Frente con entrada amplia: deja un pasillo real para entrar caminando.
-            makeFarmBox(storage,-16,0,17,16,13,1.7,wood);
-            makeFarmBox(storage,16,0,17,16,13,1.7,wood);
+            makeFarmBox(storage,-18,0,17,12,13,1.7,wood);
+            makeFarmBox(storage,18,0,17,12,13,1.7,wood);
             for(const x of [-21,0,21]){
                 const beam=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.1,37),darkWood);beam.position.set(x,13,0);storage.add(beam);
             }
@@ -4842,7 +4843,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             storage.position.set(FARM_STORAGE_POS.x,storageY,FARM_STORAGE_POS.z);farmGroup.add(storage);
             addFarmCollider(FARM_STORAGE_POS.x-23,FARM_STORAGE_POS.z,1.9,36,0,'storage-left');addFarmCollider(FARM_STORAGE_POS.x+23,FARM_STORAGE_POS.z,1.9,36,0,'storage-right');addFarmCollider(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z-17,46,1.9,0,'storage-back');
             // Laterales del frente separados para no cerrar el hueco de la puerta.
-            addFarmCollider(FARM_STORAGE_POS.x-16,FARM_STORAGE_POS.z+17,1.9,16,0,'storage-front-left');addFarmCollider(FARM_STORAGE_POS.x+16,FARM_STORAGE_POS.z+17,1.9,16,0,'storage-front-right');
+            addFarmCollider(FARM_STORAGE_POS.x-18,FARM_STORAGE_POS.z+17,12,1.9,0,'storage-front-left');addFarmCollider(FARM_STORAGE_POS.x+18,FARM_STORAGE_POS.z+17,12,1.9,0,'storage-front-right');
             
             const itemGeometry={
                 maiz:new THREE.CylinderGeometry(.22,.34,1.35,7),
@@ -4952,7 +4953,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const body=new THREE.Mesh(new THREE.BoxGeometry(7,2.7,10),new THREE.MeshLambertMaterial({color:0x3d8c48}));body.position.y=2.7;tractor.add(body);
             const cab=new THREE.Mesh(new THREE.BoxGeometry(4.5,4.3,4.5),new THREE.MeshLambertMaterial({color:0x8ec8d7}));cab.position.set(0,5.8,-1);tractor.add(cab);
             for(const side of [-1,1])for(const z of [-3.2,3.2]){const radius=z>0?2.2:1.45,wheel=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,1.15,10),new THREE.MeshLambertMaterial({color:0x222222}));wheel.rotation.z=Math.PI/2;wheel.position.set(side*3.7,z>0?2.2:1.55,z);tractor.add(wheel);}
-            tractor.position.set(FARM_TRACTOR_POS.x,tractorY,FARM_TRACTOR_POS.z);farmGroup.add(tractor);addFarmCollider(FARM_TRACTOR_POS.x,FARM_TRACTOR_POS.z,8.6,11.5,0,'farm-tractor');
+            tractor.position.set(FARM_TRACTOR_POS.x,tractorY,FARM_TRACTOR_POS.z);farmGroup.add(tractor);tractor.userData={speed:0,steer:0,maxSpeed:.62,accel:.038,driftGrip:.22,collisionRadius:5.2,isFarmTractor:true};drivableCars=drivableCars.filter(v=>!v.userData?.isFarmTractor);drivableCars.push(tractor);createFarmPickupVehicle();
             const deliveryY=farmGroundAt(FARM_DELIVERY_POS.x,FARM_DELIVERY_POS.z),delivery=new THREE.Group();
             const deliveryPost=new THREE.Mesh(new THREE.BoxGeometry(.45,5,.45),wood);deliveryPost.position.y=2.5;delivery.add(deliveryPost);
             const board=new THREE.Mesh(new THREE.BoxGeometry(9,2.7,.5),new THREE.MeshLambertMaterial({color:0xe0bd7a}));board.position.set(0,5.4,0);delivery.add(board);
@@ -5539,10 +5540,12 @@ function farmUpdateBenjaHud(){
   buyables.filter(type=>FARM_GOODS[type].food||type==='madera'||type==='balde').forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar '+good.label+' · $'+good.price+'</button>';});
   html+='<div class="farmShopSectionTitle">🛠️ CONSTRUCCIÓN E ILUMINACIÓN</div>';
   buyables.filter(type=>FARM_GOODS[type].buildable).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar y colocar '+good.label+' · $'+good.price+'</button>';});
+  html+='<button type="button" data-farm-action="buy-hammer">🔨 Comprar martillo de construcción · $35'+(farmHammerOwned?' · YA COMPRADO':'')+'</button>';
   html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
  }else{
   html+='<div class="farmShopSectionTitle">📦 GUARDAR Y ORGANIZAR</div><button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button><div class="farmShopSectionTitle">🎒 RETIRAR PRODUCTOS</div>';
   Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">'+(good.icon||'📦')+' Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';if(good.buildable&&(farmCarriedGoods[type]||0)>0)html+='<button type="button" data-farm-action="place-item" data-good="'+type+'">🛠️ COLOCAR '+good.label+' ('+farmCarriedGoods[type]+')</button>';});
+  html+='<button type="button" data-farm-action="use-hammer">🔨 USAR MARTILLO · MOVER O DESARMAR</button>';
   html+='<button type="button" data-farm-action="wash-benja">🚿 BAÑAR A BENJA · 3 AGUA</button>';
   html+='<button type="button" data-farm-action="upgrade-pigsty">🐷 MEJORAR POCILGA · NIVEL '+farmPigstyLevel+'/4</button>';
   html+='<button type="button" data-farm-action="upgrade-water">💧 AMPLIAR DEPÓSITO · NIVEL '+farmWaterStorageLevel+'/4</button>';
@@ -5574,6 +5577,10 @@ function farmUpdateBenjaHud(){
     farmWarehouseStock[type]--;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
     refreshFarmStorageVisuals();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+   }else if(action==='buy-hammer'){
+    if(farmHammerOwned){showToast('ya tienes el martillo');return;}if(storyMoney<35){showToast('necesitas $35 para comprar el martillo');return;}
+    storyMoney-=35;farmHammerOwned=true;try{localStorage.setItem(STORY_SAVE_KEY+'_hammer','1');}catch(_){}updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('compraste el martillo de construcción');
+   }else if(action==='use-hammer'){panel.style.display='none';farmOpenHammer();
    }else if(action==='wash-benja'){farmWashBenja();farmUpdateInventoryPanel();}
    else if(action==='place-item'){panel.style.display='none';startFarmBuildPlacement(type);}
    else if(action==='collect-water'){farmCollectWaterWithBucket();farmUpdateInventoryPanel();}
@@ -6100,7 +6107,7 @@ function closeFarmTV(){
 function setupFarmTVPhysicalControls(){
  if(farmTVPhysicalControlsBound||!renderer||!renderer.domElement)return;
  renderer.domElement.addEventListener('pointerdown',event=>{
-  if(!storyModeActive||farmCityMode||!character||!farmTVPhysicalHitTargets.length)return;
+  if(event.target!==renderer.domElement||!storyModeActive||farmCityMode||!character||!farmTVPhysicalHitTargets.length)return;
   if(Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z)>42)return;
   const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;
   camera.updateMatrixWorld(true);
@@ -6124,7 +6131,7 @@ function setupFarmTVPhysicalControls(){
   const tvHit=exactHit(farmTVPhysicalHitTargets,42);
   const radioHit=(!tvHit&&farmRadioProp&&Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z)<24)?exactHit(farmRadioPhysicalHitTargets,42):null;
   if(!tvHit&&!radioHit)return;
-  event.preventDefault();event.stopPropagation();
+  event.preventDefault();event.stopPropagation();if(event.stopImmediatePropagation)event.stopImmediatePropagation();
   if(radioHit){const action=radioHit.object.userData.radioAction;if(action==='power')setFarmRadioPower(!farmRadioPowerOn);else{const next=(farmRadioStationIndex+(action==='next'?1:-1)+FARM_RADIO_STATIONS.length)%FARM_RADIO_STATIONS.length;selectFarmRadioStation(next);if(!farmRadioPowerOn)setFarmRadioPower(true);}showToast(action==='power'?'radio encendida/apagada':action==='next'?'siguiente emisora':'emisora anterior');return;}
   const action=tvHit.object.userData.tvChannelAction;
   if(action==='power'){setFarmTVPower(!farmTVPowerOn);showToast(farmTVPowerOn?'televisor encendido':'televisor apagado');}
@@ -8049,6 +8056,57 @@ function startProtestMission() {
         };
         setInterval(cuidaUiOpen,100);
         new MutationObserver(cuidaUiOpen).observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:['style','class','aria-hidden']});
+
+/* Cuida a Benja 1.9.2: pickup persistente y martillo de construccion */
+function farmPickupSaveCargo(){try{localStorage.setItem(STORY_SAVE_KEY+'_pickup_cargo',JSON.stringify(farmPickupCargo||{}));}catch(_){}}
+function farmPickupLoadCargo(){try{const v=JSON.parse(localStorage.getItem(STORY_SAVE_KEY+'_pickup_cargo')||'{}');farmPickupCargo=v&&typeof v==='object'?v:{};}catch(_){farmPickupCargo={};}}
+function farmPickupCargoCount(){return Object.values(farmPickupCargo||{}).reduce((a,v)=>a+Math.max(0,Number(v)||0),0);}
+function farmPickupRefreshVisual(){
+ if(!farmPickupCargoGroup)return;
+ while(farmPickupCargoGroup.children.length){const o=farmPickupCargoGroup.children[farmPickupCargoGroup.children.length-1];farmPickupCargoGroup.remove(o);if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());}}
+ const list=[];Object.keys(FARM_GOODS).forEach(k=>{for(let i=0;i<Math.min(18,Number(farmPickupCargo[k])||0);i++)list.push(k);});
+ list.slice(0,18).forEach((k,i)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(1.05,.72,.92),new THREE.MeshStandardMaterial({color:FARM_GOODS[k].color||0x98734b,roughness:.9}));m.position.set(-2.6+(i%5)*1.25,1.45+Math.floor(i/5)*.78,-1.15);m.castShadow=!IS_MOBILE_DEVICE;farmPickupCargoGroup.add(m);});
+}
+function createFarmPickupVehicle(){
+ if(!farmGroup||!FARM_TRACTOR_POS)return;
+ if(farmPickupVehicle){drivableCars=drivableCars.filter(v=>v!==farmPickupVehicle);if(farmPickupVehicle.parent)farmPickupVehicle.parent.remove(farmPickupVehicle);}
+ farmPickupLoadCargo();const t=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color:0x315f43,roughness:.75}),dark=new THREE.MeshStandardMaterial({color:0x202a25,roughness:.9}),glass=new THREE.MeshStandardMaterial({color:0x8fc8d8,roughness:.25});
+ const b=(w,h,d,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;t.add(m);};
+ b(7.4,1.25,12,paint,0,2.05,0);b(7.1,3.3,4.4,paint,0,4.15,3.25);b(6.65,1.9,.16,glass,0,4.55,5.52);
+ b(.18,2.25,3.2,dark,-3.45,4.35,3.4);b(.18,2.25,3.2,dark,3.45,4.35,3.4);b(7.1,.45,6.2,dark,0,2.9,-2.6);b(.28,1.5,6.1,paint,-3.5,3.65,-2.6);b(.28,1.5,6.1,paint,3.5,3.65,-2.6);b(7.1,1.5,.28,paint,0,3.65,-5.65);
+ for(const side of [-1,1])for(const z of [-4.1,4]){const w=new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.35,1,12),dark);w.rotation.z=Math.PI/2;w.position.set(side*3.7,1.45,z);t.add(w);}
+ const x=FARM_TRACTOR_POS.x+25,z=FARM_TRACTOR_POS.z+8;t.position.set(x,farmGroundAt(x,z),z);t.rotation.y=Math.PI/2;
+ t.userData={speed:0,steer:0,maxSpeed:.78,accel:.045,driftGrip:.26,collisionRadius:5.5,isFarmPickup:true};farmGroup.add(t);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmPickup);drivableCars.push(t);
+ farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,0,-2.4);t.add(farmPickupCargoGroup);farmPickupVehicle=t;farmPickupRefreshVisual();
+}
+function farmPickupTransfer(load){
+ if(!farmPickupVehicle||!character)return;const d=Math.hypot(character.position.x-farmPickupVehicle.position.x,character.position.z-farmPickupVehicle.position.z);if(d>25){showToast('acercate a la pickup');return;}
+ if(load){let n=0;Object.keys(FARM_GOODS).forEach(k=>{const q=Math.max(0,Number(farmCarriedGoods[k])||0);if(q){farmPickupCargo[k]=(Number(farmPickupCargo[k])||0)+q;farmCarriedGoods[k]=0;n+=q;}});if(!n){showToast('no llevas objetos para cargar');return;}showToast('cargaste '+n+' objetos en la paila');}
+ else{const n=farmPickupCargoCount();if(!n){showToast('la paila esta vacia');return;}Object.keys(farmPickupCargo).forEach(k=>{farmCarriedGoods[k]=(Number(farmCarriedGoods[k])||0)+(Number(farmPickupCargo[k])||0);});farmPickupCargo={};showToast('descargaste '+n+' objetos');}
+ farmPickupSaveCargo();farmPickupRefreshVisual();updateFarmCarryVisual(true);updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
+}
+function farmEnsurePickupControls(){
+ if(document.getElementById('farmPickupControls'))return;const p=document.createElement('div');p.id='farmPickupControls';p.style.cssText='position:fixed;left:50%;bottom:145px;transform:translateX(-50%);z-index:1900;display:none;gap:8px;pointer-events:auto;';
+ const mk=(id,label)=>{const b=document.createElement('button');b.id=id;b.type='button';b.textContent=label;b.style.cssText='padding:10px 13px;border:1px solid #d6bd8a;border-radius:10px;background:rgba(20,38,30,.96);color:white;font-weight:900;font-size:12px;touch-action:manipulation;';return b;};
+ const a=mk('farmPickupLoad','📦 CARGAR PAILA'),b=mk('farmPickupUnload','📤 DESCARGAR');p.append(a,b);document.body.appendChild(p);a.addEventListener('click',()=>farmPickupTransfer(true));b.addEventListener('click',()=>farmPickupTransfer(false));
+}
+function farmNearestPlacedBuild(){if(!character||!farmPlacedBuilds.length)return -1;let best=-1,dist=20;farmPlacedBuilds.forEach((r,i)=>{const d=Math.hypot(character.position.x-r.x,character.position.z-r.z);if(d<dist){dist=d;best=i;}});return best;}
+function farmRemovePlacedBuildAt(i){
+ if(i<0||i>=farmPlacedBuilds.length||!farmPlacedBuildGroup)return null;const r=farmPlacedBuilds[i],o=farmPlacedBuildGroup.children[i];if(o)farmPlacedBuildGroup.remove(o);farmPlacedBuilds.splice(i,1);clearFarmColliders('farm-player-build');farmPlacedBuilds.forEach(v=>farmBuildCollisionAdd(v.x,v.z,v.type,v.rotation||0));farmSavePlacedBuilds();return r;
+}
+function farmOpenHammer(){
+ if(!farmHammerOwned){showToast('compra primero el martillo en suministros');return;}const i=farmNearestPlacedBuild();if(i<0){showToast('acercate a una estructura construida');return;}
+ const r=farmPlacedBuilds[i];if(!farmHammerPanel){const p=document.createElement('div');p.id='farmHammerPanel';p.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(330px,92vw);z-index:2100;padding:14px;border:2px solid #d7b66e;border-radius:14px;background:rgba(9,20,27,.97);color:white;text-align:center;';
+ p.innerHTML='<b id="farmHammerTitle">MARTILLO</b><p style="font-size:12px;margin:9px 0">Que quieres hacer?</p><div style="display:grid;gap:7px"><button data-hammer="move">↔ MOVER</button><button data-hammer="destroy">DESARMAR</button><button data-hammer="cancel">CANCELAR</button></div>';p.querySelectorAll('button').forEach(b=>b.style.cssText='min-height:40px;border:1px solid #a98b58;border-radius:8px;background:#314b3c;color:white;font-weight:900;');document.body.appendChild(p);farmHammerPanel=p;
+ p.addEventListener('click',e=>{const b=e.target.closest('button[data-hammer]');if(!b)return;const a=b.dataset.hammer;if(a==='cancel'){p.style.display='none';return;}const idx=farmNearestPlacedBuild();if(idx<0){p.style.display='none';return;}const rec=farmRemovePlacedBuildAt(idx);p.style.display='none';if(!rec)return;if(a==='move'){farmCarriedGoods[rec.type]=(Number(farmCarriedGoods[rec.type])||0)+1;updateFarmCarryVisual(true);startFarmBuildPlacement(rec.type);showToast('estructura recogida. colócala en otro lugar.');}else{farmCarriedGoods.madera=(Number(farmCarriedGoods.madera)||0)+1;storyMoney+=Math.max(1,Math.floor((Number(FARM_GOODS[rec.type]?.price)||8)*.25));updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('recuperaste materiales y parte del valor.');}});
+ }
+ const title=farmHammerPanel.querySelector('#farmHammerTitle');if(title)title.textContent='MARTILLO · '+(FARM_GOODS[r.type]?.label||r.type);farmHammerPanel.style.display='block';
+}
+function farmPatchUiTick(){
+ farmEnsurePickupControls();const p=document.getElementById('farmPickupControls');if(!p)return;const near=!!(storyModeActive&&!farmCityMode&&!isDriving&&character&&farmPickupVehicle&&Math.hypot(character.position.x-farmPickupVehicle.position.x,character.position.z-farmPickupVehicle.position.z)<24);p.style.display=near?'flex':'none';
+}
+try{farmHammerOwned=localStorage.getItem(STORY_SAVE_KEY+'_hammer')==='1';farmPickupLoadCargo();}catch(_){}
+setInterval(()=>{try{farmPatchUiTick();}catch(e){console.warn('pickup controls',e);}},450);
 </script>
 </body>
 </html>
