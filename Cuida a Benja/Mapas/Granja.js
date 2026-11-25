@@ -29,7 +29,7 @@ window.CUIDA_BENJA_FARM_MAP = {
   coop: { x: -240, z: -340 },
   delivery: { x: -218, z: -435 },
   well: { x: -390, z: -440 },
-  tractor: { x: -410, z: -400 },
+  tractor: { x: -400, z: -385 },
   repair: { x: -286, z: -354 },
   fruitTrees: { x: -266, z: -284 },
   cityExitRadius: 235,
