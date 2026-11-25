@@ -40,7 +40,7 @@
             opacity: 0.85; line-height: 1.5; max-width: 92%;
         }
         
-        #statusText {
+        #statusText { display:none!important;
             position: fixed; top: 65px; left: 50%; transform: translateX(-50%);
             color: #fff; font-size: 14px; font-weight: bold; z-index: 15;
             text-shadow: 0 0 6px #000; pointer-events: none;
@@ -513,7 +513,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <button id="playOfflineBtn" style="display:none!important"></button>
 </div>
 </div>
-<div id="statusText">Listo</div>
+<div id="statusText" aria-live="polite"></div>
 <div id="missionUI"><div id="missionTitle">MISIÓN</div><div id="missionProgress">Carteles: 5/5</div></div>
 <div id="storyGuide"><div id="storyGuideArrow">⬆</div><div id="storyGuideText">OBJETIVO</div></div>
 <div id="farmClockHud">06:00 <small>AMANECIENDO</small></div>
@@ -529,7 +529,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="farmInventoryHint">los productos guardados se quedan en tu partida</div></div>
 <div id="farmQuickActions">
 <button id="farmQuickJobs" class="jobs" type="button" style="display:none">TRABAJOS</button>
-<button id="farmGoCity" class="travel" type="button" style="display:none">🚗 RUMBO A CIUDAD</button>
+
 </div>
 <div id="farmSubtitles" aria-live="polite"></div>
 <div id="cityJobPanel" role="dialog" aria-label="Trabajos de la ciudad">
@@ -1103,7 +1103,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         let isKnockedBack = false; let knockbackVel = new THREE.Vector3(); let knockbackTimer = 0;
         let joystickActive = false; let joystickVector = { x: 0, y: 0 }; let isRunning = false; let isJumping = false; let jumpVelocity = 0;
         let isAttacking = false; let attackPhase = 0; let isCameraTouch = false; let isZooming = false; let lastTouchX = 0, lastTouchY = 0;
-        let initialPinchDistance = 0, initialCameraDistance = 0; let joystickTouchId = null, cameraTouchId = null;
+        let initialPinchDistance = 0, initialCameraDistance = 0; let joystickTouchId = null, cameraTouchId = null; let cameraPointerId = null;
         
         let cameraTheta = 0; let cameraPhi = Math.PI / 3; let cameraDistance = 25; 
         let timeOfDay = 0.3; let lastDayNightTick=0; let walkCycle = 0; let isMoving = false;
@@ -6342,7 +6342,7 @@ async function travelToCity(){
   await new Promise(resolve=>setTimeout(resolve,550));
  }catch(error){
   cityTravelRetryAt=Date.now()+12000;
-  const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='inline-flex';
+  const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='none';
   showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga')+'. Puedes pulsar IR A CIUDAD para reintentar.');isCinematic=false;
  }finally{hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;}
 }
@@ -6411,7 +6411,7 @@ function setupFarmUiControls(){
  const jobs=document.getElementById('farmQuickJobs'),go=document.getElementById('farmGoCity'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
  setupFarmBuildControls();
  if(jobs)jobs.addEventListener('click',showCityJobPanel);
- if(go)go.addEventListener('click',()=>{cityTravelRetryAt=0;travelToCity();});
+ if(go)go.remove();
  if(close)close.addEventListener('click',()=>{const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';});
  if(list)list.addEventListener('click',e=>{const b=e.target.closest('button[data-city-job]');if(b)startCityJob(b.dataset.cityJob);});
  setupFarmTVControls();setupFarmTVPhysicalControls();setupFarmRadioControls();
@@ -6593,7 +6593,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
  const distanceFromFarm=Math.hypot(character.position.x-FARM_CENTER.x,character.position.z-FARM_CENTER.z);
  const beyondFarmLimit=distanceFromFarm>(FARM_MAP_CONFIG.cityExitRadius||235);
  const cityRetryButton=document.getElementById('farmGoCity');
- if(cityRetryButton)cityRetryButton.style.display=!farmRaidActive?'inline-flex':'none';
+ if(cityRetryButton)cityRetryButton.style.display='none';
  if(!farmRaidActive&&beyondFarmLimit&&Date.now()>=cityTravelRetryAt){
   travelToCity();
   return;
@@ -7891,54 +7891,6 @@ function startProtestMission() {
     
 
 
-        // FIX 1.8.1: zoom multitáctil y controles visibles + / -.
-        const zoomStyle=document.createElement('style');
-        zoomStyle.textContent=`
-          #cameraZoomControls{position:fixed;right:92px;bottom:104px;z-index:1800;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
-          #cameraZoomControls button{width:42px;height:42px;border-radius:50%;border:2px solid #d7f3ff;background:rgba(8,25,43,.82);color:#fff;font-size:25px;font-weight:900;line-height:1;box-shadow:0 3px 12px #0008;touch-action:manipulation}
-          #cameraZoomControls button:active{transform:scale(.92);background:#17628a}
-          @media(min-width:900px){#cameraZoomControls{right:104px;bottom:110px}}
-        `;
-        document.head.appendChild(zoomStyle);
-        if(!document.getElementById('cameraZoomControls')){
-            const z=document.createElement('div');z.id='cameraZoomControls';z.innerHTML='<button type="button" id="cameraZoomIn" aria-label="Acercar">+</button><button type="button" id="cameraZoomOut" aria-label="Alejar">−</button>';document.body.appendChild(z);
-            document.getElementById('cameraZoomIn').addEventListener('click',()=>{cameraDistance=Math.max(7,cameraDistance-3);});
-            document.getElementById('cameraZoomOut').addEventListener('click',()=>{cameraDistance=Math.min(48,cameraDistance+3);});
-        }
-        const zoomPointers=new Map();
-        let pinchStartDistance=0,pinchStartCameraDistance=25;
-        const pointerDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
-        document.addEventListener('pointerdown',e=>{
-            if(e.pointerType!=='touch'||!gameStarted||isCinematic||isDead||isDriving)return;
-            const zui=e.target&&e.target.closest&&e.target.closest('#cameraZoomControls,button,a,input,select,textarea,[role="dialog"],[role="button"],#joystickArea,#actionButtons,#flightControls,#interactionPrompt');
-            if(zui)return;
-            zoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-            if(zoomPointers.size===2){
-                const pts=[...zoomPointers.values()];
-                pinchStartDistance=pointerDistance(pts[0],pts[1]);pinchStartCameraDistance=cameraDistance;
-                window.__cuidaCameraPointerId=null;isCameraTouch=false;isZooming=true;
-            }
-            if(renderer&&renderer.domElement)renderer.domElement.style.touchAction='none';
-        },true);
-        document.addEventListener('pointermove',e=>{
-            if(e.pointerType!=='touch'||!zoomPointers.has(e.pointerId)||isCinematic)return;
-            zoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
-            if(zoomPointers.size>=2){
-                const pts=[...zoomPointers.values()];
-                const dist=Math.max(1,pointerDistance(pts[0],pts[1]));
-                cameraDistance=Math.max(7,Math.min(48,pinchStartCameraDistance*(pinchStartDistance/dist)));
-            }
-        },true);
-        const finishZoomPointer=e=>{
-            zoomPointers.delete(e.pointerId);
-            if(zoomPointers.size<2)isZooming=false;
-            if(zoomPointers.size===1){
-                const [id,pt]=[...zoomPointers.entries()][0];
-                window.__cuidaCameraPointerId=id;lastTouchX=pt.x;lastTouchY=pt.y;isCameraTouch=true;
-            }else if(zoomPointers.size===0){window.__cuidaCameraPointerId=null;isCameraTouch=false;}
-        };
-        document.addEventListener('pointerup',finishZoomPointer,true);
-        document.addEventListener('pointercancel',finishZoomPointer,true);
         // FIX 1.8.0: cámara táctil global compartida entre scripts.
         window.__cuidaCameraPointerId=null;
         document.addEventListener('pointerdown',e=>{
