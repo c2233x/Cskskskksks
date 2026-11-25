@@ -791,7 +791,28 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="tuboBigFireBtn">🔫<br/>DISPARAR</div>
 <div id="morteroTimer">Mortero: 20s</div>
 <div id="crosshair"></div>
-<script src="./three.min.js?v=1.7.7"></script>
+<script src="./three.min.js?v=1.7.7">        // Voces por personaje: narrador natural y Benja con tono agudo tipo ardilla.
+        // Se ajusta el tono de la locución existente sin cambiar el texto ni la voz instalada.
+        (function installCuidaBenjaVoiceTuning(){
+            if (window.__cuidaBenjaVoiceTuningInstalled) return;
+            window.__cuidaBenjaVoiceTuningInstalled = true;
+            const synth = window.speechSynthesis;
+            if (!synth || typeof synth.speak !== 'function' || !window.SpeechSynthesisUtterance) return;
+            const originalSpeak = synth.speak.bind(synth);
+            synth.speak = function(utterance) {
+                try {
+                    if (utterance && typeof utterance.text === 'string') {
+                        const text = utterance.text.trim();
+                        const isBenja = /(?:^|[\\s:—-])benja(?:\\s*[:：]|\\s+(?:dice|responde|habla))/i.test(text);
+                        utterance.pitch = isBenja ? 1.85 : 1.0;
+                        if (!isBenja && (!Number.isFinite(utterance.rate) || utterance.rate <= 0)) utterance.rate = 1;
+                    }
+                } catch (_) {}
+                return originalSpeak(utterance);
+            };
+        })();
+
+</script>
 <script>
 
 /* ===== DIAGNÓSTICO TEMPORAL DE ARRANQUE ===== */
@@ -2467,16 +2488,19 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
             if (gameStarted) return;
             gameStarted = true;
             try {
-                startScreen.style.display = 'none';
-                statusText.style.display = 'block';
-                sysRestartBtn.style.display = 'none';
+                // Los WebView que montan el juego dentro de srcdoc pueden omitir
+                // algunas capas opcionales. Nunca detener el arranque por un nodo null.
+                const setDisplay = (id, display) => {
+                    const el = document.getElementById(id);
+                    if (el) el.style.display = display;
+                    return el;
+                };
+                const startLayer = startScreen || document.getElementById('startScreen');
+                if (startLayer) startLayer.style.display = 'none';
+                setDisplay('statusText', 'block');
+                setDisplay('sysRestartBtn', 'none');
                 forceHudVisible();
-                document.getElementById('playerHealthBar').style.display = 'block';
-                document.getElementById('playerHealthLabel').style.display = 'block';
-                document.getElementById('auraBarContainer').style.display = 'block';
-                document.getElementById('auraLabel').style.display = 'block';
-                document.getElementById('mudBar').style.display = 'block';
-                document.getElementById('mudLabel').style.display = 'block';
+                ['playerHealthBar','playerHealthLabel','auraBarContainer','auraLabel','mudBar','mudLabel'].forEach(id => setDisplay(id, 'block'));
                 const pci = document.getElementById('peneCountInfo');
                 if (pci) pci.style.display = 'block';
                 if (fueraSoundUrl) { audioFuera.src = fueraSoundUrl; audioFuera.volume = 0.35; }
@@ -2518,8 +2542,10 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
             } catch (error) {
                 gameStarted = false;
                 console.error('Error al iniciar Cuida a Benja:', error);
-                startScreen.style.display = 'flex';
-                if (statusText) statusText.style.display = 'none';
+                const startLayer = startScreen || document.getElementById('startScreen');
+                if (startLayer) startLayer.style.display = 'flex';
+                const statusLayer = statusText || document.getElementById('statusText');
+                if (statusLayer) statusLayer.style.display = 'none';
                 showStartupError(error);
             }
         }
