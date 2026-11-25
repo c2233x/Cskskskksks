@@ -1,8 +1,22 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.10.0",
+  "version": "1.10.1",
   "updates": [
+    {
+      "version": "1.10.1",
+      "title": "Mision de Benja, vehiculos y articulos del almacen",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "La primera misión pide acercarse a Benja y se completa automáticamente al detectar la posición real del cerdito; las partidas antiguas en el primer encargo se migran a este objetivo.",
+        "La flecha de misión sigue a Benja cuando se desplaza y el encargo de alimentarlo usa su posición actual.",
+        "Los errores de los modelos de artículos del almacén quedan aislados y se añade un modelo 3D de respaldo para que un producto defectuoso no impida crear el resto de la granja.",
+        "El tractor y la camioneta quedan más cerca del inicio de la granja, con colores y marcadores de estacionamiento más visibles.",
+        "El martillo muestra la lista de estructuras colocadas y permite elegir cuál mover o destruir.",
+        "El inventario muestra únicamente el título INVENTARIO y tarjetas con los artículos que llevas, sin dinero, resúmenes ni instrucciones.",
+        "Mientras un canal de TV carga, la pantalla física muestra un pollito animado girando; al llegar la señal se sustituye por el video."
+      ]
+    },
     {
       "version": "1.10.0",
       "title": "Inventario, Benja interactivo y mejoras visuales de la granja",
