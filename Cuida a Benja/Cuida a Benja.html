@@ -2210,7 +2210,17 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 // Primero revisamos Version y el caché. Esto evita la API de GitHub en cargas posteriores.
                 if (!forceScan && await tryCachedGame()) return;
                 setGitHubProgress(0, 'Iniciando...', entriesTotalForUI > 0 ? `0/${entriesTotalForUI}` : '0/0');
-                const entries = await githubCollectFilesFromTree();
+                let entries = [];
+                try {
+                    entries = await githubCollectFilesFromTree();
+                    githubLogMsg(`Listado obtenido con Git Trees: ${entries.length} archivos.`, 'ok');
+                } catch (treeError) {
+                    githubLogMsg(`Git Trees no respondió: ${treeError.message}. Probando Contents API...`, 'error');
+                    entries = [];
+                    await githubCollectFiles(GITHUB_FOLDER, entries, []);
+                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos en /' + GITHUB_FOLDER + '/.');
+                    githubLogMsg(`Listado alternativo de Contents API: ${entries.length} archivos.`, 'ok');
+                }
                 entriesTotalForUI = entries.length;
                 savedFilesCount = await getStoredCountForVersion(currentGameVersion);
                 failedDownloadEntries = readFailedManifest(currentGameVersion);
