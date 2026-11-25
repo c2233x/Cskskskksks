@@ -1676,9 +1676,13 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
                     if (data.truncated) throw new Error('Árbol de GitHub truncado');
-                    const prefix = `${GITHUB_FOLDER}/`;
+                    const prefixes = [
+                        `${GITHUB_FOLDER}/`,
+                        'El Bromas/Sonidos/',
+                        'El Bromas/Textura/'
+                    ];
                     const entries = (Array.isArray(data.tree) ? data.tree : [])
-                        .filter(x => x.type === 'blob' && x.path.startsWith(prefix))
+                        .filter(x => x.type === 'blob' && prefixes.some(prefix => x.path.startsWith(prefix)))
                         .map(x => ({
                             path: x.path,
                             size: Number(x.size) || 0,
@@ -2223,7 +2227,9 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     // No se usa el ZIP completo ni se mezclan los archivos de El Bromas.
                     entries = [];
                     await githubCollectFiles(GITHUB_FOLDER, entries, []);
-                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos en /' + GITHUB_FOLDER + '/.');
+                    await githubCollectFiles('El Bromas/Sonidos', entries, []);
+                    await githubCollectFiles('El Bromas/Textura', entries, []);
+                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos del juego y sus recursos compartidos.');
                     githubLogMsg(`Listado alternativo obtenido con Contents API: ${entries.length} archivos.`, 'ok');
                 }
                 const stored = await getStoredCountForVersion(oldVersion || currentGameVersion);
