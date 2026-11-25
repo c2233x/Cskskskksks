@@ -8065,7 +8065,7 @@ function farmPickupRefreshVisual(){
  if(!farmPickupCargoGroup)return;
  while(farmPickupCargoGroup.children.length){const o=farmPickupCargoGroup.children[farmPickupCargoGroup.children.length-1];farmPickupCargoGroup.remove(o);if(o.geometry)o.geometry.dispose();if(o.material){(Array.isArray(o.material)?o.material:[o.material]).forEach(m=>m.dispose());}}
  const list=[];Object.keys(FARM_GOODS).forEach(k=>{for(let i=0;i<Math.min(18,Number(farmPickupCargo[k])||0);i++)list.push(k);});
- list.slice(0,18).forEach((k,i)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(1.05,.72,.92),new THREE.MeshStandardMaterial({color:FARM_GOODS[k].color||0x98734b,roughness:.9}));m.position.set(-2.6+(i%5)*1.25,1.45+Math.floor(i/5)*.78,-1.15);m.castShadow=!IS_MOBILE_DEVICE;farmPickupCargoGroup.add(m);});
+ list.slice(0,18).forEach((k,i)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(1.05,.72,.92),new THREE.MeshStandardMaterial({color:FARM_GOODS[k].color||0x98734b,roughness:.9}));m.position.set(-2.6+(i%5)*1.25,.48+Math.floor(i/5)*.78,-1.15);m.castShadow=!IS_MOBILE_DEVICE;farmPickupCargoGroup.add(m);});
 }
 function createFarmPickupVehicle(){
  if(!farmGroup||!FARM_TRACTOR_POS)return;
@@ -8077,7 +8077,7 @@ function createFarmPickupVehicle(){
  for(const side of [-1,1])for(const z of [-4.1,4]){const w=new THREE.Mesh(new THREE.CylinderGeometry(1.35,1.35,1,12),dark);w.rotation.z=Math.PI/2;w.position.set(side*3.7,1.45,z);t.add(w);}
  const x=FARM_TRACTOR_POS.x+25,z=FARM_TRACTOR_POS.z+8;t.position.set(x,farmGroundAt(x,z),z);t.rotation.y=Math.PI/2;
  t.userData={speed:0,steer:0,maxSpeed:.78,accel:.045,driftGrip:.26,collisionRadius:5.5,isFarmPickup:true};farmGroup.add(t);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmPickup);drivableCars.push(t);
- farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,0,-2.4);t.add(farmPickupCargoGroup);farmPickupVehicle=t;farmPickupRefreshVisual();
+ farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,2.9,-2.4);t.add(farmPickupCargoGroup);farmPickupVehicle=t;farmPickupRefreshVisual();
 }
 function farmPickupTransfer(load){
  if(!farmPickupVehicle||!character)return;const d=Math.hypot(character.position.x-farmPickupVehicle.position.x,character.position.z-farmPickupVehicle.position.z);if(d>25){showToast('acercate a la pickup');return;}
