@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.5",
+  "version": "1.9.6",
   "updates": [
+    {
+      "version": "1.9.6",
+      "title": "Vehículos de granja y botones físicos",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "Se corrigió la física del tractor y la pickup: ahora registran sus cuatro ruedas, suspensión y parámetros de contacto con el terreno para evitar errores al conducir.",
+        "La inclinación y suspensión de cada vehículo usan las posiciones reales de sus ruedas; la pickup y el tractor tienen aceleración y velocidad ajustadas a su tamaño.",
+        "Al salir de la pickup o del tractor, Cornatan aparece fuera de la carrocería, usando una distancia de salida adaptada al tamaño del vehículo.",
+        "Los controles de entrada y salida responden con pointerup en Android y evitan ejecutar dos veces el mismo toque.",
+        "Los botones físicos 3D de TV y radio responden por la posición proyectada de cada botón y aceptan un margen táctil mayor, pero solo cuando Cornatan está cerca del aparato."
+      ]
+    },
     {
       "version": "1.9.5",
       "title": "TV estable al tocar la pantalla y limpieza de voz",
