@@ -6602,7 +6602,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   travelToCity();
   return;
  }
- if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=prompt;}
+ if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',prompt);interactionPrompt.title=prompt;}
  else if(interactionPrompt)interactionPrompt.style.display='none';
  updateFarmMoneyLabel();updateFarmGuide();
  if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
