@@ -821,28 +821,8 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
  };
  ['error','warn'].forEach(level=>{const original=console[level].bind(console);console[level]=(...args)=>{window.cuidaAddLog('CONSOLE_'+level,args.map(safe).join(' '));original(...args);};});
 
- function installVisibleLogPanel(){
-  if(document.getElementById('cuidaLogsPanel'))return;
-  const style=document.createElement('style');style.textContent=`
-   #cuidaLogsToggle{position:fixed;right:12px;bottom:12px;z-index:2147483000;border:1px solid #36d7a0;border-radius:22px;background:#09251f;color:#dffff3;padding:10px 15px;font:800 13px Arial;box-shadow:0 3px 16px #0009;touch-action:manipulation}
-   #cuidaLogsPanel{position:fixed;z-index:2147483001;right:10px;bottom:58px;width:min(94vw,620px);height:min(62vh,480px);background:#07111c;border:1px solid #35c99b;border-radius:12px;box-shadow:0 8px 32px #000c;display:none;flex-direction:column;padding:10px;color:#e8fff7}
-   #cuidaLogsPanel header{display:flex;align-items:center;gap:7px;margin-bottom:8px;font:800 14px Arial}
-   #cuidaLogsPanel header button{background:#203449;color:white;border:1px solid #49677e;border-radius:7px;padding:7px 10px}
-   #cuidaLogsOutput{flex:1;min-height:0;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;background:#02070d;border-radius:7px;padding:9px;color:#a9f4c9;font:10px/1.45 monospace;user-select:text}
-  `;document.head.appendChild(style);
-  const panel=document.createElement('section');panel.id='cuidaLogsPanel';panel.innerHTML='<header><span style="flex:1">REGISTRO DE ERRORES</span><button id="cuidaLogsCopy">Copiar</button><button id="cuidaLogsClear">Limpiar</button><button id="cuidaLogsClose">Cerrar</button></header><pre id="cuidaLogsOutput"></pre>';
-  const toggle=document.createElement('button');toggle.id='cuidaLogsToggle';toggle.type='button';toggle.textContent='📋 Logs';
-  document.body.appendChild(panel);document.body.appendChild(toggle);
-  const output=panel.querySelector('#cuidaLogsOutput');
-  const refresh=()=>{output.textContent=records.join('\\n');output.scrollTop=output.scrollHeight;};
-  toggle.addEventListener('click',()=>{panel.style.display=panel.style.display==='flex'?'none':'flex';if(panel.style.display==='flex')refresh();});
-  panel.querySelector('#cuidaLogsClose').addEventListener('click',()=>panel.style.display='none');
-  panel.querySelector('#cuidaLogsClear').addEventListener('click',()=>{records=[];try{sessionStorage.removeItem(KEY);}catch(_){}refresh();window.cuidaAddLog('INFO','Registro limpiado manualmente.');});
-  panel.querySelector('#cuidaLogsCopy').addEventListener('click',async()=>{const value=records.join('\\n');try{await navigator.clipboard.writeText(value);}catch(_){const ta=document.createElement('textarea');ta.value=value;document.body.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}});
-  refresh();
- }
- if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installVisibleLogPanel,{once:true});else installVisibleLogPanel();
- window.cuidaAddLog('INFO','Panel visual de logs habilitado.');
+ // Panel visual de Logs retirado; se conserva el registro interno para diagnóstico.
+
 
 })();
 // Cuida a Benja - datos del mapa de la granja.// Cuida a Benja - datos del mapa de la granja.
@@ -860,13 +840,13 @@ window.CUIDA_BENJA_FARM_MAP = {
     { id: "laguna-pequena", x: -465, z: -255, radius: 13, depth: 0.55 }
   ],
   ambientZones: [
-    { id: "patio-central", x: -354, z: -322, radius: 128, insects: true },
-    { id: "pocilga-benja", x: -286, z: -354, radius: 108, insects: true },
-    { id: "huerto", x: -220, z: -250, radius: 98, insects: true },
-    { id: "arboleda", x: -266, z: -284, radius: 104, insects: true },
-    { id: "camino-tractor", x: -448, z: -286, radius: 110, insects: true },
-    { id: "sendero-norte", x: -320, z: -242, radius: 94, insects: true },
-    { id: "pozo-y-agua", x: -410, z: -450, radius: 92, insects: true }
+    { id: "patio-central", x: -354, z: -322, radius: 0, insects: false },
+    { id: "pocilga-benja", x: -286, z: -354, radius: 0, insects: false },
+    { id: "huerto", x: -220, z: -250, radius: 28, insects: true },
+    { id: "arboleda", x: -266, z: -284, radius: 24, insects: true },
+    { id: "camino-tractor", x: -448, z: -286, radius: 0, insects: false },
+    { id: "sendero-norte", x: -320, z: -242, radius: 0, insects: false },
+    { id: "pozo-y-agua", x: -410, z: -450, radius: 0, insects: false }
   ],
   pig: { x: -286, z: -354 },
   work: { x: -388, z: -302 },
@@ -961,8 +941,8 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
     crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
     tv:{x:-414,z:-365},flatRadius:245,ambientZones:[
-        {id:'huerto',x:-220,z:-250,radius:62,insects:true},
-        {id:'arboleda',x:-266,z:-284,radius:58,insects:true},
+        {id:'huerto',x:-220,z:-250,radius:28,insects:true},
+        {id:'arboleda',x:-266,z:-284,radius:24,insects:true},
         {id:'pozo',x:-390,z:-440,radius:48,insects:false}
     ],
     cityExitRadius:235,cityGate:{x:-135,z:-330},saveWeightGoal:52,
@@ -5002,8 +4982,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const labelMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.42),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,side:THREE.DoubleSide}));
                 labelMesh.position.set(x,2.12,2.2);tv.add(labelMesh);
                 farmTVPhysicalButtons.push(base,cap);
-                const hitTarget=new THREE.Mesh(new THREE.BoxGeometry(2.6,1.9,1.15),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
-                hitTarget.position.set(x,1.62,2.05);hitTarget.userData.tvChannelAction=action;tv.add(hitTarget);farmTVPhysicalHitTargets.push(hitTarget);
+                const hitTarget=new THREE.Mesh(new THREE.BoxGeometry(3.5,2.5,2.1),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
+                hitTarget.position.set(x,1.62,2.45);hitTarget.userData.tvChannelAction=action;tv.add(hitTarget);farmTVPhysicalHitTargets.push(hitTarget);
             }
             makeChannelButton(-1.55,'◀','prev',0x446078);
             makeChannelButton(0,'⏻','power',0x9b6338);
@@ -5641,7 +5621,7 @@ function setFarmCicadas(active,strength=1){
  if(!active&&!farmCicadaAudio)return;
  const audio=ensureFarmCicadaAudio();if(!audio)return;
  const level=Math.max(0,Math.min(1,Number(strength)||0));
- audio.volume=(active&&audioUnlocked)?Math.min(1,.82*level):0;
+ audio.volume=(active&&audioUnlocked)?Math.min(1,.82*level*level):0;
  if(active&&audioUnlocked){
   if(audio.paused){const p=audio.play();if(p&&p.catch)p.catch(()=>{});}
  }else{
@@ -5698,7 +5678,7 @@ function updateFarmAmbience(){
   if(d<zone.radius&&(!active||d/zone.radius<distance/active.radius)){active=zone;distance=d;}
  }
  if(active){
-  const edge=Math.max(0,1-distance/active.radius),level=Math.max(.28,Math.pow(edge,.56));
+  const edge=Math.max(0,1-distance/active.radius),level=Math.pow(edge,.9);
   startFarmAmbience(active,level);
  }else{
   // El viento continúa en toda la granja aunque no haya insectos en esa zona.
@@ -6103,7 +6083,7 @@ function closeFarmTV(){
 }
 function setupFarmTVPhysicalControls(){
  if(farmTVPhysicalControlsBound||!renderer||!renderer.domElement)return;
- renderer.domElement.addEventListener('pointerup',event=>{
+ renderer.domElement.addEventListener('pointerdown',event=>{
   if(!storyModeActive||farmCityMode||!character||!farmTVPhysicalHitTargets.length)return;
   if(Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z)>42)return;
   const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;
@@ -6111,7 +6091,7 @@ function setupFarmTVPhysicalControls(){
   const pointer=new THREE.Vector2(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
   const ray=new THREE.Raycaster();ray.setFromCamera(pointer,camera);
   const hit=ray.intersectObjects(farmTVPhysicalHitTargets,false)[0];if(!hit)return;
-  event.preventDefault();const action=hit.object.userData.tvChannelAction;
+  event.preventDefault();event.stopPropagation();const action=hit.object.userData.tvChannelAction;
   if(action==='power'){setFarmTVPower(!farmTVPowerOn);showToast(farmTVPowerOn?'televisor encendido':'televisor apagado');}
   else if(action==='prev'||action==='next'){cycleFarmTVChannel(action==='next'?1:-1);if(!farmTVPowerOn)setFarmTVPower(true);showToast(action==='next'?'siguiente canal':'canal anterior');}
  },{capture:true});
@@ -6164,8 +6144,8 @@ function attemptFarmRadioStream(token){
   farmRadioAudio.pause();farmRadioAudio.onerror=null;farmRadioAudio.src=url;farmRadioAudio.volume=farmRadioVolume;
   const result=farmRadioAudio.play();
   farmRadioAudio.onerror=()=>{if(token===farmRadioGeneration&&farmRadioStreamTry===attemptNo)attemptFarmRadioStream(token);};
-  if(result&&result.catch)result.catch(()=>{if(token===farmRadioGeneration&&farmRadioStreamTry===attemptNo)attemptFarmRadioStream(token);});
- }catch(_){attemptFarmRadioStream(token);}
+  if(result&&result.catch)result.catch(error=>{if(error&&error.name==='NotAllowedError')return;if(token===farmRadioGeneration&&farmRadioStreamTry===attemptNo)attemptFarmRadioStream(token);});
+ }catch(error){if(error&&error.name==='NotAllowedError')return;attemptFarmRadioStream(token);}
 }
 function setFarmRadioPower(on){
  farmRadioPowerOn=!!on;
@@ -7906,6 +7886,14 @@ function startProtestMission() {
                 // el primer toque puede ocurrir mientras aún carga el juego. Cada toque
                 // posterior debe poder arrancar/reanudar la música si quedó pausada.
                 audioUnlocked = true;
+                // Reanudar los medios guardados tras el primer gesto real del jugador (restricción Android/WebView).
+                if(storyModeActive&&!farmCityMode){
+                    if(farmRadioPowerOn){farmRadioStreamTry=0;attemptFarmRadioStream(++farmRadioGeneration);}
+                    if(farmTVPowerOn){
+                        if(farmTVIframeFallback)sendFarmTVCommand('unMute');
+                        loadFarmTVChannel();
+                    }
+                }
                 if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
                 const currentAmbientZone=FARM_AMBIENT_ZONES.find(z=>z.id===farmAmbienceActiveZone);
                 if(currentAmbientZone&&currentAmbientZone.insects)setFarmCicadas(true,farmAmbienceLevel);
