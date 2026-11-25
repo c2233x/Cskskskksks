@@ -818,6 +818,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
         })();
 
 </script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
 <script>
 
 /* ===== DIAGNÓSTICO TEMPORAL DE ARRANQUE ===== */
@@ -1023,7 +1024,7 @@ let farmPlacedBuildGroup=null,farmPlacedBuilds=[],farmBuildPreview=null,farmBuil
 let farmTorchLights=[],farmCityLampPool=[],farmCityLampUpdateAt=0,farmTorchUpdateAt=0,farmTVPointLight=null,farmTVPowerButtonMaterial=null,farmTVPowerLedMaterial=null,farmRadioPowerButtonMaterial=null,farmRadioPowerLedMaterial=null,farmTVSignalTexture=null;
 let farmTVPhysicalButtons=[],farmTVPhysicalHitTargets=[],farmTVPhysicalControlsBound=false,farmRadioPhysicalHitTargets=[],farmRadioPhysicalControlsBound=false,farmClockLastUi=0;
 let farmTVShowNoSignal=false;
-        let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
+        let farmCityMode=false,cityActiveJob=null,cityAvailableJobs=[],cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
         let farmTVPanelBound=false,farmTVCurrentChannel=null,farmTVPowerOn=false,farmTVVolume=.55,farmTVScreenMaterial=null,farmTVLastAudioCheck=0;
         let farmTVHlsPlayer=null,farmTVHlsScriptPromise=null,farmTVPlaybackToken=0,farmTVIframeFallback=false;
@@ -4599,10 +4600,19 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         
         function spawnWave(count) {
-            for (let i = 0; i < count; i++) {
-                const angle = Math.random() * Math.PI * 2; const dist = 42 + Math.random() * 55; const x = character.position.x + Math.cos(angle) * dist; const z = character.position.z + Math.sin(angle) * dist;
-                if (checkCollision(x, z)) continue; const pene = createSmallPene(x, z); scene.add(pene); smallPenes.push(pene);
+            if(!scene||!character)return;
+            const origin=(farmCityMode&&isDriving&&drivenCar)?drivenCar.position:character.position;
+            for(let i=0;i<count;i++){
+                let x=origin.x,z=origin.z,found=false;
+                for(let attempt=0;attempt<28;attempt++){
+                    const angle=(i/count)*Math.PI*2+(Math.random()-.5)*.55,dist=58+Math.random()*34;
+                    const tx=origin.x+Math.cos(angle)*dist,tz=origin.z+Math.sin(angle)*dist;
+                    if(!checkCollision(tx,tz)){x=tx;z=tz;found=true;break;}
+                }
+                if(!found){const angle=(i/count)*Math.PI*2,dist=72;x=origin.x+Math.cos(angle)*dist;z=origin.z+Math.sin(angle)*dist;}
+                const pene=createSmallPene(x,z);pene.visible=true;pene.position.y=getTerrainY(x,z,null);scene.add(pene);smallPenes.push(pene);
             }
+            updatePeneCountUI();
         }
         
         function updatePeneCountUI() {
@@ -4755,8 +4765,19 @@ function updateFarmCinematic(){
             }
             const tail=new THREE.Mesh(new THREE.TorusGeometry(.32,.11,6,14,Math.PI*1.7),pink);tail.position.set(0,3.05,-2.27);tail.rotation.x=Math.PI/2;tail.rotation.z=.6;pig.add(tail);
             const ground=farmGroundAt(FARM_PIG_POS.x,FARM_PIG_POS.z);pig.position.set(FARM_PIG_POS.x,ground,FARM_PIG_POS.z);pig.rotation.y=Math.PI;
-            pig.userData={groundY:ground,weight:32};pig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
+            const mudGroup=new THREE.Group(),mudMaterial=new THREE.MeshStandardMaterial({color:0x4b2b19,roughness:1,transparent:true,opacity:0});
+            [[-2.55,2.25,-.8],[2.55,2.35,-.35],[-2.45,2.15,1.0],[2.48,2.1,1.05],[0,3.55,.35],[0,1.45,-1.25]].forEach((p,i)=>{const stain=new THREE.Mesh(new THREE.SphereGeometry(.43+(i%2)*.12,8,6),mudMaterial);stain.position.set(p[0],p[1],p[2]);stain.scale.set(1.05,.55,.22);mudGroup.add(stain);});
+            pig.add(mudGroup);pig.userData={groundY:ground,weight:32,mudGroup,rollAt:Date.now()+18000+Math.random()*16000,rollUntil:0,rollDirection:1};pig.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
             scene.add(pig);benjaPig=pig;updateBenjaWeightVisual();
+        }
+        function farmUpdateBenjaMud(now){
+            if(!benjaPig||farmCityMode)return;
+            const t=Date.now(),u=benjaPig.userData||{},ground=Number(u.groundY)||0;
+            if(!u.rollUntil&&t>=Number(u.rollAt||0)){u.rollUntil=t+2600;u.rollDirection=Math.random()<.5?-1:1;showToast('¡Benja se esta revolcando en el lodo!');speakFarmLine('benja','¡que rico el lodito!');}
+            if(u.rollUntil){const p=Math.max(0,Math.min(1,1-(u.rollUntil-t)/2600));benjaPig.rotation.z=u.rollDirection*Math.sin(p*Math.PI*2)*.72;benjaPig.rotation.x=Math.sin(p*Math.PI*4)*.16;benjaPig.position.y=ground+.18+Math.abs(Math.sin(p*Math.PI*2))*.12;
+                if(t>=u.rollUntil){u.rollUntil=0;benjaPig.rotation.set(0,benjaPig.rotation.y,0);benjaPig.position.y=ground;farmBenjaCleanliness=Math.max(0,farmBenjaCleanliness-28);u.rollAt=t+26000+Math.random()*22000;farmUpdateBenjaHud();showToast('Benja quedo cubierto de barro seco. ¡necesita un baño!');saveStoryProgress();}
+            }
+            if(u.mudGroup&&u.mudGroup.children[0]){const dirt=Math.max(0,Math.min(1,(100-farmBenjaCleanliness)/100));u.mudGroup.visible=dirt>.015;u.mudGroup.children.forEach((m,i)=>{m.material.opacity=.12+dirt*.82;m.scale.set(1.0+dirt*.22,.5+dirt*.5,.18+dirt*.12);});}
         }
         function updateBenjaWeightVisual(){
             if(!benjaPig)return;const scale=1+Math.max(0,storyPigWeight-32)*.009;benjaPig.scale.set(scale,scale,scale);benjaPig.userData.weight=storyPigWeight;
@@ -5011,6 +5032,7 @@ function updateFarmCinematic(){
                 farmRefreshStorageFallback(fallback,Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0)));
               }
             });
+            farmLoadProduceModels();
             const fieldY=farmGroundAt(FARM_CROP_POS.x,FARM_CROP_POS.z),soilMat=new THREE.MeshStandardMaterial({color:0x382419,roughness:1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),soil=new THREE.Mesh(new THREE.CircleGeometry(25.5,48),soilMat);
             soil.rotation.x=-Math.PI/2;soil.position.set(FARM_CROP_POS.x,fieldY+.07,FARM_CROP_POS.z);farmGroup.add(soil);
             const furrowMat=new THREE.MeshStandardMaterial({color:0x24180f,roughness:1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),ridgeMat=new THREE.MeshStandardMaterial({color:0x543820,roughness:1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
@@ -5238,6 +5260,27 @@ const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.
  }
  group.children.forEach((item,index)=>{item.visible=index<wanted;});
 }
+function farmLoadProduceModels(){
+ if(!THREE.GLTFLoader||farmProduceModelsLoading)return;
+ farmProduceModelsLoading=true;
+ const loader=new THREE.GLTFLoader();
+ loader.load('./Modelos/Items/productos.glb?v=1.0',gltf=>{
+  const map={maiz:'Maiz',zanahoria:'Zanahoria',manzanas:'Manzana',trigo:'Trigo',huevos:'Huevos'};
+  Object.entries(map).forEach(([type,name])=>{
+   const source=gltf.scene.getObjectByName(name);if(!source||!source.isMesh)return;
+   const target=farmStorageVisuals[type];if(!target||!target.isInstancedMesh)return;
+   const geometry=source.geometry.clone();geometry.rotateX(-Math.PI/2);geometry.computeBoundingBox();
+   const bounds=geometry.boundingBox,center=bounds.getCenter(new THREE.Vector3());
+   geometry.translate(-center.x,-bounds.min.y,-center.z);geometry.computeVertexNormals();
+   const material=new THREE.MeshStandardMaterial({vertexColors:!!geometry.getAttribute('color'),roughness:.88});
+   target.geometry.dispose();target.geometry=geometry;
+   if(target.material&&target.material.dispose)target.material.dispose();target.material=material;
+   target.instanceMatrix.needsUpdate=true;target.frustumCulled=false;
+  });
+  farmProduceModelsLoading=false;refreshFarmStorageVisuals();
+ },undefined,error=>{farmProduceModelsLoading=false;console.warn('No se pudieron cargar los modelos GLB de productos',error);});
+}
+let farmProduceModelsLoading=false;
 function refreshFarmStorageVisuals(){
  Object.keys(farmStorageVisuals).forEach(type=>{
   const mesh=farmStorageVisuals[type];if(!mesh)return;
@@ -5532,14 +5575,21 @@ function farmBuildSaveKey(){return STORY_SAVE_KEY+'_placed_builds';}
             return g;
         }
         function farmBuildCollisionClear(x,z,type,rotation){
+            const joinable=type==='muro_madera'||type==='muro_ladrillo';
+            if(joinable){
+                if(farmPlacedBuilds.some(b=>Math.hypot(b.x-x,b.z-z)<7.6))return false;
+                const r=1.6;
+                for(const c of buildingColliders){
+                    if(c.map==='farm'&&farmCityMode)continue;
+                    if(c.owner==='farm-player-build')continue;
+                    const dx=x-c.x,dz=z-c.z,a=Number(c.rotation)||0,ca=Math.cos(a),sa=Math.sin(a);
+                    if(Math.abs(dx*ca-dz*sa)<c.width/2+r&&Math.abs(dx*sa+dz*ca)<c.depth/2+r)return false;
+                }
+                return !drivableCars.some(car=>car&&car.visible&&Math.hypot(x-car.position.x,z-car.position.z)<(car.userData.collisionRadius||2.7)+4.5);
+            }
             if(type==='antorcha'||type==='balde'||type==='bucket'||type==='techo')return !checkCollision(x,z);
-            const halfW=type==='puerta'||type==='ventana'?4.1:4.1;
-            const offsets=[[-halfW,0],[0,0],[halfW,0]];
-            return offsets.every(([ox,oz])=>{
-                const ca=Math.cos(rotation),sa=Math.sin(rotation);
-                const px=x+ox*ca-oz*sa,pz=z+ox*sa+oz*ca;
-                return !checkCollision(px,pz);
-            });
+            const halfW=4.1,offsets=[[-halfW,0],[0,0],[halfW,0]];
+            return offsets.every(([ox,oz])=>{const ca=Math.cos(rotation),sa=Math.sin(rotation),px=x+ox*ca-oz*sa,pz=z+ox*sa+oz*ca;return !checkCollision(px,pz);});
         }
         function farmBuildCollisionAdd(x,z,type,rotation){
             if(type==='antorcha'||type==='balde'||type==='bucket')addFarmCollider(x,z,.7,.7,rotation,'farm-player-build',4.2);
@@ -5579,7 +5629,7 @@ function farmBuildSaveKey(){return STORY_SAVE_KEY+'_placed_builds';}
         function updateFarmBuildPlacement(){
             if(!farmBuildPreview||!character||!farmBuildType||farmCityMode)return;
             const yaw=character.rotation.y||0,dirX=Math.sin(yaw),dirZ=Math.cos(yaw);
-            const x=Math.round((character.position.x+dirX*8)/2)*2,z=Math.round((character.position.z+dirZ*8)/2)*2;
+            const x=Math.round((character.position.x+dirX*8)/8)*8,z=Math.round((character.position.z+dirZ*8)/8)*8;
             farmBuildPreview.position.set(x,farmGroundAt(x,z),z);farmBuildPreview.rotation.y=farmBuildRotation;
         }
         function farmRotateBuild(){
@@ -6571,12 +6621,20 @@ function createCityJobBoard(){
  const notice=new THREE.Mesh(new THREE.BoxGeometry(7.8,3.8,.16),paper);notice.position.set(0,6.7,.49);cityJobBoard.add(notice);
  cityJobBoard.position.set(p.x,y,p.z);scene.add(cityJobBoard);
 }
+function cityRandomJobTarget(){
+ const spawn=CITY_MAP_CONFIG.spawn||{x:0,z:0},board=CITY_MAP_CONFIG.jobBoard||{x:38,z:-22},limit=(Number(CITY_MAP_CONFIG.exitRadius)||345)-65;
+ for(let i=0;i<70;i++){const a=Math.random()*Math.PI*2,r=90+Math.random()*145,x=spawn.x+Math.cos(a)*r,z=spawn.z+Math.sin(a)*r;if(Math.hypot(x-board.x,z-board.z)<38||Math.hypot(x-spawn.x,z-spawn.z)>limit||checkCollision(x,z))continue;return{x,z};}
+ const a=Math.random()*Math.PI*2,r=125+Math.random()*70;return{x:spawn.x+Math.cos(a)*r,z:spawn.z+Math.sin(a)*r};
+}
 function showCityJobPanel(){
  const p=document.getElementById('cityJobPanel'),list=document.getElementById('cityJobList');if(!p||!list)return;
- list.innerHTML=(CITY_MAP_CONFIG.jobs||[]).map(j=>'<button type="button" data-city-job="'+j.id+'">'+j.icon+' '+j.title+'<span>'+j.detail+' · $'+j.reward+'</span></button>').join('');p.style.display='block';
+ const source=(CITY_MAP_CONFIG.jobs||[]).slice();
+ for(let i=source.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[source[i],source[j]]=[source[j],source[i]];}
+ cityAvailableJobs=source.slice(0,4).map(j=>({...j,target:cityRandomJobTarget()}));
+ list.innerHTML=cityAvailableJobs.map(j=>'<button type="button" data-city-job="'+j.id+'">'+j.icon+' '+j.title+'<span>'+j.detail+' · $'+j.reward+'</span></button>').join('');p.style.display='block';
 }
 function startCityJob(id){
- const j=(CITY_MAP_CONFIG.jobs||[]).find(x=>x.id===id);if(!j)return;cityActiveJob=j;const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';
+ const j=cityAvailableJobs.find(x=>x.id===id);if(!j)return;cityActiveJob=j;const p=document.getElementById('cityJobPanel');if(p)p.style.display='none';
  setFarmGuideTarget(j.target.x,j.target.z,'ve a '+j.title.toLowerCase());updateMissionUI();showToast('nuevo trabajo: '+j.title.toLowerCase());
 }
 const CITY_MAP_FALLBACK={
@@ -6757,6 +6815,7 @@ async function enterCityMap(arrivedInPickup=false){
  const p=CITY_MAP_CONFIG.spawn||{x:0,z:0};
  if(arrivedInPickup&&farmPickupVehicle){
   if(farmPickupVehicle.parent!==scene)scene.add(farmPickupVehicle);
+  farmPickupVehicle.userData.speed=0;farmPickupVehicle.userData.steer=0;carInput={steer:0,throttle:0,reverse:0};
   const candidates=[[-22,18],[22,18],[-22,-18],[22,-18],[0,30]];
   let spot=candidates[0];
   for(const c of candidates){if(!checkCollision(p.x+c[0],p.z+c[1])){spot=c;break;}}
@@ -6860,10 +6919,11 @@ function cityLootCollectNearest(now){
 }
 function updateCityMapMode(now){
  const spawn=CITY_MAP_CONFIG.spawn||{x:0,z:0};
- if(Math.hypot(character.position.x-spawn.x,character.position.z-spawn.z)>(Number(CITY_MAP_CONFIG.exitRadius)||345)){travelToFarm();return;}
+ const actor=(isDriving&&drivenCar&&drivenCar.position)?drivenCar.position:character.position;
+ if(Math.hypot(actor.x-spawn.x,actor.z-spawn.z)>(Number(CITY_MAP_CONFIG.exitRadius)||345)){travelToFarm();return;}
  let prompt='';
  if(cityActiveJob){
-  const j=cityActiveJob,d=Math.hypot(character.position.x-j.target.x,character.position.z-j.target.z);
+  const j=cityActiveJob,d=Math.hypot(actor.x-j.target.x,actor.z-j.target.z);
   if(d<18&&isAttacking&&now>storyInteractAfter){
    storyInteractAfter=now+1500;storyMoney+=j.reward;cityActiveJob=null;updateFarmMoneyLabel();saveStoryProgress();farmGuideTarget=null;removeFarmGuideMarker();updateMissionUI();showToast('trabajo terminado: +$'+j.reward);speakFarmLine('narrador','buen trabajo. ya te pagaron el encargo.');
   }
@@ -7068,7 +7128,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
  if(farmUsePulseUntil&&now>=farmUsePulseUntil){farmUsePulseUntil=0;if(attackPhase===2){isAttacking=false;attackPhase=0;}}
  const usePressed=isAttacking||(farmUsePending&&now-farmUsePendingAt<650);farmUsePending=false;
  if(farmCityMode){stopFarmAmbience();updateCityMapMode(now);return;}
- updateFarmAmbience();updateFarmTVProximity();updateFarmRadioProximity();let prompt='';
+ updateFarmAmbience();farmUpdateBenjaMud(now);updateFarmTVProximity();updateFarmRadioProximity();let prompt='';
  if(farmRaidActive){const n=smallPenes.filter(p=>p&&p.userData&&p.userData.farmRaider).length;prompt='DEFIENDE A BENJA · intrusos: '+n+' · $5 por cada 2';}
  else{
   const shopDist=Math.hypot(character.position.x-FARM_SHOP_POS.x,character.position.z-FARM_SHOP_POS.z);
