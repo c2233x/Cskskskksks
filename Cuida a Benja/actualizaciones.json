@@ -1,8 +1,17 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.7.4",
+  "version": "1.7.5",
   "updates": [
+    {
+      "version": "1.7.5",
+      "title": "Inicio WebView y audio ambiente",
+      "date": "24 de noviembre de 2026",
+      "changes": [
+        "El inicializador detecta si DOMContentLoaded ya ocurrió y arranca directamente, evitando quedarse en Iniciando con 0/0.",
+        "El sonido de chicharra apunta al nombre exacto del MP3 que ya está publicado en Sonidos/ambiente, sin modificar el audio."
+      ]
+    },
     {
       "version": "1.7.4",
       "title": "Corrección del inicio en Android",
