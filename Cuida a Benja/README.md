@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.7.8**
+**Version actual: 1.9.9**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -150,3 +150,10 @@ Cuida a Benja utiliza el sistema de carga original de Salva a Cornatan, adaptado
 
 ## Diagnóstico temporal
 El botón flotante `Logs` abre el panel de diagnóstico con la contraseña `pipi`. Registra el proceso de carga, red, errores y recursos fallidos durante la sesión. Los registros se mantienen temporalmente en `sessionStorage` y pueden copiarse o limpiarse desde el panel.
+
+
+## Actualización 1.9.9 · Tractor, controles y almacén
+- El tractor y la camioneta aparecen estacionados cerca de la pocilga, con coordenadas iguales en el mapa externo y el HTML de respaldo.
+- Los botones táctiles superpuestos de TV y radio son invisibles, pero conservan su área táctil; los botones físicos 3D de cada aparato siguen visibles.
+- La misión se llama **REVISAR ALMACEN** y se completa al abrir el almacén para consultar las existencias.
+- Los diálogos seleccionan voces masculinas españolas cuando están disponibles y usan un tono grave. La voz requiere que el navegador/WebView incluya `speechSynthesis` y que Android tenga voces españolas instaladas.
