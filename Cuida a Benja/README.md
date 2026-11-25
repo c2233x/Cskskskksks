@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.10.2**
+**Version actual: 1.10.3**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -185,3 +185,10 @@ El botón flotante `Logs` abre el panel de diagnóstico con la contraseña `pipi
 - Los diálogos aparecen como subtítulos; la cinemática avanza automáticamente.
 - Se retiró el reinicio manual de la interfaz.
 - Se añadieron detalles estructurales al almacén, tarimas y mochila, además de modelos diferenciados para los artículos transportados.
+
+## Viaje y taller de vehiculos (1.10.3)
+
+- Al viajar desde la granja, el personaje permanece dentro del vehiculo que estaba conduciendo; se conserva la referencia y el vehiculo se mueve con el jugador al mapa de ciudad.
+- La llegada ocurre en la carretera de entrada de la ciudad, junto al cartel grande `CAMPO`.
+- El regreso ya no depende de alejarse en cualquier direccion del centro: se activa al cruzar el extremo señalizado de la carretera `CAMPO`.
+- El taller tiene almacenamiento persistente de repuestos, cajas de herramientas y piezas mecanicas. Los objetos se descargan desde la camioneta y las mejoras consumen el inventario guardado.
