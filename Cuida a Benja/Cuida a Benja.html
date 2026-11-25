@@ -5156,7 +5156,6 @@ function removeCarRadioStation(index, reason='Sin señal'){
             }
             farmPigstyGroup.position.set(x,y,z);farmPigstyGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
             farmGroup.add(createFarmSign('TU POCILGA BASE · NIVEL '+level,x,y+10,z-9));
-            if(level>=2)
         }
         function createFarmPonds(){
             if(!farmGroup)return;
