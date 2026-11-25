@@ -3623,7 +3623,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 if(joystickKnob) joystickKnob.style.transform='translate(-50%,-50%)';
             },{passive:false});
             const camLeft=document.getElementById('carCamLeft'),camRight=document.getElementById('carCamRight'),zoomOut=document.getElementById('carZoomOut'),zoomIn=document.getElementById('carZoomIn');
-            const bindCameraControl=(el,action)=>{if(!el)return;const run=e=>{if(e){e.preventDefault();e.stopPropagation();}if(!isDriving||!drivenCar)return;action();};el.addEventListener('pointerdown',run,{passive:false});el.addEventListener('click',run);el.addEventListener('contextmenu',e=>e.preventDefault());el.style.touchAction='none';el.style.pointerEvents='auto';};
+            const bindCameraControl=(el,action)=>{if(!el)return;const run=e=>{if(e&&e.type==='click'&&e.detail!==0)return;if(e){e.preventDefault();e.stopPropagation();}if(!isDriving||!drivenCar)return;action();};el.addEventListener('pointerdown',run,{passive:false});el.addEventListener('click',run);el.addEventListener('contextmenu',e=>e.preventDefault());el.style.touchAction='none';el.style.pointerEvents='auto';};
             bindCameraControl(camLeft,()=>{cameraTheta-=.32;});
             bindCameraControl(camRight,()=>{cameraTheta+=.32;});
             bindCameraControl(zoomOut,()=>{cameraDistance=Math.min(48,cameraDistance+3);});
