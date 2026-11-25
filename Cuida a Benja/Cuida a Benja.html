@@ -6595,7 +6595,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
   if(tvDist<18&&tvDist<=radioDist&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
   else if(radioDist<16&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
-  if(wellDist<18&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;farmCollectWaterWithBucket();}
+  if(wellDist<22&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;farmCollectWaterWithBucket();}
   if(tvDist<18&&tvDist<=radioDist)prompt='pulsa ATACAR para cambiar el canal o encender/apagar la televisión.';
   else if(radioDist<16)prompt='pulsa ATACAR para elegir una emisora y encender/apagar la radio.';
   else if(shopDist<19)prompt='pulsa ATACAR para entrar al puesto y comprar suministros.';
