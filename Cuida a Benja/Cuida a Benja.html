@@ -2239,7 +2239,6 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         async function loadGitHubAssets(forceScan = false) {
             if (githubLoader.dataset.loading === '1') return;
-            let zipFallbackAttempted = false;
             githubLoader.dataset.loading = '1';
             githubLoader.dataset.cancelled = '0';
             startScreen.classList.add('loading');
@@ -2260,7 +2259,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             githubLogMsg(`Rama: ${GITHUB_BRANCH}`);
             githubLogMsg(`Ruta raíz del repositorio: /`);
                         githubLogMsg(`URL raíz: ${GITHUB_CONTENTS_URL}?ref=${encodeURIComponent(GITHUB_BRANCH)}`);
-            setGitHubProgress(0, 'Conectando con GitHub...', entriesTotalForUI > 0 ? `0/${entriesTotalForUI}` : 'Conectando');
+            setGitHubProgress(0, 'Iniciando...', entriesTotalForUI > 0 ? `0/${entriesTotalForUI}` : '0/0');
 
             try {
                 // Primero mostramos cuántos archivos habían quedado almacenados en el dispositivo.
@@ -2279,13 +2278,12 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                     entries = await githubCollectFilesFromTree();
                     githubLogMsg(`Listado obtenido con Git Trees: ${entries.length} archivos.`, 'ok');
                 } catch (treeError) {
-                    // No recorrer carpeta por carpeta: en Android esa alternativa podía
-                    // tardar mucho y dejar la pantalla congelada visualmente en 0/0.
-                    // Pasamos directamente al ZIP completo como respaldo.
-                    githubLogMsg(`Git Trees no respondió: ${treeError.message}. Activando descarga ZIP de respaldo...`, 'error');
-                    zipFallbackAttempted = true;
-                    await loadGitHubZipFallback('No se pudo obtener el árbol de archivos de GitHub.');
-                    return;
+                    githubLogMsg(`Git Trees no respondió: ${treeError.message}. Probando Contents API...`, 'error');
+                    entries = [];
+                    await githubCollectFiles(GITHUB_FOLDER, entries, []);
+                    await githubCollectFiles('El Bromas', entries, []);
+                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos de Cuida a Benja y El Bromas.');
+                    githubLogMsg(`Listado alternativo de Contents API: ${entries.length} archivos.`, 'ok');
                 }
                 entriesTotalForUI = entries.length;
                 savedFilesCount = await getStoredCountForVersion(currentGameVersion);
@@ -2402,23 +2400,15 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
                 }
 
                 // En errores tempranos sí probamos una sola alternativa silenciosa.
-                if (!zipFallbackAttempted) {
-                    try {
-                        zipFallbackAttempted = true;
-                        await loadGitHubZipFallback('La descarga directa de archivos falló; usando ZIP de respaldo.');
-                        return;
-                    } catch (zipError) {
-                        console.error('Error en respaldo ZIP:', zipError);
-                        startScreen.classList.remove('loading');
-                        startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`;
-                        githubLoader.style.display = 'none';
-                        showStartupError(zipError);
-                    }
-                } else {
+                try {
+                    await loadGitHubZipFallback('');
+                    return;
+                } catch (zipError) {
+                    console.error('Error en respaldo ZIP:', zipError);
                     startScreen.classList.remove('loading');
-                    startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`;
+                    startupProgressCount.textContent = `${savedFilesCount}/${entriesTotalForUI || 0}`
                     githubLoader.style.display = 'none';
-                    showStartupError(error);
+                    showStartupError(zipError);
                 }
             } finally {
                 githubLoader.dataset.loading = '0';
