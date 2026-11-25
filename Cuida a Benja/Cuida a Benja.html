@@ -5551,7 +5551,7 @@ function updateFarmThrownFood(){
 function ensureFarmCicadaAudio(){
  if(farmCicadaAudio)return farmCicadaAudio;
  // Se reproduce el MP3 original tal cual: sin osciladores, cambio de tono ni filtros.
- const audio=new Audio("./Sonidos/ambiente/chicharra_original.mp3");
+ const audio=new Audio("./Sonidos/ambiente/la%20chicharra%20japonesa(MP3_160K).mp3");
  audio.loop=true;audio.preload='auto';audio.volume=0;audio.setAttribute('playsinline','');
  audio.addEventListener('error',()=>{const status=document.getElementById('farmAmbienceStatus');if(status)status.textContent='No se pudo cargar Cuida a Benja/Sonidos/ambiente/chicharra_original.mp3.';});
  farmCicadaAudio=audio;return audio;
@@ -7762,7 +7762,7 @@ function startProtestMission() {
 
         // El código de acceso se pide antes de ejecutar el cargador del juego.
         // 
-        window.addEventListener('DOMContentLoaded', () => {
+        const initializeCuidaBenja = () => {
             // Arrancar el cargador ANTES de intentar pantalla completa.
             // En algunos WebView Android requestFullscreen lanza/rechaza la promesa
             // si no hay un gesto del usuario; eso no debe impedir que cargue el juego.
@@ -7820,7 +7820,16 @@ function startProtestMission() {
                     playMusic(!!normalMusicResumePending).then(ok => { if (ok) normalMusicResumePending = false; }).catch(() => {});
                 }
             }, 1500);
-        });
+        };
+
+        // El HTML también puede abrirse desde un WebView que ya terminó de analizar
+        // el documento cuando este script se ejecuta. En ese caso DOMContentLoaded
+        // ya ocurrió y un listener nuevo nunca se dispara: la pantalla queda en 0/0.
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeCuidaBenja, { once: true });
+        } else {
+            initializeCuidaBenja();
+        }
     </script>
 </body>
 </html>
