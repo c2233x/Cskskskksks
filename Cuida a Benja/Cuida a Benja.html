@@ -5608,12 +5608,26 @@ function updateFarmCarryVisual(force=false){
  types.slice(0,8).forEach((k,i)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(.42,.38,.42),new THREE.MeshLambertMaterial({color:FARM_GOODS[k].color}));m.position.set(-.62+(i%4)*.42,.95+Math.floor(i/4)*.3,-.2);farmCarryVisualGroup.add(m);});
  farmCarryVisualGroup.position.set(0,3.55,-.78);character.add(farmCarryVisualGroup);character.userData.farmCarryGroup=farmCarryVisualGroup;
 }
-const farmVoiceDiagnosticLog=[];
-function farmVoiceLog(message,extra){const row={time:new Date().toLocaleTimeString(),message:String(message),detail:extra===undefined?'':String(extra)};farmVoiceDiagnosticLog.push(row);if(farmVoiceDiagnosticLog.length>120)farmVoiceDiagnosticLog.shift();const p=document.getElementById('farmVoiceLogText');if(p)p.textContent=farmVoiceLogText();}
-function farmVoiceLogText(){const synth=('speechSynthesis'in window)?window.speechSynthesis:null,voices=synth&&synth.getVoices?synth.getVoices():[];return ['DIAGNOSTICO DE VOZ LOCAL','Fecha: '+new Date().toISOString(),'Navegador: '+(navigator.userAgent||'desconocido'),'speechSynthesis: '+!!synth,'SpeechSynthesisUtterance: '+(typeof SpeechSynthesisUtterance!=='undefined'),'Voces disponibles: '+voices.length,'Estado: '+(synth?(synth.speaking?'hablando':synth.pending?'pendiente':synth.paused?'pausado':'inactivo'):'no disponible'),'Voces: '+voices.map(v=>v.name+' ('+v.lang+')').join(', '),'','EVENTOS',...farmVoiceDiagnosticLog.map(x=>'['+x.time+'] '+x.message+(x.detail?' · '+x.detail:''))].join('\n');}
-function farmVoiceTest(){const text='Hola',box=document.getElementById('farmSubtitles');farmLastSubtitleAt=Date.now();if(box){box.textContent='PRUEBA DE VOZ: Hola';box.style.display='block';}if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined'){farmVoiceLog('ERROR: este navegador no ofrece voz local');showToast('este navegador no tiene voz local disponible');return;}const synth=window.speechSynthesis;try{synth.cancel();synth.resume();const voices=synth.getVoices?synth.getVoices():[];farmVoiceLog('Prueba solicitada: Hola','voces='+voices.length+' · '+navigator.userAgent);const u=new SpeechSynthesisUtterance(text);u.lang='es-MX';u.rate=1;u.pitch=1;u.volume=1;const spanish=voices.filter(v=>/^es([-_]|$)/i.test(v.lang)),voice=spanish.find(v=>/es-MX|es-US|es-419/i.test(v.lang))||spanish[0];if(voice){u.voice=voice;farmVoiceLog('Voz seleccionada',voice.name+' ('+voice.lang+')');}else farmVoiceLog('AVISO: no hay voz española instalada','se probará la voz predeterminada');u.onstart=()=>farmVoiceLog('OK: el motor empezó a hablar');u.onend=()=>farmVoiceLog('OK: terminó la prueba');u.onerror=e=>{farmVoiceLog('ERROR de síntesis',e.error||'sin detalle');showToast('falló la voz local: '+(e.error||'revisa los logs'));};synth.speak(u);window.setTimeout(()=>{if(!synth.speaking&&!synth.pending)farmVoiceLog('AVISO: el navegador no inició audio','revisa volumen multimedia y voces instaladas en Android');},1800);}catch(e){farmVoiceLog('EXCEPCION al probar voz',e&&e.message||e);showToast('no se pudo iniciar la voz local');}}
-function farmEnsureVoiceTools(){if(document.getElementById('farmVoiceTools'))return;const w=document.createElement('div');w.id='farmVoiceTools';w.style.cssText='position:fixed;right:10px;bottom:105px;z-index:2400;display:none;gap:5px;align-items:center;pointer-events:auto;flex-wrap:wrap;max-width:96vw;justify-content:flex-end;';const mk=(id,label)=>{const b=document.createElement('button');b.id=id;b.type='button';b.textContent=label;b.style.cssText='padding:9px 11px;border:1px solid #d9c18d;border-radius:9px;background:rgba(20,34,29,.97);color:#fff;font-weight:900;font-size:11px;touch-action:manipulation;';return b;};const test=mk('farmVoiceTestBtn','🔊 PROBAR VOZ: HOLA'),logs=mk('farmVoiceLogsBtn','📋 LOGS VOZ'),copy=mk('farmVoiceCopyBtn','📄 COPIAR LOGS');w.append(test,logs,copy);document.body.appendChild(w);const panel=document.createElement('div');panel.id='farmVoiceLogPanel';panel.style.cssText='display:none;position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,94vw);max-height:70vh;overflow:auto;z-index:2401;padding:12px;border:2px solid #b89a61;border-radius:12px;background:rgba(8,15,19,.98);color:#fff;';panel.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><b>DIAGNOSTICO DE VOZ LOCAL</b><button type="button" id="farmVoiceLogClose">CERRAR</button></div><pre id="farmVoiceLogText" style="white-space:pre-wrap;overflow-wrap:anywhere;font-size:11px;max-height:52vh;overflow:auto;margin-top:10px"></pre>';document.body.appendChild(panel);test.addEventListener('click',farmVoiceTest);logs.addEventListener('click',()=>{const p=document.getElementById('farmVoiceLogPanel');if(p){document.getElementById('farmVoiceLogText').textContent=farmVoiceLogText();p.style.display=p.style.display==='none'?'block':'none';}});copy.addEventListener('click',async()=>{const txt=farmVoiceLogText();try{await navigator.clipboard.writeText(txt);showToast('logs de voz copiados');}catch(e){const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();const ok=document.execCommand('copy');ta.remove();showToast(ok?'logs de voz copiados':'no se pudieron copiar los logs');}});panel.querySelector('#farmVoiceLogClose').addEventListener('click',()=>panel.style.display='none');farmVoiceLog('Herramientas de diagnóstico preparadas');}
-function speakFarmLine(speaker,line){const box=document.getElementById('farmSubtitles');farmLastSubtitleAt=Date.now();if(box){box.textContent=(speaker?String(speaker).toUpperCase()+': ':'')+line;box.style.display='block';}if(!('speechSynthesis'in window)||typeof SpeechSynthesisUtterance==='undefined'){farmVoiceLog('No disponible: speechSynthesis no existe');return;}try{const synth=window.speechSynthesis;synth.cancel();synth.resume();const u=new SpeechSynthesisUtterance(line);u.lang='es-MX';u.rate=.91;u.pitch=.92;u.volume=1;const voices=synth.getVoices?synth.getVoices():[],spanish=voices.filter(x=>/^es([-_]|$)/i.test(x.lang)),v=spanish.find(x=>/es-MX|es-US|es-419/i.test(x.lang))||spanish[0];if(v)u.voice=v;farmVoiceLog('Dialogo solicitado',speaker+': '+line+' · voces='+voices.length);u.onstart=()=>farmVoiceLog('Inicio de diálogo',speaker||'narrador');u.onend=()=>farmVoiceLog('Fin de diálogo',speaker||'narrador');u.onerror=e=>farmVoiceLog('Error de diálogo',e.error||'sin detalle');synth.speak(u);}catch(e){farmVoiceLog('Excepcion de diálogo',e&&e.message||e);}const stamp=farmLastSubtitleAt;window.setTimeout(()=>{if(box&&farmLastSubtitleAt===stamp)box.style.display='none';},Math.max(4200,Math.min(8500,line.length*65)));}
+function speakFarmLine(speaker,line){
+ const box=document.getElementById('farmSubtitles');
+ farmLastSubtitleAt=Date.now();
+ if(box){box.textContent=(speaker?String(speaker).toUpperCase()+': ':'')+line;box.style.display='block';}
+ if('speechSynthesis'in window&&typeof SpeechSynthesisUtterance!=='undefined'){
+  try{
+   const synth=window.speechSynthesis;
+   synth.cancel();synth.resume();
+   const u=new SpeechSynthesisUtterance(line);
+   u.lang='es-MX';u.rate=.91;u.pitch=.92;u.volume=1;
+   const voices=synth.getVoices?synth.getVoices():[];
+   const spanish=voices.filter(x=>/^es([-_]|$)/i.test(x.lang));
+   const voice=spanish.find(x=>/es-MX|es-US|es-419/i.test(x.lang))||spanish[0];
+   if(voice)u.voice=voice;
+   synth.speak(u);
+  }catch(e){}
+ }
+ const stamp=farmLastSubtitleAt;
+ window.setTimeout(()=>{if(box&&farmLastSubtitleAt===stamp)box.style.display='none';},Math.max(4200,Math.min(8500,line.length*65)));
+}
 function farmThrowFood(){
  if(!storyModeActive||farmCityMode||!benjaPig||!character)return false;const type=['manzanas','maiz','trigo','zanahoria','heno','pienso'].find(k=>FARM_GOODS[k]&&FARM_GOODS[k].food&&(farmCarriedGoods[k]||0)>0);
  if(!type){showToast('no llevas comida. compra algo en la tienda o sacalo del almacen.');return true;}
@@ -6105,41 +6119,32 @@ function closeFarmTV(){
 function setupFarmTVPhysicalControls(){
  if(farmTVPhysicalControlsBound||!renderer||!renderer.domElement)return;
  let lastPhysicalActionAt=0;
- renderer.domElement.addEventListener('pointerdown',event=>{
-  if(!storyModeActive||farmCityMode||!character)return;
-  const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;
+ const canvas=renderer.domElement;
+ canvas.addEventListener('pointerdown',event=>{
+  if(event.target!==canvas||!storyModeActive||farmCityMode||!character||event.isPrimary===false)return;
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  const tvDistance=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
+  const radioDistance=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
+  const canTouchTV=tvDistance<=12,canTouchRadio=radioDistance<=9;
+  if(!canTouchTV&&!canTouchRadio)return;
+  const rect=canvas.getBoundingClientRect();if(!rect.width||!rect.height)return;
   camera.updateMatrixWorld(true);
   if(farmTVProp)farmTVProp.updateMatrixWorld(true);
   if(farmRadioProp)farmRadioProp.updateMatrixWorld(true);
-  // Detecta cada boton por su centro proyectado. Evita depender del raycast
-  // sobre hitboxes invisibles, que puede fallar en algunos WebView Android.
-  const projectedHit=(targets,maxPixels)=>{
-   let best=null,bestDistance=Infinity;
-   for(const target of (targets||[])){
-    if(!target||!target.visible)continue;
-    const p=target.getWorldPosition(new THREE.Vector3()).project(camera);
-    if(p.z< -1||p.z>1||Math.abs(p.x)>1||Math.abs(p.y)>1)continue;
-    const sx=rect.left+(p.x+1)*.5*rect.width,sy=rect.top+(1-p.y)*.5*rect.height;
-    const d=Math.hypot(event.clientX-sx,event.clientY-sy);
-    if(d<=maxPixels&&d<bestDistance){best=target;bestDistance=d;}
-   }
-   return best;
-  };
-  const touchRadius=event.pointerType==='mouse'?30:44;
-  const tvNear=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z)<=25;
-  const radioNear=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z)<=17;
-  const tvHit=tvNear?projectedHit(farmTVPhysicalHitTargets,touchRadius):null;
-  const radioHit=(!tvHit&&radioNear)?projectedHit(farmRadioPhysicalHitTargets,touchRadius):null;
+  const pointer=new THREE.Vector2(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
+  const raycaster=new THREE.Raycaster();raycaster.setFromCamera(pointer,camera);
+  const tvHit=canTouchTV?raycaster.intersectObjects(farmTVPhysicalHitTargets,false).find(h=>h.object&&h.object.userData.tvChannelAction):null;
+  const radioHit=(!tvHit&&canTouchRadio)?raycaster.intersectObjects(farmRadioPhysicalHitTargets,false).find(h=>h.object&&h.object.userData.radioAction):null;
   if(!tvHit&&!radioHit)return;
-  const now=performance.now();if(now-lastPhysicalActionAt<260)return;lastPhysicalActionAt=now;
+  const now=performance.now();if(now-lastPhysicalActionAt<300)return;lastPhysicalActionAt=now;
   event.preventDefault();event.stopPropagation();if(event.stopImmediatePropagation)event.stopImmediatePropagation();
   if(radioHit){
-   const action=radioHit.userData.radioAction;
+   const action=radioHit.object.userData.radioAction;
    if(action==='power')setFarmRadioPower(!farmRadioPowerOn);
    else{const next=(farmRadioStationIndex+(action==='next'?1:-1)+FARM_RADIO_STATIONS.length)%FARM_RADIO_STATIONS.length;selectFarmRadioStation(next);if(!farmRadioPowerOn)setFarmRadioPower(true);}
    showToast(action==='power'?'radio encendida/apagada':action==='next'?'siguiente emisora':'emisora anterior');return;
   }
-  const action=tvHit.userData.tvChannelAction;
+  const action=tvHit.object.userData.tvChannelAction;
   if(action==='power'){const next=!farmTVPowerOn;setFarmTVPower(next);showToast(next?'televisor encendido':'televisor apagado');}
   else if(action==='prev'||action==='next'){cycleFarmTVChannel(action==='next'?1:-1);if(!farmTVPowerOn)setFarmTVPower(true);showToast(action==='next'?'siguiente canal':'canal anterior');}
  },{capture:true,passive:false});
@@ -7929,17 +7934,21 @@ function startProtestMission() {
             }, 350);
             let audioPoolsPrepared = false;
             const unlockAudio = () => {
-                enterFullscreen();
-                // No bloquear este manejador después del primer toque: en Android/WebView
-                // el primer toque puede ocurrir mientras aún carga el juego. Cada toque
-                // posterior debe poder arrancar/reanudar la música si quedó pausada.
+                const firstUnlock = !audioUnlocked;
                 audioUnlocked = true;
-                // Reanudar los medios guardados tras el primer gesto real del jugador (restricción Android/WebView).
                 if(storyModeActive&&!farmCityMode){
-                    if(farmRadioPowerOn){farmRadioStreamTry=0;attemptFarmRadioStream(++farmRadioGeneration);}
+                    if(firstUnlock&&farmRadioPowerOn){farmRadioStreamTry=0;attemptFarmRadioStream(++farmRadioGeneration);}
                     if(farmTVPowerOn){
-                        if(farmTVIframeFallback)sendFarmTVCommand('unMute');
-                        loadFarmTVChannel();
+                        if(farmTVIframeFallback){sendFarmTVCommand('unMute');}
+                        else{
+                            const tvVideo=document.getElementById('farmTVWorldVideo');
+                            const hasExistingStream=!!(farmTVHlsPlayer||(tvVideo&&(tvVideo.currentSrc||tvVideo.src)));
+                            if(tvVideo&&hasExistingStream&&tvVideo.paused){
+                                try{const resume=tvVideo.play();if(resume&&resume.catch)resume.catch(()=>{});}catch(_){}
+                            }else if(firstUnlock&&!hasExistingStream){
+                                loadFarmTVChannel();
+                            }
+                        }
                     }
                 }
                 if(farmAmbienceContext&&farmAmbienceContext.state==='suspended')farmAmbienceContext.resume().catch(()=>{});
@@ -7961,7 +7970,6 @@ function startProtestMission() {
             document.addEventListener('pointerdown', unlockAudio, { passive:true });
             document.addEventListener('touchstart', unlockAudio, { passive:true });
             document.addEventListener('click', unlockAudio, { passive:true });
-            document.addEventListener('pointerdown', () => { enterFullscreen(); }, { passive:true });
             document.addEventListener('visibilitychange', () => {
                 if (document.visibilityState === 'visible' && audioUnlocked && gameStarted && musicTracks.length && !bossRolonActive && !supremeEffectActive && audioPlayer.paused) {
                     playMusic(!!normalMusicResumePending).then(ok => { if (ok) normalMusicResumePending = false; }).catch(() => {});
@@ -8108,7 +8116,7 @@ function farmPatchUiTick(){
  farmEnsurePickupControls();const p=document.getElementById('farmPickupControls');if(!p)return;const near=!!(storyModeActive&&!farmCityMode&&!isDriving&&character&&farmPickupVehicle&&Math.hypot(character.position.x-farmPickupVehicle.position.x,character.position.z-farmPickupVehicle.position.z)<24);p.style.display=near?'flex':'none';
 }
 try{farmHammerOwned=localStorage.getItem(STORY_SAVE_KEY+'_hammer')==='1';farmPickupLoadCargo();}catch(_){}
-setInterval(()=>{try{farmPatchUiTick();farmEnsureVoiceTools();const vt=document.getElementById('farmVoiceTools'),start=document.getElementById('startScreen');if(vt)vt.style.display=storyModeActive&&(!start||getComputedStyle(start).display==='none')?'flex':'none';}catch(e){console.warn('pickup/voice controls',e);}},450);
+setInterval(()=>{try{farmPatchUiTick();}catch(e){console.warn('pickup controls',e);}},450);
 </script>
 </body>
 </html>
