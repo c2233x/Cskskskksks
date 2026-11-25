@@ -1043,6 +1043,16 @@ let farmRadioScanToken=0,farmRadioScanActive=false,farmRadioScanAudio=null,farmR
         let farmStorageVisuals={},farmStorageBins={},farmMissionDecor=[];
 let farmPickupVehicle=null,farmPickupCargoGroup=null,farmPickupCargo={},farmHammerOwned=false,farmHammerPanel=null,farmHammerSelectedIndex=-1,farmVehiclesCheckAt=0;
 let cityLootObjects=[],cityLootCarried=[],farmPickupHomePose=null,farmPickupInCity=false;
+let cityTravelVehicle=null,cityTravelVehicleHomePose=null,cityTravelVehicleWasPickup=false;
+let farmVehiclePartsStock={repuestos:0,'caja-herramientas':0,'piezas-mecanicas':0};
+function farmLoadVehiclePartsStock(){try{const d=JSON.parse(localStorage.getItem(STORY_SAVE_KEY+'_vehicle_parts')||'{}');farmVehiclePartsStock=Object.assign({repuestos:0,'caja-herramientas':0,'piezas-mecanicas':0},d);}catch(_){}}
+function farmSaveVehiclePartsStock(){try{localStorage.setItem(STORY_SAVE_KEY+'_vehicle_parts',JSON.stringify(farmVehiclePartsStock));}catch(_){}}
+function farmStoreVehicleParts(){
+ farmLoadVehiclePartsStock();const items=Array.isArray(farmPickupCargo.cityLoot)?farmPickupCargo.cityLoot:[];let moved=0;
+ for(let i=items.length-1;i>=0;i--){const id=items[i]&&items[i].id;if(Object.prototype.hasOwnProperty.call(farmVehiclePartsStock,id)){farmVehiclePartsStock[id]++;items.splice(i,1);moved++;}}
+ if(!moved){showToast('no hay repuestos en la camioneta para guardar');return;}
+ farmSaveVehiclePartsStock();farmPickupSaveCargo();farmPickupRefreshVisual();showToast('guardaste '+moved+' repuestos en el almacen del taller');openFarmVehicleWorkshop();
+}
 const CITY_SCAVENGE_LOOT=[
  {id:'caja-herramientas',label:'Caja de herramientas',icon:'🧰',color:0xb97838},
  {id:'repuestos',label:'Repuestos',icon:'⚙️',color:0x78858b},
@@ -6825,6 +6835,20 @@ function unloadCityWorld(){
  cityWorldGroup=null;cityWorldLoaded=false;cityJobBoard=null;
  try{if(typeof rebuildCarCollisionGrid==='function')rebuildCarCollisionGrid();}catch(_){}
 }
+function ensureCityFieldRoadSign(){
+ if(!cityWorldGroup||cityWorldGroup.getObjectByName('CuidaBenja_CarreteraCampo'))return;
+ const gate=CITY_MAP_CONFIG.returnGate||{x:-132,z:-330};
+ const road=new THREE.Group();road.name='CuidaBenja_CarreteraCampo';
+ const asphalt=new THREE.Mesh(new THREE.BoxGeometry(20,.16,270),new THREE.MeshStandardMaterial({color:0x343a3e,roughness:.96}));asphalt.position.set(gate.x,.04,gate.z+48);asphalt.receiveShadow=true;road.add(asphalt);
+ const stripeMat=new THREE.MeshBasicMaterial({color:0xf4e6b4});
+ for(let z=-78;z<=78;z+=24){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.32,.19,9),stripeMat);stripe.position.set(gate.x,.14,gate.z+48+z);road.add(stripe);}
+ const postMat=new THREE.MeshStandardMaterial({color:0x60452c,roughness:.9}),boardMat=new THREE.MeshStandardMaterial({color:0x245b35,roughness:.75});
+ for(const x of [-7,7]){const post=new THREE.Mesh(new THREE.BoxGeometry(.7,8,.7),postMat);post.position.set(gate.x+x,4,gate.z+3);road.add(post);}
+ const board=new THREE.Mesh(new THREE.BoxGeometry(17,4.5,.8),boardMat);board.position.set(gate.x,8.8,gate.z+3);road.add(board);
+ const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle='#174b2b';ctx.fillRect(0,0,1024,256);ctx.strokeStyle='#f3df9b';ctx.lineWidth=16;ctx.strokeRect(10,10,1004,236);ctx.fillStyle='#fff2c4';ctx.font='bold 150px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CAMPO',512,132);
+ const tex=new THREE.CanvasTexture(canvas);tex.colorSpace=THREE.SRGBColorSpace;const sign=new THREE.Mesh(new THREE.PlaneGeometry(16,4),new THREE.MeshBasicMaterial({map:tex}));sign.position.set(gate.x,8.8,gate.z+2.55);road.add(sign);
+ cityWorldGroup.add(road);
+}
 function showMapTravelOverlay(title,subtitle){
  const panel=document.getElementById('mapTravelOverlay'),heading=document.getElementById('mapTravelTitle'),sub=document.getElementById('mapTravelSubtitle');
  if(heading)heading.textContent=title||'VIAJANDO';if(sub)sub.textContent=subtitle||'Un momento…';
@@ -6836,30 +6860,30 @@ function hideMapTravelOverlay(){
 async function travelToCity(){
  if(!storyModeActive||farmCityMode||mapTravelInProgress)return;
  cancelFarmBuildPlacement();
- const arrivedInPickup=!!(isDriving&&drivenCar&&farmPickupVehicle&&drivenCar===farmPickupVehicle);
- if(isDriving&&!arrivedInPickup)exitDrivenCar();
- if(arrivedInPickup&&farmPickupVehicle){
-  farmPickupHomePose={x:farmPickupVehicle.position.x,y:farmPickupVehicle.position.y,z:farmPickupVehicle.position.z,rotationY:farmPickupVehicle.rotation.y};
-  if(farmPickupVehicle.parent!==scene)scene.add(farmPickupVehicle);
-  farmPickupVehicle.visible=true;farmPickupInCity=true;
- }
+ const wasDriving=!!(isDriving&&drivenCar);
+ cityTravelVehicle=wasDriving?drivenCar:null;
+ cityTravelVehicleWasPickup=!!(cityTravelVehicle&&cityTravelVehicle===farmPickupVehicle);
+ if(cityTravelVehicle){
+  cityTravelVehicleHomePose={x:cityTravelVehicle.position.x,y:cityTravelVehicle.position.y,z:cityTravelVehicle.position.z,rotationY:cityTravelVehicle.rotation.y,parent:cityTravelVehicle.parent};
+  if(cityTravelVehicle.parent!==scene)scene.add(cityTravelVehicle);
+  cityTravelVehicle.visible=true;cityTravelVehicle.frustumCulled=false;
+ }else{cityTravelVehicleHomePose=null;}
  mapTravelInProgress=true;isCinematic=true;stopFarmAmbience();
  setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();
  const inv=document.getElementById('farmInventoryPanel');if(inv)inv.style.display='none';
- showMapTravelOverlay('RUMBO A LA CIUDAD','Atravesando el camino hacia la ciudad…');
+ showMapTravelOverlay('RUMBO A LA CIUDAD','Viajando con el vehiculo y su conductor…');
  try{
-  await new Promise(resolve=>setTimeout(resolve,650));await ensureCityWorldLoaded();await enterCityMap(arrivedInPickup);
-  showMapTravelOverlay('LLEGASTE A LA CIUDAD','Busca objetos por la ciudad y súbelos a la camioneta.');
+  await new Promise(resolve=>setTimeout(resolve,650));await ensureCityWorldLoaded();await enterCityMap(!!cityTravelVehicle);
+  showMapTravelOverlay('LLEGASTE A LA CIUDAD','Llegaste a la carretera de entrada. El cartel CAMPO marca el camino de regreso.');
   await new Promise(resolve=>setTimeout(resolve,550));
  }catch(error){
-  if(arrivedInPickup&&farmPickupVehicle){
-   if(farmPickupVehicle.parent!==farmGroup)farmGroup.add(farmPickupVehicle);
-   if(farmPickupHomePose){farmPickupVehicle.position.set(farmPickupHomePose.x,farmPickupHomePose.y,farmPickupHomePose.z);farmPickupVehicle.rotation.y=farmPickupHomePose.rotationY;}
-   farmPickupInCity=false;farmPickupHomePose=null;
+  if(cityTravelVehicle&&cityTravelVehicleHomePose){
+   const home=cityTravelVehicleHomePose;if(home.parent&&cityTravelVehicle.parent!==home.parent)home.parent.add(cityTravelVehicle);
+   cityTravelVehicle.position.set(home.x,home.y,home.z);cityTravelVehicle.rotation.y=home.rotationY;
   }
-  cityTravelRetryAt=Date.now()+12000;
-  const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='none';
-  showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga')+'. Puedes volver a intentarlo.');isCinematic=false;
+  cityTravelVehicle=null;cityTravelVehicleHomePose=null;cityTravelVehicleWasPickup=false;
+  cityTravelRetryAt=Date.now()+12000;const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='none';
+  showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga')+'. Puedes volver a intentarlo.');
  }finally{hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;}
 }
 async function travelToFarm(){
@@ -6881,24 +6905,23 @@ async function enterCityMap(arrivedInPickup=false){
  if(farmGuideMarker)farmGuideMarker.visible=false;
  cityTravelRetryAt=0;const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='none';
  const p=CITY_MAP_CONFIG.spawn||{x:0,z:0};
- if(arrivedInPickup&&farmPickupVehicle){
-  // La pickup se conserva como objeto independiente del grupo de ciudad y el jugador viaja dentro.
-  if(farmPickupVehicle.parent!==scene)scene.add(farmPickupVehicle);
-  farmPickupInCity=true;farmPickupVehicle.visible=true;farmPickupVehicle.userData.speed=0;farmPickupVehicle.userData.steer=0;
+ const gate=CITY_MAP_CONFIG.returnGate||{x:-132,z:-330};
+ const arrival={x:gate.x,z:gate.z+58};
+ if(arrivedInPickup&&cityTravelVehicle){
+  if(cityTravelVehicle.parent!==scene)scene.add(cityTravelVehicle);
+  cityTravelVehicle.visible=true;cityTravelVehicle.userData.speed=0;cityTravelVehicle.userData.steer=0;
   carInput={steer:0,throttle:0,reverse:0};
-  const candidates=[[-22,18],[22,18],[-22,-18],[22,-18],[0,30]];
-  let spot=candidates[0];
-  for(const c of candidates){if(!checkCollision(p.x+c[0],p.z+c[1])){spot=c;break;}}
-  const vx=p.x+spot[0],vz=p.z+spot[1];
-  farmPickupVehicle.position.set(vx,getTerrainY(vx,vz,null)+.12,vz);
-  farmPickupVehicle.rotation.set(0,0,0);farmPickupVehicle.frustumCulled=false;
-  farmPickupVehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});
-  drivenCar=farmPickupVehicle;isDriving=true;character.position.copy(farmPickupVehicle.position);character.visible=false;
+  const vx=arrival.x,vz=arrival.z,vy=getTerrainY(vx,vz,null);
+  cityTravelVehicle.position.set(vx,vy+.12,vz);cityTravelVehicle.rotation.set(0,0,0);cityTravelVehicle.frustumCulled=false;
+  cityTravelVehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});
+  drivenCar=cityTravelVehicle;isDriving=true;character.position.copy(cityTravelVehicle.position);character.visible=false;
   const buttons=document.getElementById('carDrivingButtons'),hud=document.getElementById('carDriveHud');if(buttons)buttons.classList.add('active');if(hud)hud.classList.add('active');
   const radio=document.getElementById('carRadioPanel');if(radio)radio.classList.add('active');
+  if(cityTravelVehicleWasPickup)farmPickupInCity=true;
  }else{
-  character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.rotation.set(0,0,0);character.visible=true;
+  character.position.set(arrival.x,farmGroundAt(arrival.x,arrival.z),arrival.z);character.rotation.set(0,0,0);character.visible=true;
  }
+ ensureCityFieldRoadSign();
  cameraTheta=0;cameraDistance=28;farmGuideTarget=null;cityActiveJob=null;waveNumber=0;waitingNextWave=false;waveActive=true;
  document.getElementById('missionUI').style.display='block';
  const jobs=document.getElementById('farmQuickJobs');if(jobs)jobs.style.display='inline-flex';
@@ -6908,30 +6931,29 @@ async function enterCityMap(arrivedInPickup=false){
 }
 function returnToFarmMap(keepPickup=false){
  if(!farmCityMode)return;
- const keep=!!(keepPickup&&isDriving&&drivenCar===farmPickupVehicle&&farmPickupVehicle);
+ const keep=!!(keepPickup&&isDriving&&cityTravelVehicle&&drivenCar===cityTravelVehicle);
  if(isDriving&&!keep)exitDrivenCar();
  farmCityMode=false;stopStoryBackgroundMusic();waveActive=false;waitingNextWave=false;farmClearNPCs(true);
  unloadCityWorld();cityLootObjects=[];
  if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
  const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};
- // Al salir de ciudad, aparcar SIEMPRE la pickup en la granja; nunca dejarla dentro del mapa descargado.
- if(farmPickupInCity&&farmPickupVehicle){
-  if(farmPickupVehicle.parent!==farmGroup)farmGroup.add(farmPickupVehicle);
-  const x=p.x+22,z=p.z+8;
-  farmPickupVehicle.position.set(x,farmGroundAt(x,z)+.12,z);
-  farmPickupVehicle.rotation.set(0,Math.PI/2,0);farmPickupVehicle.visible=true;farmPickupVehicle.frustumCulled=false;
-  farmPickupVehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});
+ if(cityTravelVehicle){
+  const vehicle=cityTravelVehicle,x=p.x+22,z=p.z+8,y=farmGroundAt(x,z)+.12;
+  if(vehicle.parent!==scene)scene.add(vehicle);
+  vehicle.position.set(x,y,z);vehicle.rotation.set(0,Math.PI/2,0);vehicle.visible=true;vehicle.frustumCulled=false;
+  vehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});
   if(keep){
-   drivenCar=farmPickupVehicle;isDriving=true;character.position.copy(farmPickupVehicle.position);character.visible=false;
+   drivenCar=vehicle;isDriving=true;character.position.copy(vehicle.position);character.visible=false;
    const buttons=document.getElementById('carDrivingButtons'),hud=document.getElementById('carDriveHud');if(buttons)buttons.classList.add('active');if(hud)hud.classList.add('active');
   }else{
-   if(isDriving&&drivenCar===farmPickupVehicle)removeDrivenCarState();
+   if(isDriving&&drivenCar===vehicle)removeDrivenCarState();
    character.position.set(x+8,farmGroundAt(x+8,z),z);character.visible=true;character.rotation.set(0,0,0);
   }
-  farmPickupInCity=false;farmPickupHomePose=null;
+  if(vehicle===farmPickupVehicle){if(vehicle.parent!==farmGroup)farmGroup.add(vehicle);farmPickupInCity=false;farmPickupHomePose=null;}
  }else if(!keep){character.position.set(p.x,farmGroundAt(p.x,p.z),p.z);character.visible=true;character.rotation.set(0,0,0);}
- cameraTheta=0;cameraDistance=26;
- cityActiveJob=null;const jobs=document.getElementById('farmQuickJobs');if(jobs)jobs.style.display='none';
+ cityTravelVehicle=null;cityTravelVehicleHomePose=null;cityTravelVehicleWasPickup=false;farmPickupInCity=false;farmPickupHomePose=null;
+ cameraTheta=0;cameraDistance=26;cityActiveJob=null;
+ const jobs=document.getElementById('farmQuickJobs');if(jobs)jobs.style.display='none';
  const cityPanel=document.getElementById('cityJobPanel');if(cityPanel)cityPanel.style.display='none';
  farmStartMission(farmMissionId);farmUpdateBenjaHud();updateMissionUI();showToast('volviste a la granja con benja.');
 }
@@ -6999,7 +7021,10 @@ function updateCityMapMode(now){
   farmPickupVehicle.visible=true;
   if(isDriving&&drivenCar===farmPickupVehicle)character.position.copy(farmPickupVehicle.position);
  }
- if(Math.hypot(actor.x-spawn.x,actor.z-spawn.z)>(Number(CITY_MAP_CONFIG.exitRadius)||345)){travelToFarm();return;}
+ const gate=CITY_MAP_CONFIG.returnGate||{x:-132,z:-330};
+ // El regreso solo se activa al cruzar el extremo de la carretera CAMPO, no al alejarse por cualquier calle.
+ const crossedFieldRoad=actor.z<gate.z-58&&Math.abs(actor.x-gate.x)<48;
+ if(crossedFieldRoad){travelToFarm();return;}
  let prompt='';
  if(cityActiveJob){
   const j=cityActiveJob,d=Math.hypot(actor.x-j.target.x,actor.z-j.target.z);
@@ -8683,18 +8708,15 @@ function createFarmPickupVehicle(){
  const x=FARM_TRACTOR_POS.x+21,z=FARM_TRACTOR_POS.z-4;t.position.set(x,farmGroundAt(x,z)+.12,z);t.rotation.y=Math.PI/2;t.name='Pickup de la granja';
  /* marcador retirado */
  /* etiqueta retirada */t.visible=true;t.frustumCulled=false;t.userData={speed:0,steer:0,maxSpeed:.50,accel:.026,driftGrip:.28,collisionRadius:5.4,isFarmPickup:true,wheels:pickupWheels,suspension:0,lastTerrainX:99999,lastTerrainZ:99999,terrainFront:4.1,terrainRear:-4.2,terrainHalfTrack:3.9,exitDistance:8.1,exitSide:5.2};t.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});farmGroup.add(t);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmPickup);drivableCars.push(t);farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,3.05,-2.65);farmPickupCargoGroup.frustumCulled=false;t.add(farmPickupCargoGroup);farmPickupVehicle=t;try{farmVehicleUpgradeLevel=Math.max(0,Math.min(3,Number(localStorage.getItem(STORY_SAVE_KEY+'_vehicle_upgrade'))||0));}catch(_){farmVehicleUpgradeLevel=0;}t.userData.maxSpeed=.50+farmVehicleUpgradeLevel*.12;t.userData.accel=.026+farmVehicleUpgradeLevel*.009;t.userData.driftGrip=.28+farmVehicleUpgradeLevel*.035;farmPickupRefreshVisual();
-}function farmVehicleWorkshopParts(){
- const list=Array.isArray(farmPickupCargo.cityLoot)?farmPickupCargo.cityLoot:[];
- const count=id=>list.filter(item=>item&&item.id===id).length;
- return {repuestos:count('repuestos'),caja:count('caja-herramientas'),piezas:count('piezas-mecanicas')};
-}
+}function farmVehicleWorkshopParts(){farmLoadVehiclePartsStock();return {repuestos:farmVehiclePartsStock.repuestos||0,caja:farmVehiclePartsStock['caja-herramientas']||0,piezas:farmVehiclePartsStock['piezas-mecanicas']||0};}
 function farmEnsureVehicleWorkshopPanel(){
  if(document.getElementById('farmVehicleWorkshopPanel'))return;
  const p=document.createElement('div');p.id='farmVehicleWorkshopPanel';
  p.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(430px,94vw);max-height:82vh;overflow:auto;z-index:2200;display:none;padding:16px;border:2px solid #d6ad62;border-radius:16px;background:linear-gradient(145deg,#202b31,#10191e);color:#fff;box-shadow:0 14px 45px #000c;font-family:Arial,sans-serif;pointer-events:auto;';
- p.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:18px;color:#ffe0a0">🔧 TALLER DE LA GRANJA</b><button id="farmWorkshopClose" type="button" style="padding:8px 11px;border:0;border-radius:8px;background:#8d342d;color:white;font-weight:900">✕</button></div><p id="farmWorkshopInfo" style="font-size:13px;line-height:1.5;margin:12px 0"></p><div id="farmWorkshopUpgrades" style="display:grid;gap:9px"></div><p style="font-size:11px;color:#c4d0d4;margin-top:12px">Trae la camioneta al taller y guarda los repuestos en su caja de carga.</p>';
+ p.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;gap:8px"><b style="font-size:18px;color:#ffe0a0">🔧 TALLER Y ALMACEN DE REPUESTOS</b><button id="farmWorkshopClose" type="button" style="padding:8px 11px;border:0;border-radius:8px;background:#8d342d;color:white;font-weight:900">✕</button></div><p id="farmWorkshopInfo" style="font-size:13px;line-height:1.5;margin:12px 0"></p><button id="farmWorkshopStoreParts" type="button" style="width:100%;padding:11px;margin:0 0 10px;border:1px solid #d6ad62;border-radius:10px;background:#36543d;color:white;font-weight:900">📦 GUARDAR REPUESTOS DE LA CAMIONETA</button><div id="farmWorkshopUpgrades" style="display:grid;gap:9px"></div><p style="font-size:11px;color:#c4d0d4;margin-top:12px">Los repuestos guardados permanecen en el almacen del taller entre viajes y partidas.</p>';
  document.body.appendChild(p);
  document.getElementById('farmWorkshopClose').addEventListener('click',()=>{p.style.display='none';});
+ document.getElementById('farmWorkshopStoreParts').addEventListener('click',farmStoreVehicleParts);
 }
 function openFarmVehicleWorkshop(){
  farmEnsureVehicleWorkshopPanel();const p=document.getElementById('farmVehicleWorkshopPanel');if(!p)return;
@@ -8714,10 +8736,11 @@ function openFarmVehicleWorkshop(){
 function farmVehicleWorkshopUpgrade(level){
  if(!farmPickupVehicle||farmPickupInCity||Math.hypot(farmPickupVehicle.position.x-FARM_WORKSHOP_POS.x,farmPickupVehicle.position.z-FARM_WORKSHOP_POS.z)>=34){showToast('estaciona la camioneta junto al taller');return;}
  if(level!==farmVehicleUpgradeLevel+1||level>3)return;
- const items=Array.isArray(farmPickupCargo.cityLoot)?farmPickupCargo.cityLoot:[];
+ farmLoadVehiclePartsStock();
  const costs=level===1?{repuestos:2,'caja-herramientas':1}:level===2?{repuestos:2,'piezas-mecanicas':3}:{repuestos:4,'caja-herramientas':2};
- for(const [id,qty] of Object.entries(costs)){if(items.filter(v=>v&&v.id===id).length<qty){showToast('faltan materiales: '+qty+' '+id.replaceAll('-',' '));return;}}
- for(const [id,qty] of Object.entries(costs)){let left=qty;for(let i=items.length-1;i>=0&&left>0;i--)if(items[i]&&items[i].id===id){items.splice(i,1);left--;}}
+ for(const [id,qty] of Object.entries(costs)){if((Number(farmVehiclePartsStock[id])||0)<qty){showToast('faltan materiales guardados: '+qty+' '+id.replaceAll('-',' '));return;}}
+ for(const [id,qty] of Object.entries(costs))farmVehiclePartsStock[id]-=qty;
+ farmSaveVehiclePartsStock();
  farmVehicleUpgradeLevel=level;
  try{localStorage.setItem(STORY_SAVE_KEY+'_vehicle_upgrade',String(level));}catch(_){}
  farmPickupVehicle.userData.maxSpeed=.50+level*.12;
