@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.7.7**
+**Version actual: 1.7.8**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -146,3 +146,7 @@ Ruta de publicación: `Cuida a Benja/Sonidos/ambiente/chicharra_original.mp3`.
 
 ## Sistema de carga
 Cuida a Benja utiliza el sistema de carga original de Salva a Cornatan, adaptado a la carpeta `Cuida a Benja`. Incluye listado GitHub, caché local, reintentos, modo sin conexión y respaldo ZIP.
+
+
+## Diagnóstico temporal
+El botón flotante `Logs` abre el panel de diagnóstico con la contraseña `pipi`. Registra el proceso de carga, red, errores y recursos fallidos durante la sesión. Los registros se mantienen temporalmente en `sessionStorage` y pueden copiarse o limpiarse desde el panel.
