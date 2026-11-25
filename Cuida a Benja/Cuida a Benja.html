@@ -394,6 +394,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmInventoryHeader button{width:32px;height:32px;border:0;border-radius:9px;background:#8b3434;color:#fff;font-size:18px;font-weight:900}
 #farmInventoryMoney{font-size:12px;color:#ffe2a7;font-weight:900;margin-bottom:8px}
 #farmInventorySummary{font-size:12px;line-height:1.7;color:#e1e7dc;padding:12px;border-radius:9px;background:rgba(255,255,255,.06);white-space:pre-line}
+.farmInventoryItem{grid-column:1/-1;padding:10px;border:1px solid rgba(214,188,133,.28);border-radius:8px;background:rgba(255,255,255,.055);color:#f2e3c8;font-size:12px;font-weight:800}
 #farmInventoryButtons{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px;margin-top:12px;max-height:46vh;max-height:36dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:2px 5px 8px 0}
 #farmInventoryButtons button{min-height:39px;padding:7px;border:1px solid #b68a4e;border-radius:9px;background:linear-gradient(145deg,#435a43,#26352a);color:#fff;font-size:11px;font-weight:900;touch-action:manipulation}
 #farmInventoryButtons button.primary{grid-column:1/-1;background:linear-gradient(145deg,#bb8741,#78502c);border-color:#ffd48e}
@@ -402,7 +403,7 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmInventoryPanel button{font-size:12px}
 #farmQuickActions{position:fixed;top:10px;left:170px;right:215px;display:flex;flex-wrap:wrap;gap:5px;z-index:90;pointer-events:auto}
 #farmQuickActions button{border:1px solid rgba(255,255,255,.5);border-radius:10px;padding:7px 10px;background:rgba(10,23,35,.88);color:#fff;font-size:10px;font-weight:950;box-shadow:0 3px 12px rgba(0,0,0,.28);touch-action:manipulation}
-#farmQuickActions button.shop{background:#865425}#farmQuickActions button.store{background:#36553c}#farmQuickActions button.jobs{background:#36517d}#farmQuickActions button.travel{background:#965024}
+#farmQuickActions button.shop{background:#865425}#farmQuickActions button.store{background:#36553c}#farmQuickActions button.jobs{background:#36517d}#farmQuickActions button.travel{background:#965024}#farmQuickActions button.inventory{background:linear-gradient(145deg,#3e6b72,#24464c);border-color:#b7e2d2}
 #farmQuickActions button:active{transform:scale(.96)}
 /* HUD de Benja ordenado sobre el HUD de Cornatan */
 #farmBenjaHud{top:auto!important;left:14px!important;bottom:248px!important;transform:none!important;width:min(218px,calc(100vw - 180px));min-width:180px;display:none;flex-direction:column;align-items:stretch;gap:5px;padding:7px 9px;z-index:56}
@@ -528,6 +529,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="farmInventoryMoney"></div><div id="farmInventorySummary"></div><div id="farmInventoryButtons"></div>
 <div id="farmInventoryHint">los productos guardados se quedan en tu partida</div></div>
 <div id="farmQuickActions">
+<button id="farmInventoryOpen" class="inventory" type="button">🎒 INVENTARIO</button>
 <button id="farmQuickJobs" class="jobs" type="button" style="display:none">TRABAJOS</button>
 
 </div>
@@ -856,7 +858,7 @@ window.CUIDA_BENJA_FARM_MAP = {
   coop: { x: -240, z: -340 },
   delivery: { x: -218, z: -435 },
   well: { x: -390, z: -440 },
-  tractor: { x: -410, z: -400 },
+  tractor: { x: -400, z: -385 },
   repair: { x: -286, z: -354 },
   fruitTrees: { x: -266, z: -284 },
   cityExitRadius: 235,
@@ -939,7 +941,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const WORLD_TERRAIN_SEGMENTS=IS_MOBILE_DEVICE?56:88;
         const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
-    crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-410,z:-400},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
+    crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-400,z:-385},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
     tv:{x:-414,z:-365},flatRadius:245,ambientZones:[
         {id:'huerto',x:-220,z:-250,radius:105,insects:true},
         {id:'arboleda',x:-266,z:-284,radius:95,insects:true},
@@ -1021,6 +1023,7 @@ const CITY_SCAVENGE_LOOT=[
         let farmDefenseLevel=0,farmBenjaHealth=100,farmRaidActive=false,farmRaidTriggered=false,farmRaidNightWasActive=false;
 let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenjaLastCleanlinessTick=0;
         let farmRaidKillCarry=0,farmRaidKillsTotal=0,farmRaidSpawnedCount=0,farmRaidLastSpawn=0,farmMissionActionLock=0;
+let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil=0;
         let benjaSoundUrls=[],benjaSoundPlayers=[],benjaSoundIndex=0,benjaSoundNextAt=0;
         let farmGuideMarker=null,farmGuideTarget=null,farmGuideLabel='';
         let storyMoney=0,storyPigWeight=32,storyFeedInventory=0,storyWorkCount=0,storyFeedingCount=0;
@@ -4856,8 +4859,9 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const storageY=farmGroundAt(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z),storage=new THREE.Group();
             storage.name='AlmacenGrandeDeLaGranja';
             // Nave amplia con suelo a ras del terreno, puerta frontal de 30 m y pasillo central libre.
-            const floor=new THREE.Mesh(new THREE.PlaneGeometry(88,84),new THREE.MeshStandardMaterial({color:0x72563a,roughness:1}));
-            floor.rotation.x=-Math.PI/2;floor.position.set(0,.055,0);floor.receiveShadow=true;storage.add(floor);
+            const floorMat=new THREE.MeshStandardMaterial({color:0x66513a,roughness:1,metalness:0,side:THREE.DoubleSide,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2});
+            const floor=new THREE.Mesh(new THREE.BoxGeometry(88,.5,84),floorMat);
+            floor.position.set(0,.22,0);floor.receiveShadow=true;floor.renderOrder=2;floor.frustumCulled=false;storage.add(floor);
             makeFarmBox(storage,-43,0,0,1.8,15,84,wood);
             makeFarmBox(storage,43,0,0,1.8,15,84,wood);
             makeFarmBox(storage,0,0,-41,88,15,1.8,wood);
@@ -4999,20 +5003,25 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const wellRoof=new THREE.Mesh(new THREE.ConeGeometry(7,3.5,4),roof);wellRoof.position.y=10;wellRoof.rotation.y=Math.PI/4;well.add(wellRoof);
             well.position.set(FARM_WELL_POS.x,wellY,FARM_WELL_POS.z);farmGroup.add(well);addFarmCollider(FARM_WELL_POS.x,FARM_WELL_POS.z,9.5,9.5,0,'farm-well');
             const tractorY=farmGroundAt(FARM_TRACTOR_POS.x,FARM_TRACTOR_POS.z),tractor=new THREE.Group();
-            const body=new THREE.Mesh(new THREE.BoxGeometry(7,2.7,10),new THREE.MeshLambertMaterial({color:0x3d8c48}));body.position.y=2.7;tractor.add(body);
-            const cab=new THREE.Mesh(new THREE.BoxGeometry(4.5,4.3,4.5),new THREE.MeshLambertMaterial({color:0x8ec8d7}));cab.position.set(0,5.8,-1);tractor.add(cab);
+            const body=new THREE.Mesh(new THREE.BoxGeometry(7,2.7,10),new THREE.MeshStandardMaterial({color:0x78b83e,roughness:.68,metalness:.04}));body.position.y=2.7;tractor.add(body);
+            const cab=new THREE.Mesh(new THREE.BoxGeometry(4.5,4.3,4.5),new THREE.MeshStandardMaterial({color:0xa6e2ed,roughness:.28,metalness:.06}));cab.position.set(0,5.8,-1);tractor.add(cab);
+            const frontGrille=new THREE.Mesh(new THREE.BoxGeometry(3.5,1.45,.22),new THREE.MeshStandardMaterial({color:0x202b20,roughness:.8}));frontGrille.position.set(0,2.5,5.12);tractor.add(frontGrille);
+            for(const side of [-1,1]){const headlamp=new THREE.Mesh(new THREE.BoxGeometry(.72,.6,.3),new THREE.MeshStandardMaterial({color:0xffe6a0,emissive:0x8a641d,emissiveIntensity:.22,roughness:.35}));headlamp.position.set(side*2.45,3.35,5.12);tractor.add(headlamp);}
+            const beaconBase=new THREE.Mesh(new THREE.CylinderGeometry(.3,.38,.35,10),new THREE.MeshStandardMaterial({color:0x30352d,roughness:.75}));beaconBase.position.set(0,8.05,-1);tractor.add(beaconBase);
+            const beacon=new THREE.Mesh(new THREE.SphereGeometry(.42,10,8),new THREE.MeshStandardMaterial({color:0xffb52c,emissive:0xff8a12,emissiveIntensity:.65,roughness:.3}));beacon.position.set(0,8.48,-1);tractor.add(beacon);
+            const tractorBeaconLight=new THREE.PointLight(0xffb52c,.85,22,2);tractorBeaconLight.position.set(0,9,-1);tractor.add(tractorBeaconLight);
             const tractorWheels=[];
             for(const side of [-1,1])for(const z of [-3.2,3.2]){
                 const front=z>0,radius=front?2.2:1.45,holder=new THREE.Group();
                 holder.position.set(side*3.7,front?2.2:1.55,z);tractor.add(holder);
-                const wheel=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,1.15,12),new THREE.MeshLambertMaterial({color:0x222222}));
+                const wheel=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,1.15,12),new THREE.MeshStandardMaterial({color:0x252a26,roughness:.96,metalness:.02}));
                 wheel.rotation.z=Math.PI/2;wheel.castShadow=true;holder.add(wheel);
                 tractorWheels.push({wheel,holder,front});
             }
             tractor.position.set(FARM_TRACTOR_POS.x,tractorY+.12,FARM_TRACTOR_POS.z);tractor.name='Tractor de la granja';
             const tractorLabelCanvas=document.createElement('canvas');tractorLabelCanvas.width=384;tractorLabelCanvas.height=96;
             const tractorLabelCtx=tractorLabelCanvas.getContext('2d');tractorLabelCtx.fillStyle='rgba(20,47,28,.92)';tractorLabelCtx.fillRect(0,0,384,96);tractorLabelCtx.fillStyle='#fff2ba';tractorLabelCtx.font='bold 48px Arial';tractorLabelCtx.textAlign='center';tractorLabelCtx.textBaseline='middle';tractorLabelCtx.fillText('TRACTOR',192,48);
-            const tractorLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(tractorLabelCanvas),transparent:true,depthWrite:false}));tractorLabel.position.set(0,11,0);tractorLabel.scale.set(11,2.8,1);tractorLabel.frustumCulled=false;tractor.add(tractorLabel);
+            const tractorLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(tractorLabelCanvas),transparent:true,depthWrite:false}));tractorLabel.position.set(0,12.8,0);tractorLabel.scale.set(15,3.6,1);tractorLabel.frustumCulled=false;tractor.add(tractorLabel);
             tractor.userData={speed:0,steer:0,maxSpeed:.44,accel:.022,driftGrip:.24,collisionRadius:5.0,isFarmTractor:true,wheels:tractorWheels,suspension:0,lastTerrainX:99999,lastTerrainZ:99999,terrainFront:3.2,terrainRear:-3.2,terrainHalfTrack:3.7,exitDistance:6.8,exitSide:4.8};tractor.visible=true;tractor.traverse(o=>{o.visible=true;if(o.isMesh){o.frustumCulled=false;o.castShadow=true;}});farmGroup.add(tractor);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmTractor);drivableCars.push(tractor);createFarmPickupVehicle();
             const deliveryY=farmGroundAt(FARM_DELIVERY_POS.x,FARM_DELIVERY_POS.z),delivery=new THREE.Group();
             const deliveryPost=new THREE.Mesh(new THREE.BoxGeometry(.45,5,.45),wood);deliveryPost.position.y=2.5;delivery.add(deliveryPost);
@@ -5224,7 +5233,7 @@ const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.
                 const solar=new THREE.Mesh(new THREE.BoxGeometry(4.2,.16,2.4),new THREE.MeshStandardMaterial({color:0x28506d,metalness:.35,roughness:.38}));solar.position.set(0,7.9,-1);solar.rotation.z=-.38;farmPigstyGroup.add(solar);
             }
             farmPigstyGroup.position.set(x,y,z);farmPigstyGroup.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
-            farmGroup.add(createFarmSign('TU POCILGA BASE · NIVEL '+level,x,y+10,z-9));
+            // Se conserva la pocilga, pero sin el cartel flotante del nombre.
         }
         function createFarmPonds(){
             if(!farmGroup)return;
@@ -5326,13 +5335,14 @@ const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.
             const px=FARM_PIG_POS.x,pz=FARM_PIG_POS.z,py=farmGroundAt(px,pz);
             const mudRim=new THREE.Mesh(new THREE.TorusGeometry(22,1.25,7,56),new THREE.MeshLambertMaterial({color:0x8b684c}));
             mudRim.rotation.x=Math.PI/2;mudRim.position.set(px,py+.15,pz);farmGroup.add(mudRim);
-            const pool=new THREE.Mesh(new THREE.CircleGeometry(20,56),new THREE.MeshBasicMaterial({color:0x4b3024}));
+            const mudPoolMat=new THREE.MeshStandardMaterial({color:0x4b3024,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,side:THREE.DoubleSide});
+            const pool=new THREE.Mesh(new THREE.CircleGeometry(20,56),mudPoolMat);
             pool.rotation.x=-Math.PI/2;pool.position.set(px,py+.19,pz);farmGroup.add(pool);
-            const innerMud=new THREE.Mesh(new THREE.CircleGeometry(13.5,40),new THREE.MeshBasicMaterial({color:0x352219}));
+            const innerMud=new THREE.Mesh(new THREE.CircleGeometry(13.5,40),new THREE.MeshStandardMaterial({color:0x352219,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,side:THREE.DoubleSide}));
             innerMud.rotation.x=-Math.PI/2;innerMud.position.set(px+2,py+.22,pz-1);farmGroup.add(innerMud);
             for(let i=0;i<7;i++){
                 const radius=3.2+(i%3)*.65;
-                const splash=new THREE.Mesh(new THREE.CircleGeometry(radius,16),new THREE.MeshBasicMaterial({color:i%2?0x60402d:0x281a14}));
+                const splash=new THREE.Mesh(new THREE.CircleGeometry(radius,16),new THREE.MeshStandardMaterial({color:i%2?0x60402d:0x281a14,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,side:THREE.DoubleSide}));
                 splash.rotation.x=-Math.PI/2;splash.position.set(px+(i-3)*4.3,py+.24+i*.002,pz+Math.sin(i*1.7)*6);farmGroup.add(splash);
             }
             const xL=px-23,xR=px+23,zT=pz-20,zB=pz+20;
@@ -5608,10 +5618,28 @@ function farmUpdateBenjaHud(){
  const stored=Object.keys(FARM_GOODS).map(k=>FARM_GOODS[k].label+': '+(farmWarehouseStock[k]||0)).join(' · ');
  const money=document.getElementById('farmInventoryMoney'),summary=document.getElementById('farmInventorySummary'),title=document.getElementById('farmInventoryTitle');
  if(money)money.textContent='Dinero disponible: $'+storyMoney;
- if(summary)summary.textContent='EN TU CARGA: '+carried+' | GUARDADO EN EL ALMACEN: '+stored;
- if(title)title.textContent=mode==='shop'?'PUESTO DE SUMINISTROS':'ALMACEN DE LA GRANJA';
+ const carriedList=Object.keys(FARM_GOODS).filter(k=>(Number(farmCarriedGoods[k])||0)>0).map(k=>(FARM_GOODS[k].icon||'📦')+' '+FARM_GOODS[k].label+' ×'+farmCarriedGoods[k]).join(' · ');
+ if(summary)summary.textContent=mode==='inventory'?'EN TU MOCHILA: '+(carriedList||'no llevas objetos todavía')+' | MARTILLO: '+(farmHammerOwned?'disponible':'no comprado'):'EN TU CARGA: '+carried+' | GUARDADO EN EL ALMACEN: '+stored;
+ if(title)title.textContent=mode==='shop'?'PUESTO DE SUMINISTROS':mode==='inventory'?'INVENTARIO DE CORNATAN':'ALMACEN DE LA GRANJA';
  if(!buttons)return;let html='';
- if(mode==='shop'){
+ if(mode==='inventory'){
+  html+='<div class="farmShopSectionTitle">🎒 OBJETOS QUE LLEVAS</div>';
+  const carriedTypes=Object.keys(FARM_GOODS).filter(type=>(Number(farmCarriedGoods[type])||0)>0);
+  if(!carriedTypes.length)html+='<div class="farmInventoryItem">La mochila está vacía. Retira productos del almacén o compra suministros.</div>';
+  carriedTypes.forEach(type=>{
+   const good=FARM_GOODS[type],qty=Number(farmCarriedGoods[type])||0;
+   html+='<div class="farmInventoryItem">'+(good.icon||'📦')+' '+good.label+' ×'+qty+'</div>';
+   if(good.buildable)html+='<button type="button" data-farm-action="place-item" data-good="'+type+'">🛠️ COLOCAR '+good.label+' ('+qty+')</button>';
+  });
+  html+='<div class="farmShopSectionTitle">🧰 HERRAMIENTAS</div>';
+  html+=farmHammerOwned?'<button type="button" data-farm-action="use-hammer">🔨 USAR MARTILLO · MOVER O DESARMAR</button>':'<button type="button" data-farm-action="buy-hammer">🔨 CONSEGUIR MARTILLO · $35</button>';
+  if((Number(farmCarriedGoods.balde)||0)>0)html+='<div class="farmInventoryItem">🪣 Balde reutilizable disponible</div>';
+  html+='<div class="farmShopSectionTitle">🐷 CUIDADO Y MEJORAS</div>';
+  html+='<button type="button" data-farm-action="wash-benja">🚿 BAÑAR A BENJA · 3 AGUA</button>';
+  html+='<button type="button" data-farm-action="upgrade-pigsty">MEJORAR POCILGA · NIVEL '+farmPigstyLevel+'/4</button>';
+  html+='<button type="button" data-farm-action="upgrade-water">AMPLIAR DEPÓSITO · NIVEL '+farmWaterStorageLevel+'/4</button>';
+  html+='<button type="button" class="primary" data-farm-action="close">CERRAR INVENTARIO</button>';
+ }else if(mode==='shop'){
   const buyables=Object.keys(FARM_GOODS).filter(type=>FARM_GOODS[type]&&FARM_GOODS[type].buyable!==false&&Number(FARM_GOODS[type].price)>0);
   html+='<div class="farmShopSectionTitle">🌽 COMIDA Y SUMINISTROS</div>';
   buyables.filter(type=>FARM_GOODS[type].food||type==='madera'||type==='balde').forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar '+good.label+' · $'+good.price+'</button>';});
@@ -5738,9 +5766,14 @@ function speakFarmLine(speaker,line){
  window.setTimeout(()=>{if(box&&farmLastSubtitleAt===stamp)box.style.display='none';},Math.max(4200,Math.min(8500,line.length*65)));
 }
 function farmThrowFood(){
- if(!storyModeActive||farmCityMode||!benjaPig||!character)return false;const type=['manzanas','maiz','trigo','zanahoria','heno','pienso'].find(k=>FARM_GOODS[k]&&FARM_GOODS[k].food&&(farmCarriedGoods[k]||0)>0);
- if(!type){showToast('no llevas comida. compra algo en la tienda o sacalo del almacen.');return true;}
- farmCarriedGoods[type]--;storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
+ if(!storyModeActive||farmCityMode||!benjaPig||!character)return false;
+ const foodTypes=['manzanas','maiz','trigo','zanahoria','heno','pienso'];
+ const carriedType=foodTypes.find(k=>FARM_GOODS[k]&&FARM_GOODS[k].food&&(farmCarriedGoods[k]||0)>0);
+ const storedType=foodTypes.find(k=>FARM_GOODS[k]&&FARM_GOODS[k].food&&(farmWarehouseStock[k]||0)>0);
+ const type=carriedType||storedType;
+ if(!type){showToast('no queda comida. compra en el puesto o consigue comida en el almacén.');return true;}
+ if(carriedType)farmCarriedGoods[type]--;else farmWarehouseStock[type]--;
+ storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
  const mesh=new THREE.Mesh(new THREE.SphereGeometry(.62,9,7),new THREE.MeshStandardMaterial({color:FARM_GOODS[type].color,roughness:.9}));
  const from=character.position.clone();from.y+=4.2;from.x+=Math.sin(character.rotation.y)*1.8;from.z+=Math.cos(character.rotation.y)*1.8;const target=benjaPig.position.clone();target.y+=2.55;
  mesh.position.copy(from);scene.add(mesh);farmThrownFood.push({mesh,start:from.clone(),target,type,progress:0});updateFarmMoneyLabel();saveStoryProgress();playPumSound();showToast('le lanzaste '+FARM_GOODS[type].label.toLowerCase()+' a benja.');return true;
@@ -6750,12 +6783,25 @@ function updateCityMapMode(now){
  if(timeOfDay<.24)cityNightWarningDone=false;
 }
 function setupFarmUiControls(){
+ const inventoryButton=document.getElementById('farmInventoryOpen');
+ if(inventoryButton&&!inventoryButton.dataset.inventoryBound){
+  inventoryButton.dataset.inventoryBound='1';
+  inventoryButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();openFarmInventoryPanel('inventory');});
+ }
  const useButton=document.getElementById('interactionPrompt');
  if(useButton&&!useButton.dataset.useBound){
   useButton.dataset.useBound='1';useButton.setAttribute('role','button');useButton.setAttribute('tabindex','0');
-  const activate=()=>{if(!gameStarted||isDead||isCinematic||isDriving)return;isAttacking=true;attackPhase=2;setTimeout(()=>{isAttacking=false;attackPhase=0;},180);};
-  useButton.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();activate();});
-  // El navegador genera click tras el toque; evitamos ejecutar dos veces la misma accion.
+  const activate=()=>{
+   if(!gameStarted||isDead||isCinematic||isDriving)return;
+   const now=performance.now();if(now-farmLastUsePulse<260)return;
+   farmLastUsePulse=now;farmUsePending=true;farmUsePendingAt=now;farmUsePulseUntil=now+340;
+   isAttacking=true;attackPhase=2;
+   setTimeout(()=>{if(farmLastUsePulse===now){isAttacking=false;attackPhase=0;farmUsePulseUntil=0;}},360);
+  };
+  const useEvent=e=>{e.preventDefault();e.stopPropagation();activate();};
+  useButton.addEventListener('pointerup',useEvent);
+  useButton.addEventListener('click',useEvent);
+  useButton.addEventListener('pointercancel',()=>{farmUsePending=false;isAttacking=false;attackPhase=0;farmUsePulseUntil=0;});
   useButton.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
  }
  const jobs=document.getElementById('farmQuickJobs'),go=document.getElementById('farmGoCity'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
@@ -6907,6 +6953,9 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
  if(!storyModeActive||!character||!scene||storyCinematicPlaying)return;
  if(farmBuildPreview)updateFarmBuildPlacement();
  const now=performance.now();
+ if(farmUsePulseUntil&&now>=farmUsePulseUntil){farmUsePulseUntil=0;if(attackPhase===2){isAttacking=false;attackPhase=0;}}
+ const usePressed=isAttacking||(farmUsePending&&now-farmUsePendingAt<650);
+ farmUsePending=false;
  if(farmCityMode){stopFarmAmbience();updateCityMapMode(now);return;}
  updateFarmAmbience();updateFarmTVProximity();updateFarmRadioProximity();
  let prompt='';
@@ -6919,11 +6968,11 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   const tvDist=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
   const radioDist=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
   const wellDist=Math.hypot(character.position.x-FARM_WELL_POS.x,character.position.z-FARM_WELL_POS.z);
-  if(shopDist<19&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
-  if(storeDist<21&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
-  if(tvDist<18&&tvDist<=radioDist&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
-  else if(radioDist<16&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
-  if(wellDist<22&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;farmCollectWaterWithBucket(farmMissionId==='water');}
+  if(shopDist<19&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('shop');}
+  if(storeDist<21&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
+  if(tvDist<18&&tvDist<=radioDist&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmTV();}
+  else if(radioDist<16&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1400;openFarmRadio();}
+  if(wellDist<22&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1200;farmCollectWaterWithBucket(farmMissionId==='water');}
   if(tvDist<18&&tvDist<=radioDist)prompt='pulsa ATACAR para cambiar el canal o encender/apagar la televisión.';
   else if(radioDist<16)prompt='pulsa ATACAR para elegir una emisora y encender/apagar la radio.';
   else if(shopDist<19)prompt='pulsa ATACAR para entrar al puesto y comprar suministros.';
@@ -6936,10 +6985,13 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
     if(farmMissionId==='warehouse')prompt='pulsa ATACAR para revisar el almacen';
     else if(farmMissionId==='delivery')prompt='pulsa ATACAR para entregar 2 verduras y 1 huevo';
     else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar el corral';
-    else if(farmMissionId==='feed')prompt='lanzale comida a benja cuando tenga hambre';
+    else if(farmMissionId==='feed')prompt='pulsa USAR para darle comida a Benja';
     else prompt='pulsa ATACAR para completar: '+m.title.toLowerCase();
-    if(isAttacking&&now>storyInteractAfter&&farmMissionId!=='warehouse'&&farmMissionId!=='feed'&&shopDist>=19&&storeDist>=21&&tvDist>=18&&radioDist>=12)farmHandleMissionAction();
-    if(farmMissionId==='warehouse'&&isAttacking&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
+    if(usePressed&&now>storyInteractAfter&&farmMissionId!=='warehouse'&&farmMissionId!=='feed'&&shopDist>=19&&storeDist>=21&&tvDist>=18&&radioDist>=12)farmHandleMissionAction();
+    if(farmMissionId==='warehouse'&&usePressed&&now>storyInteractAfter){storyInteractAfter=now+1200;openFarmInventoryPanel('warehouse');}
+    if(farmMissionId==='feed'&&usePressed&&now>storyInteractAfter&&shopDist>=19&&storeDist>=21&&tvDist>=18&&radioDist>=12){
+     storyInteractAfter=now+950;farmThrowFood();
+    }
    }
   }
  }
@@ -7878,8 +7930,12 @@ function startProtestMission() {
 
             let s1 = stops[0], s2 = stops[stops.length - 1];
             for (let i = 0; i < stops.length - 1; i++) { if (t >= stops[i].t && t <= stops[i+1].t) { s1 = stops[i]; s2 = stops[i+1]; break; } }
-            const range = s2.t - s1.t; const factor = range > 0 ? (t - s1.t) / range : 0;
-            const skyCol = new THREE.Color(s1.sky).lerp(new THREE.Color(s2.sky), factor); const sunCol = new THREE.Color(s1.sun).lerp(new THREE.Color(s2.sun), factor); const ambCol = new THREE.Color(s1.amb).lerp(new THREE.Color(s2.amb), factor); const winCol = new THREE.Color(s1.winCol).lerp(new THREE.Color(s2.winCol), factor);
+            const range = s2.t - s1.t;
+            const rawFactor = range > 0 ? THREE.MathUtils.clamp((t - s1.t) / range,0,1) : 0;
+            const factor = rawFactor*rawFactor*(3-2*rawFactor);
+            const nightFactor = Math.max(1-THREE.MathUtils.smoothstep(t,.17,.34),THREE.MathUtils.smoothstep(t,.70,.86));
+            const skyCol = new THREE.Color(s1.sky).lerp(new THREE.Color(s2.sky), factor);
+            skyCol.multiplyScalar(1-nightFactor*.16); const sunCol = new THREE.Color(s1.sun).lerp(new THREE.Color(s2.sun), factor); const ambCol = new THREE.Color(s1.amb).lerp(new THREE.Color(s2.amb), factor); const winCol = new THREE.Color(s1.winCol).lerp(new THREE.Color(s2.winCol), factor);
             const sunInt = s1.sunInt + (s2.sunInt - s1.sunInt) * factor; const lampInt = s1.lampInt + (s2.lampInt - s1.lampInt) * factor; const winInt = s1.winInt + (s2.winInt - s1.winInt) * factor;
 
             scene.background.copy(skyCol); scene.fog.color.copy(skyCol);
@@ -7918,9 +7974,9 @@ function startProtestMission() {
             }
             if (stylizedSky) {
                 stylizedSky.position.set(camera ? camera.position.x : 0, camera ? camera.position.y : 0, camera ? camera.position.z : 0);
-                stylizedSky.material.uniforms.top.value.copy(skyCol).lerp(new THREE.Color(0xffffff), 0.22);
-                stylizedSky.material.uniforms.horizon.value.copy(skyCol).lerp(new THREE.Color(0xffffff), 0.55);
-                const dawnNight=1-THREE.MathUtils.smoothstep(t,.18,.27),duskNight=THREE.MathUtils.smoothstep(t,.75,.84);stylizedSky.material.uniforms.night.value=Math.max(dawnNight,duskNight);
+                stylizedSky.material.uniforms.top.value.copy(skyCol).lerp(new THREE.Color(0x070d1c),nightFactor*.34).multiplyScalar(1-nightFactor*.16);
+                stylizedSky.material.uniforms.horizon.value.copy(skyCol).lerp(new THREE.Color(0x182033),nightFactor*.48).multiplyScalar(1-nightFactor*.10);
+                stylizedSky.material.uniforms.night.value=THREE.MathUtils.clamp(nightFactor,0,1);
             }
 
             sharedBuildingMaterials.forEach(m => { m.emissiveIntensity = winInt; m.emissive.copy(winCol); });
