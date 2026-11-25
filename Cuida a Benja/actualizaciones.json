@@ -1,8 +1,21 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.10.1",
+  "version": "1.10.2",
   "updates": [
+    {
+      "version": "1.10.2",
+      "title": "Balde, subtitulos y mejoras visuales",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "La misión del bebedero comprueba si ya existe un balde en la mochila o en el almacén; al comprar uno durante esa misión, actualiza la flecha y el objetivo al pozo.",
+        "Se eliminaron las etiquetas flotantes y los aros en espiral del tractor y la camioneta.",
+        "Los diálogos de la historia ya no abren ventanas emergentes: se muestran como subtítulos en pantalla y la cinemática avanza automáticamente.",
+        "Se retiró el botón y la ventana de reinicio manual de la interfaz.",
+        "El almacén recibió vigas, refuerzos, iluminación cálida, tarimas con tablas y detalles metálicos.",
+        "La mochila y los productos transportados ahora usan formas 3D diferenciadas, tablillas, herrajes y piezas con volumen en lugar de cubos planos."
+      ]
+    },
     {
       "version": "1.10.1",
       "title": "Mision de Benja, vehiculos y articulos del almacen",
