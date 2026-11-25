@@ -5727,10 +5727,18 @@ function farmCountCarried(){return Object.keys(FARM_GOODS).reduce((a,k)=>a+(Numb
 function updateFarmCarryVisual(force=false){
  if(!character||!character.userData)return;const hash=Object.keys(FARM_GOODS).map(k=>k+':'+(farmCarriedGoods[k]||0)).join('|');if(!force&&hash===farmCarryVisualHash)return;farmCarryVisualHash=hash;
  if(farmCarryVisualGroup&&farmCarryVisualGroup.parent)farmCarryVisualGroup.parent.remove(farmCarryVisualGroup);
- farmCarryVisualGroup=new THREE.Group();const wood=new THREE.MeshLambertMaterial({color:0x76502f}),crate=new THREE.Mesh(new THREE.BoxGeometry(1.8,1.05,.85),wood);
- crate.position.y=.35;farmCarryVisualGroup.add(crate);farmCarryVisualGroup.visible=farmCountCarried()>0||cityLootCarried.length>0;
+ farmCarryVisualGroup=new THREE.Group();const wood=new THREE.MeshStandardMaterial({color:0x76502f,roughness:.94}),darkWood=new THREE.MeshStandardMaterial({color:0x38271b,roughness:.96}),iron=new THREE.MeshStandardMaterial({color:0x707b80,metalness:.78,roughness:.34});
+ const crate=new THREE.Mesh(new THREE.BoxGeometry(1.8,1.05,.85),wood);crate.position.y=.35;crate.castShadow=true;crate.receiveShadow=true;farmCarryVisualGroup.add(crate);
+ for(let x=-.68;x<=.69;x+=.34){const slat=new THREE.Mesh(new THREE.BoxGeometry(.27,.12,.9),darkWood);slat.position.set(x,.91,0);slat.castShadow=true;farmCarryVisualGroup.add(slat);}
+ for(let z of [-.44,.44]){for(let y of [.05,.66]){const strap=new THREE.Mesh(new THREE.BoxGeometry(1.86,.07,.055),iron);strap.position.set(0,y,z);farmCarryVisualGroup.add(strap);}}
+ for(let x of [-.83,.83])for(let z of [-.4,.4]){const nail=new THREE.Mesh(new THREE.SphereGeometry(.045,6,5),iron);nail.position.set(x,.84,z);farmCarryVisualGroup.add(nail);}
+ farmCarryVisualGroup.visible=farmCountCarried()>0||cityLootCarried.length>0;
  const types=[];Object.keys(FARM_GOODS).forEach(k=>{if(k==='balde')return;for(let i=0;i<Math.min(12,Number(farmCarriedGoods[k])||0);i++)types.push(k);});
- types.slice(0,8).forEach((k,i)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(.42,.38,.42),new THREE.MeshLambertMaterial({color:FARM_GOODS[k].color}));m.position.set(-.62+(i%4)*.42,.95+Math.floor(i/4)*.3,-.2);farmCarryVisualGroup.add(m);});
+ types.slice(0,8).forEach((k,i)=>{const mat=new THREE.MeshStandardMaterial({color:FARM_GOODS[k].color,roughness:.82}),x=-.62+(i%4)*.42,y=.95+Math.floor(i/4)*.3,z=-.2;let geo=new THREE.BoxGeometry(.34,.3,.34);
+  if(k==='maiz')geo=new THREE.CylinderGeometry(.12,.16,.48,7);else if(k==='trigo')geo=new THREE.ConeGeometry(.16,.5,6);else if(k==='zanahoria')geo=new THREE.ConeGeometry(.14,.48,7);else if(k==='huevos'||k==='manzanas')geo=new THREE.SphereGeometry(.19,10,8);else if(k==='heno')geo=new THREE.BoxGeometry(.4,.28,.34);
+  const item=new THREE.Mesh(geo,mat);item.position.set(x,y,z);item.rotation.z=k==='zanahoria'?Math.PI:0;item.castShadow=true;farmCarryVisualGroup.add(item);
+  if(k==='maiz'||k==='trigo'){const leaf=new THREE.Mesh(new THREE.ConeGeometry(.055,.24,5),new THREE.MeshStandardMaterial({color:0x68834a,roughness:1}));leaf.position.set(x+.1,y+.18,z);leaf.rotation.z=.8;farmCarryVisualGroup.add(leaf);}
+ });
  if((Number(farmCarriedGoods.balde)||0)>0){
   const bucket=new THREE.Group(),metal=new THREE.MeshStandardMaterial({color:0x879aa2,metalness:.42,roughness:.48});
   const body=new THREE.Mesh(new THREE.CylinderGeometry(.34,.43,.72,12,1,true),metal);body.position.y=.55;bucket.add(body);
