@@ -4939,6 +4939,7 @@ function updateFarmCinematic(){
             };
             const types=Object.keys(FARM_GOODS),dummy=new THREE.Object3D(),shelfXs=[-30,-15,15,30],shelfZs=[-25,-8,9,26];
             types.forEach((type,index)=>{
+              try{
                 const col=index%4,row=Math.floor(index/4),lx=shelfXs[col],lz=shelfZs[row];
                 const pallet=new THREE.Mesh(new THREE.BoxGeometry(11,.55,10),darkWood);
                 pallet.position.set(lx,.34,lz);pallet.castShadow=true;storage.add(pallet);
@@ -4970,6 +4971,13 @@ function updateFarmCinematic(){
                 items.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));
                 items.instanceMatrix.needsUpdate=true;storage.add(items);
                 farmStorageVisuals[type]=items;farmStorageBins[type]=pallet;
+              }catch(error){
+                console.warn('Modelo de almacen simplificado para '+type,error);
+                const col=index%4,row=Math.floor(index/4),lx=shelfXs[col],lz=shelfZs[row];
+                if(!farmStorageBins[type]){const palletFallback=new THREE.Mesh(new THREE.BoxGeometry(11,.55,10),darkWood);palletFallback.position.set(lx,.34,lz);palletFallback.frustumCulled=false;storage.add(palletFallback);farmStorageBins[type]=palletFallback;}
+                const fallback=new THREE.Group();fallback.frustumCulled=false;fallback.userData.storageFallback={geometry:itemGeometry[type]||new THREE.BoxGeometry(1.1,1.1,1.1),material:itemMaterials[type]||wood,lx,lz,type};storage.add(fallback);farmStorageVisuals[type]=fallback;
+                farmRefreshStorageFallback(fallback,Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0)));
+              }
             });
             const fieldY=farmGroundAt(FARM_CROP_POS.x,FARM_CROP_POS.z),soilMat=new THREE.MeshStandardMaterial({color:0x382419,roughness:1,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}),soil=new THREE.Mesh(new THREE.CircleGeometry(25.5,48),soilMat);
             soil.rotation.x=-Math.PI/2;soil.position.set(FARM_CROP_POS.x,fieldY+.07,FARM_CROP_POS.z);farmGroup.add(soil);
@@ -5027,6 +5035,7 @@ function updateFarmCinematic(){
                 tractorWheels.push({wheel,holder,front});
             }
             tractor.position.set(FARM_TRACTOR_POS.x,tractorY+.12,FARM_TRACTOR_POS.z);tractor.name='Tractor de la granja';
+            const tractorRing=new THREE.Mesh(new THREE.RingGeometry(6.4,7.2,32),new THREE.MeshBasicMaterial({color:0xffc84a,transparent:true,opacity:.48,side:THREE.DoubleSide,depthWrite:false}));tractorRing.rotation.x=-Math.PI/2;tractorRing.position.y=.1;tractorRing.frustumCulled=false;tractor.add(tractorRing);
             const tractorLabelCanvas=document.createElement('canvas');tractorLabelCanvas.width=384;tractorLabelCanvas.height=96;
             const tractorLabelCtx=tractorLabelCanvas.getContext('2d');tractorLabelCtx.fillStyle='rgba(20,47,28,.92)';tractorLabelCtx.fillRect(0,0,384,96);tractorLabelCtx.fillStyle='#fff2ba';tractorLabelCtx.font='bold 48px Arial';tractorLabelCtx.textAlign='center';tractorLabelCtx.textBaseline='middle';tractorLabelCtx.fillText('TRACTOR',192,48);
             const tractorLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(tractorLabelCanvas),transparent:true,depthWrite:false}));tractorLabel.position.set(0,12.8,0);tractorLabel.scale.set(15,3.6,1);tractorLabel.frustumCulled=false;tractor.add(tractorLabel);
@@ -5189,10 +5198,25 @@ const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.
                 for(let i=0;i<6;i++){const slat=new THREE.Mesh(new THREE.BoxGeometry(.16,2.4,.22),wood);slat.position.set(gx-4.15,1.9,gz-3.3+i*1.22);slat.rotation.y=Math.PI/2;farmDefenseGroup.add(slat);}
             }
         }
-                function refreshFarmStorageVisuals(){
-            Object.keys(farmStorageVisuals).forEach(type=>{const mesh=farmStorageVisuals[type];if(mesh){mesh.count=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));mesh.instanceMatrix.needsUpdate=true;mesh.frustumCulled=false;}});
-        }
-        function farmWaterCapacity(){return 10+Math.max(1,Math.min(4,farmWaterStorageLevel))*10;}
+                function farmRefreshStorageFallback(group,count){
+ const data=group&&group.userData&&group.userData.storageFallback;if(!data)return;const wanted=Math.max(0,Math.min(60,Number(count)||0));
+ while(group.children.length<wanted){
+  const i=group.children.length,c=i%4,r=Math.floor(i/4)%3,layer=Math.floor(i/12);
+  const item=new THREE.Mesh(data.geometry,data.material);item.position.set(data.lx-2.15+c*1.25,1.1+layer*1.08,data.lz-2.7+r*1.12);item.castShadow=!IS_MOBILE_DEVICE;item.receiveShadow=true;item.frustumCulled=false;
+  if(data.type==='zanahoria')item.rotation.z=Math.PI;else if(data.type==='maiz'||data.type==='trigo')item.rotation.z=(i%2?-.12:.12);else if(data.type==='madera')item.rotation.y=.18*(i%3);else if(data.type==='techo')item.rotation.z=(i%2?-.24:.24);else item.rotation.y=(i%3)*.11;
+  group.add(item);
+ }
+ group.children.forEach((item,index)=>{item.visible=index<wanted;});
+}
+function refreshFarmStorageVisuals(){
+ Object.keys(farmStorageVisuals).forEach(type=>{
+  const mesh=farmStorageVisuals[type];if(!mesh)return;
+  const amount=Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0));
+  if(mesh.isInstancedMesh){mesh.count=amount;mesh.instanceMatrix.needsUpdate=true;mesh.frustumCulled=false;mesh.visible=true;if(mesh.computeBoundingSphere)mesh.computeBoundingSphere();}
+  else if(mesh.userData&&mesh.userData.storageFallback){mesh.visible=true;farmRefreshStorageFallback(mesh,amount);}
+ });
+}
+function farmWaterCapacity(){return 10+Math.max(1,Math.min(4,farmWaterStorageLevel))*10;}
         function farmWaterStock(){return Math.max(0,Number(farmWarehouseStock&&farmWarehouseStock.agua)||0);}
         function createFarmPigsty(){
             if(!farmGroup)return;
@@ -6036,6 +6060,7 @@ function updateFarmTVPanelStatus(){
  const status=document.getElementById('farmTVPlayerStatus'),power=document.getElementById('farmTVPowerBtn'),label=document.getElementById('farmTVPowerLabel'),volume=document.getElementById('farmTVVolume'),value=document.getElementById('farmTVVolumeValue');
  if(status){
   if(!farmTVPowerOn)status.innerHTML='TELEVISOR APAGADO<br/>La pantalla de la granja está en negro';
+  else if(farmTVLoadingActive)status.innerHTML='🐥 CARGANDO CANAL…';
   else status.innerHTML='📺 '+(farmTVCurrentChannel?farmTVCurrentChannel.name:'Elige un canal')+'<br/>La imagen se muestra en la pantalla física del televisor';
  }
  if(power){power.classList.toggle('on',farmTVPowerOn);power.textContent=farmTVPowerOn?'⏻ APAGAR TV':'⏻ ENCENDER TV';}
@@ -6095,6 +6120,7 @@ function ensureFarmHlsLibrary(){
  return farmTVHlsScriptPromise;
 }
 function showFarmTVNoSignalScreen(channel){
+ hideFarmTVLoadingScreen();
  if(!farmTVScreenMaterial)return;
  if(farmTVSignalTexture){try{farmTVSignalTexture.dispose();}catch(_){}farmTVSignalTexture=null;}
  const canvas=document.createElement('canvas');canvas.width=512;canvas.height=288;
@@ -6114,7 +6140,27 @@ function showFarmTVNoSignalScreen(channel){
  farmTVScreenMaterial.map=tex;farmTVScreenMaterial.emissiveMap=tex;farmTVScreenMaterial.color.setHex(0xffffff);
  farmTVScreenMaterial.emissive.setHex(0xffffff);farmTVScreenMaterial.emissiveIntensity=.10;farmTVScreenMaterial.needsUpdate=true;
 }
+function showFarmTVLoadingScreen(channel){
+ if(!farmTVScreenMaterial)return;
+ if(farmTVLoadingTexture){try{farmTVLoadingTexture.dispose();}catch(_){}}
+ farmTVLoadingCanvas=document.createElement('canvas');farmTVLoadingCanvas.width=512;farmTVLoadingCanvas.height=288;farmTVLoadingContext=farmTVLoadingCanvas.getContext('2d');
+ farmTVLoadingTexture=new THREE.CanvasTexture(farmTVLoadingCanvas);farmTVLoadingTexture.minFilter=THREE.LinearFilter;farmTVLoadingTexture.magFilter=THREE.LinearFilter;farmTVLoadingTexture.generateMipmaps=false;
+ farmTVLoadingActive=true;farmTVLoadingSince=performance.now();
+ farmTVScreenMaterial.map=farmTVLoadingTexture;farmTVScreenMaterial.emissiveMap=farmTVLoadingTexture;farmTVScreenMaterial.color.setHex(0xffffff);farmTVScreenMaterial.emissive.setHex(0xffffff);farmTVScreenMaterial.emissiveIntensity=.22;farmTVScreenMaterial.needsUpdate=true;
+ updateFarmTVLoadingAnimation();const status=document.getElementById('farmTVPlayerStatus');if(status)status.textContent='🐥 CARGANDO '+String(channel&&channel.name||'CANAL').toUpperCase()+'…';
+}
+function updateFarmTVLoadingAnimation(){
+ if(!farmTVLoadingActive||!farmTVLoadingContext||!farmTVLoadingTexture)return;
+ const c=farmTVLoadingContext,angle=(performance.now()-farmTVLoadingSince)*.004;c.clearRect(0,0,512,288);
+ const bg=c.createLinearGradient(0,0,512,288);bg.addColorStop(0,'#10202a');bg.addColorStop(.55,'#172d35');bg.addColorStop(1,'#081219');c.fillStyle=bg;c.fillRect(0,0,512,288);
+ c.strokeStyle='rgba(255,221,153,.28)';c.lineWidth=5;c.beginPath();c.arc(256,124,74,0,Math.PI*2);c.stroke();
+ c.strokeStyle='#ffd36c';c.lineWidth=7;c.lineCap='round';c.beginPath();c.arc(256,124,74,angle,angle+Math.PI*1.18);c.stroke();
+ c.save();c.translate(256,124);c.rotate(angle);c.font='76px "Segoe UI Emoji",Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('🐥',0,0);c.restore();
+ c.fillStyle='#fff0c9';c.font='bold 22px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('CARGANDO CANAL',256,238);c.fillStyle='rgba(255,255,255,.55)';c.font='13px Arial';c.fillText('ESPERA LA SEÑAL',256,263);farmTVLoadingTexture.needsUpdate=true;
+}
+function hideFarmTVLoadingScreen(){farmTVLoadingActive=false;farmTVLoadingContext=null;farmTVLoadingCanvas=null;if(farmTVLoadingTexture){try{farmTVLoadingTexture.dispose();}catch(_){}farmTVLoadingTexture=null;}}
 function restoreFarmTVScreenTexture(){
+ hideFarmTVLoadingScreen();
  if(farmTVVideoTexture){try{farmTVVideoTexture.dispose();}catch(_){}farmTVVideoTexture=null;}
  if(farmTVSignalTexture){try{farmTVSignalTexture.dispose();}catch(_){}farmTVSignalTexture=null;}
  if(farmTVScreenMaterial){
@@ -6127,6 +6173,7 @@ function restoreFarmTVScreenTexture(){
  }
 }
 function attachFarmTVVideoTexture(video){
+ hideFarmTVLoadingScreen();
  if(!video||!farmTVScreenMaterial)return;
  if(farmTVVideoTexture&&farmTVVideoTexture.image!==video){try{farmTVVideoTexture.dispose();}catch(_){}farmTVVideoTexture=null;}
  if(!farmTVVideoTexture){
@@ -6168,6 +6215,9 @@ async function loadFarmTVChannel(){
  clearFarmTVPlayback();
  const token=farmTVPlaybackToken,video=document.getElementById('farmTVWorldVideo'),frame=document.getElementById('farmTVWorldFrame');
  if(!video||!frame)return;
+ showFarmTVLoadingScreen(channel);
+ const finishFarmTVLoading=()=>{if(token!==farmTVPlaybackToken||!farmTVPowerOn||video.readyState<2)return;hideFarmTVLoadingScreen();attachFarmTVVideoTexture(video);updateFarmTVPanelStatus();};
+ video.addEventListener('loadeddata',finishFarmTVLoading,{once:true});video.addEventListener('playing',finishFarmTVLoading,{once:true});video.addEventListener('canplay',finishFarmTVLoading,{once:true});
  if(channel.officialOnly&&channel.provider==='PLUTO TV'){
   const link=document.getElementById('farmTVOpenOfficial'),hint=document.getElementById('farmTVHint'),status=document.getElementById('farmTVPlayerStatus');
   if(link){link.dataset.url=channel.url;link.textContent='ABRIR '+channel.name.toUpperCase()+' EN PLUTO TV';}
@@ -8415,7 +8465,7 @@ function farmPickupRefreshVisual(){
 function createFarmPickupVehicle(){
  if(!farmGroup||!FARM_TRACTOR_POS)return;
  if(farmPickupVehicle){drivableCars=drivableCars.filter(v=>v!==farmPickupVehicle);if(farmPickupVehicle.parent)farmPickupVehicle.parent.remove(farmPickupVehicle);}
- farmPickupLoadCargo();const t=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color:0x315f43,roughness:.75}),dark=new THREE.MeshStandardMaterial({color:0x202a25,roughness:.9}),glass=new THREE.MeshStandardMaterial({color:0x8fc8d8,roughness:.25});
+ farmPickupLoadCargo();const t=new THREE.Group(),paint=new THREE.MeshStandardMaterial({color:0x397fbd,roughness:.72}),dark=new THREE.MeshStandardMaterial({color:0x202a25,roughness:.9}),glass=new THREE.MeshStandardMaterial({color:0x8fc8d8,roughness:.25});
  const b=(w,h,d,mat,x,y,z)=>{const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),mat);m.position.set(x,y,z);m.castShadow=true;m.receiveShadow=true;m.frustumCulled=false;t.add(m);};
  b(7.8,1.4,13,paint,0,2,0);b(7.4,3.5,4.7,paint,0,4.45,3.45);b(6.8,2.05,.18,glass,0,4.75,5.86);b(.22,2.4,3.5,dark,-3.55,4.5,3.55);b(.22,2.4,3.5,dark,3.55,4.5,3.55);b(7.25,.35,6.5,dark,0,2.85,-2.75);b(.35,1.65,6.5,paint,-3.65,3.8,-2.75);b(.35,1.65,6.5,paint,3.65,3.8,-2.75);b(7.25,1.65,.35,paint,0,3.8,-6);
  const pickupWheels=[];
@@ -8426,6 +8476,7 @@ function createFarmPickupVehicle(){
   pickupWheels.push({wheel:w,holder,front});
  }
  const x=FARM_TRACTOR_POS.x+21,z=FARM_TRACTOR_POS.z-4;t.position.set(x,farmGroundAt(x,z)+.12,z);t.rotation.y=Math.PI/2;t.name='Pickup de la granja';
+ const pickupRing=new THREE.Mesh(new THREE.RingGeometry(6.4,7.2,32),new THREE.MeshBasicMaterial({color:0x54b9ff,transparent:true,opacity:.52,side:THREE.DoubleSide,depthWrite:false}));pickupRing.rotation.x=-Math.PI/2;pickupRing.position.y=.12;pickupRing.frustumCulled=false;t.add(pickupRing);
  const pickupLabelCanvas=document.createElement('canvas');pickupLabelCanvas.width=384;pickupLabelCanvas.height=96;
  const pickupLabelCtx=pickupLabelCanvas.getContext('2d');pickupLabelCtx.fillStyle='rgba(20,47,28,.92)';pickupLabelCtx.fillRect(0,0,384,96);pickupLabelCtx.fillStyle='#fff2ba';pickupLabelCtx.font='bold 44px Arial';pickupLabelCtx.textAlign='center';pickupLabelCtx.textBaseline='middle';pickupLabelCtx.fillText('CAMIONETA',192,48);
  const pickupLabel=new THREE.Sprite(new THREE.SpriteMaterial({map:new THREE.CanvasTexture(pickupLabelCanvas),transparent:true,depthWrite:false}));pickupLabel.position.set(0,9.8,0);pickupLabel.scale.set(12,3,1);pickupLabel.frustumCulled=false;t.add(pickupLabel);t.visible=true;t.frustumCulled=false;t.userData={speed:0,steer:0,maxSpeed:.50,accel:.026,driftGrip:.28,collisionRadius:5.4,isFarmPickup:true,wheels:pickupWheels,suspension:0,lastTerrainX:99999,lastTerrainZ:99999,terrainFront:4.1,terrainRear:-4.2,terrainHalfTrack:3.9,exitDistance:8.1,exitSide:5.2};t.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});farmGroup.add(t);drivableCars=drivableCars.filter(v=>!v.userData?.isFarmPickup);drivableCars.push(t);farmPickupCargoGroup=new THREE.Group();farmPickupCargoGroup.position.set(0,3.05,-2.65);farmPickupCargoGroup.frustumCulled=false;t.add(farmPickupCargoGroup);farmPickupVehicle=t;farmPickupRefreshVisual();
@@ -8459,13 +8510,46 @@ function farmNearestPlacedBuild(){if(!character||!farmPlacedBuilds.length)return
 function farmRemovePlacedBuildAt(i){
  if(i<0||i>=farmPlacedBuilds.length||!farmPlacedBuildGroup)return null;const r=farmPlacedBuilds[i],o=farmPlacedBuildGroup.children[i];if(o)farmPlacedBuildGroup.remove(o);farmPlacedBuilds.splice(i,1);clearFarmColliders('farm-player-build');farmPlacedBuilds.forEach(v=>farmBuildCollisionAdd(v.x,v.z,v.type,v.rotation||0));farmSavePlacedBuilds();return r;
 }
-function farmOpenHammer(){
- if(!farmHammerOwned){showToast('compra primero el martillo en suministros');return;}const i=farmNearestPlacedBuild();if(i<0){showToast('acercate a una estructura construida');return;}
- const r=farmPlacedBuilds[i];if(!farmHammerPanel){const p=document.createElement('div');p.id='farmHammerPanel';p.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(330px,92vw);z-index:2100;padding:14px;border:2px solid #d7b66e;border-radius:14px;background:rgba(9,20,27,.97);color:white;text-align:center;';
- p.innerHTML='<b id="farmHammerTitle">MARTILLO</b><p style="font-size:12px;margin:9px 0">Que quieres hacer?</p><div style="display:grid;gap:7px"><button data-hammer="move">↔ MOVER</button><button data-hammer="destroy">DESARMAR</button><button data-hammer="cancel">CANCELAR</button></div>';p.querySelectorAll('button').forEach(b=>b.style.cssText='min-height:40px;border:1px solid #a98b58;border-radius:8px;background:#314b3c;color:white;font-weight:900;');document.body.appendChild(p);farmHammerPanel=p;
- p.addEventListener('click',e=>{const b=e.target.closest('button[data-hammer]');if(!b)return;const a=b.dataset.hammer;if(a==='cancel'){p.style.display='none';return;}const idx=farmNearestPlacedBuild();if(idx<0){p.style.display='none';return;}const rec=farmRemovePlacedBuildAt(idx);p.style.display='none';if(!rec)return;if(a==='move'){farmCarriedGoods[rec.type]=(Number(farmCarriedGoods[rec.type])||0)+1;updateFarmCarryVisual(true);startFarmBuildPlacement(rec.type);showToast('estructura recogida. colócala en otro lugar.');}else{farmCarriedGoods.madera=(Number(farmCarriedGoods.madera)||0)+1;storyMoney+=Math.max(1,Math.floor((Number(FARM_GOODS[rec.type]?.price)||8)*.25));updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('recuperaste materiales y parte del valor.');}});
+function farmHammerRenderPanel(){
+ if(!farmHammerPanel)return;
+ const selected=farmHammerSelectedIndex,records=farmPlacedBuilds||[];
+ if(selected>=0&&selected<records.length){
+  const rec=records[selected],good=FARM_GOODS[rec.type]||{};
+  farmHammerPanel.innerHTML='<div class="farmHammerHead">🔨 MARTILLO</div><div class="farmHammerSelected"><span>'+(good.icon||'📦')+'</span><b>'+(good.label||rec.type)+'</b></div><div class="farmHammerActions"><button type="button" data-hammer-action="move">↔ MOVER</button><button type="button" data-hammer-action="destroy">🗑️ DESTRUIR</button><button type="button" data-hammer-action="back">VOLVER</button><button type="button" data-hammer-action="close">CERRAR</button></div>';
+  return;
  }
- const title=farmHammerPanel.querySelector('#farmHammerTitle');if(title)title.textContent='MARTILLO · '+(FARM_GOODS[r.type]?.label||r.type);farmHammerPanel.style.display='block';
+ const entries=records.map((rec,index)=>{const good=FARM_GOODS[rec.type]||{};return '<button type="button" class="farmHammerItem" data-hammer-select="'+index+'"><span>'+(good.icon||'📦')+'</span><b>'+(good.label||rec.type)+'</b></button>';}).join('');
+ farmHammerPanel.innerHTML='<div class="farmHammerHead">🔨 MARTILLO</div><div class="farmHammerList">'+(entries||'<div class="farmHammerEmpty">No hay estructuras colocadas para mover o destruir.</div>')+'</div><div class="farmHammerActions"><button type="button" data-hammer-action="close">CERRAR</button></div>';
+}
+function farmOpenHammer(){
+ if(!farmHammerOwned){showToast('compra primero el martillo en suministros');return;}
+ if(!farmHammerPanel){
+  const p=document.createElement('div');p.id='farmHammerPanel';
+  p.style.cssText='position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);width:min(390px,94vw);max-height:78vh;overflow:auto;z-index:2100;padding:14px;border:2px solid #d7b66e;border-radius:14px;background:rgba(9,20,27,.98);color:white;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.7);touch-action:pan-y;';
+  const style=document.createElement('style');style.textContent='#farmHammerPanel .farmHammerHead{font-weight:1000;color:#ffdf9b;font-size:16px;margin-bottom:10px}#farmHammerPanel .farmHammerList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;max-height:54vh;overflow:auto}#farmHammerPanel .farmHammerItem{min-height:82px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;border:1px solid #9c8053;border-radius:10px;background:#293c32;color:#fff;font-weight:900}#farmHammerPanel .farmHammerItem span{font-size:24px}#farmHammerPanel .farmHammerSelected{display:flex;flex-direction:column;align-items:center;gap:7px;margin:12px}#farmHammerPanel .farmHammerSelected span{font-size:42px}#farmHammerPanel .farmHammerActions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}#farmHammerPanel .farmHammerActions button{min-height:42px;border:1px solid #b99a68;border-radius:9px;background:#3b5944;color:#fff;font-weight:950}#farmHammerPanel .farmHammerActions button[data-hammer-action=destroy]{background:#793c36}#farmHammerPanel .farmHammerEmpty{grid-column:1/-1;padding:18px;color:#d9d0c1;font-size:12px}';
+  document.head.appendChild(style);document.body.appendChild(p);farmHammerPanel=p;
+  p.addEventListener('click',e=>{
+   const select=e.target.closest('button[data-hammer-select]');if(select){farmHammerSelectedIndex=Number(select.dataset.hammerSelect);farmHammerRenderPanel();return;}
+   const action=e.target.closest('button[data-hammer-action]')?.dataset.hammerAction;if(!action)return;
+   if(action==='close'){p.style.display='none';farmHammerSelectedIndex=-1;return;}
+   if(action==='back'){farmHammerSelectedIndex=-1;farmHammerRenderPanel();return;}
+   if(action!=='move'&&action!=='destroy')return;
+   const idx=farmHammerSelectedIndex;if(idx<0||idx>=farmPlacedBuilds.length){farmHammerSelectedIndex=-1;farmHammerRenderPanel();return;}
+   const rec=farmRemovePlacedBuildAt(idx);farmHammerSelectedIndex=-1;p.style.display='none';if(!rec)return;
+   if(action==='move'){
+    farmCarriedGoods[rec.type]=(Number(farmCarriedGoods[rec.type])||0)+1;updateFarmCarryVisual(true);farmUpdateInventoryPanel();startFarmBuildPlacement(rec.type);showToast('estructura recogida. colócala en otro lugar.');
+   }else{
+    farmCarriedGoods.madera=(Number(farmCarriedGoods.madera)||0)+1;storyMoney+=Math.max(1,Math.floor((Number(FARM_GOODS[rec.type]?.price)||8)*.25));updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();showToast('estructura destruida. recuperaste materiales.');
+   }
+  });
+ }
+ farmHammerSelectedIndex=-1;farmHammerRenderPanel();farmHammerPanel.style.display='block';
+}
+function farmEnsureVehiclesVisible(now=performance.now()){
+ if(!storyModeActive||farmCityMode||!farmGroup||farmPickupInCity||now-farmVehiclesCheckAt<1800)return;farmVehiclesCheckAt=now;
+ const tractor=drivableCars.find(v=>v&&v.userData&&v.userData.isFarmTractor)||farmGroup.children.find(v=>v&&v.name==='Tractor de la granja');
+ if(tractor){if(tractor.parent!==farmGroup&&!isDriving)farmGroup.add(tractor);if(!isDriving)tractor.visible=true;tractor.frustumCulled=false;tractor.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});if(!drivableCars.includes(tractor))drivableCars.push(tractor);}
+ if(farmPickupVehicle&&!isDriving){if(farmPickupVehicle.parent!==farmGroup)farmGroup.add(farmPickupVehicle);farmPickupVehicle.visible=true;farmPickupVehicle.frustumCulled=false;farmPickupVehicle.traverse(o=>{o.visible=true;if(o.isMesh)o.frustumCulled=false;});if(!drivableCars.includes(farmPickupVehicle))drivableCars.push(farmPickupVehicle);}
 }
 function farmPatchUiTick(){
  farmEnsurePickupControls();const p=document.getElementById('farmPickupControls');if(!p)return;
