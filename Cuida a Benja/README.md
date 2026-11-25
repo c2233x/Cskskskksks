@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.9.9**
+**Version actual: 1.10.0**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -157,3 +157,13 @@ El botón flotante `Logs` abre el panel de diagnóstico con la contraseña `pipi
 - Los botones táctiles superpuestos de TV y radio son invisibles, pero conservan su área táctil; los botones físicos 3D de cada aparato siguen visibles.
 - La misión se llama **REVISAR ALMACEN** y se completa al abrir el almacén para consultar las existencias.
 - Los diálogos seleccionan voces masculinas españolas cuando están disponibles y usan un tono grave. La voz requiere que el navegador/WebView incluya `speechSynthesis` y que Android tenga voces españolas instaladas.
+
+
+## Actualización 1.10.0 · Inventario, Benja y granja
+- El almacén tiene suelo sólido para impedir que el terreno lo tape o parpadee.
+- Se retira el cartel de la pocilga y se conserva la estructura.
+- El botón USAR responde a los toques y libera su estado aunque el evento táctil se interrumpa.
+- Cerca de Benja, USAR lanza comida; también puede tomar una porción del almacén si no hay comida en la mochila.
+- Se incorpora el botón INVENTARIO con la mochila, el martillo, herramientas y acciones para colocar piezas y cuidar a Benja.
+- El tractor y la camioneta quedan cerca de la pocilga; el tractor se distingue con colores, luces, baliza y rótulo.
+- El barro deja de utilizar materiales básicos luminosos y el cielo tiene transiciones más graduales durante el día y la noche.
