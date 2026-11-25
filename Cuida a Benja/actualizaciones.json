@@ -1,8 +1,18 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.3",
+  "version": "1.9.4",
   "updates": [
+    {
+      "version": "1.9.4",
+      "title": "Controles de TV y compatibilidad de voz",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "Los botones físicos de TV y radio detectan el toque por la posición real de cada botón en pantalla, sin depender del raycast de hitboxes invisibles.",
+        "Se ajustó la distancia de interacción, el radio táctil en Android y la protección contra dobles activaciones.",
+        "El diagnóstico recibido confirma que el WebView del dispositivo no expone speechSynthesis ni SpeechSynthesisUtterance; los subtítulos siguen disponibles, pero la voz local requiere un navegador o contenedor que proporcione ese motor."
+      ]
+    },
     {
       "version": "1.9.3",
       "title": "Vehículos visibles y diagnóstico de voz",
