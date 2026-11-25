@@ -965,8 +965,8 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const STORY_SAVE_KEY = 'ElBromas2_StoryProgress_v1';
         const STORY_FRAGMENT_SPOTS = [{x:48,z:0},{x:-48,z:36},{x:0,z:-72}];
         const STORY_ANTENNA_SPOTS = [{x:145,z:80},{x:-145,z:-80}];
-        const WORLD_TERRAIN_SEGMENTS=IS_MOBILE_DEVICE?56:88;
         const IS_MOBILE_DEVICE=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent||'') || ((navigator.maxTouchPoints||0)>1 && Math.min(window.innerWidth||0,window.innerHeight||0)<=900);
+        const WORLD_TERRAIN_SEGMENTS=IS_MOBILE_DEVICE?56:88;
         const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
     crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
