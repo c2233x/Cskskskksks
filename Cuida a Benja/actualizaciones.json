@@ -1,8 +1,22 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.7",
+  "version": "1.9.8",
   "updates": [
+    {
+      "version": "1.9.8",
+      "title": "Almacén ampliado, camioneta en ciudad y objetos recogibles",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "El almacén fue reconstruido como una nave amplia: entrada central de 30 metros, pasillo principal despejado, estantes ordenados a ambos lados, techo amplio y letrero visible. Se quitaron las colisiones de los pallets que bloqueaban el interior.",
+        "Los vehículos de la granja ya no se eliminan cuando se genera la flota de coches de ciudad. El tractor y la camioneta se conservan al cambiar entre mapas.",
+        "El tractor y la camioneta se acercaron a la zona inicial y recibieron letreros elevados para encontrarlos más fácilmente.",
+        "La camioneta puede cruzar a la ciudad cuando el jugador la conduce hasta el límite del mapa; también regresa a la granja como vehículo.",
+        "Aparecen de forma aleatoria entre tres y cinco objetos recogibles en cada visita a la ciudad: cajas, herramientas, repuestos y suministros.",
+        "Los objetos recogidos se pueden cargar en la paila de la camioneta, quedan guardados y pueden descargarse después. El cargamento se conserva entre sesiones.",
+        "Los botones táctiles de la TV y la radio ahora son controles de pantalla colocados sobre la posición proyectada de los botones 3D, evitando depender de toques sobre mallas invisibles."
+      ]
+    },
     {
       "version": "1.9.7",
       "title": "Controles físicos, pozo y televisión analógica",
