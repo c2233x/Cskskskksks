@@ -5462,6 +5462,8 @@ function farmWaterCapacity(){return 10+Math.max(1,Math.min(4,farmWaterStorageLev
             if(!ui||!storyModeActive||!farmGuideTarget||!character){if(ui)ui.style.display='none';return;}
             ui.style.display='flex';
             const target=(farmMissionId==='meetBenja'||farmMissionId==='feed')&&benjaPig?benjaPig.position:(farmMissionId==='tractor'?farmGetMissionTarget('tractor'):farmGuideTarget);
+            // El aro y la flecha 3D también siguen al tractor si el jugador lo estacionó en otro lugar.
+            if(farmMissionId==='tractor'&&farmGuideMarker){farmGuideMarker.position.set(target.x,farmGroundAt(target.x,target.z),target.z);}
             const dx=target.x-character.position.x,dz=target.z-character.position.z;
             const toTarget=new THREE.Vector3(dx,0,dz),forward=new THREE.Vector3();camera.getWorldDirection(forward);forward.y=0;
             if(forward.lengthSq()<.0001)forward.set(0,0,-1);forward.normalize();
