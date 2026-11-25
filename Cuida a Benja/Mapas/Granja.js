@@ -17,7 +17,7 @@ window.CUIDA_BENJA_FARM_MAP = {
     { id: "pocilga-benja", x: -286, z: -354, radius: 108, insects: true },
     { id: "huerto", x: -220, z: -250, radius: 98, insects: true },
     { id: "arboleda", x: -266, z: -284, radius: 104, insects: true },
-    { id: "camino-tractor", x: -448, z: -286, radius: 110, insects: true },
+    { id: "camino-tractor", x: -365, z: -295, radius: 110, insects: true },
     { id: "sendero-norte", x: -320, z: -242, radius: 94, insects: true },
     { id: "pozo-y-agua", x: -410, z: -450, radius: 92, insects: true }
   ],
@@ -29,7 +29,7 @@ window.CUIDA_BENJA_FARM_MAP = {
   coop: { x: -240, z: -340 },
   delivery: { x: -218, z: -435 },
   well: { x: -390, z: -440 },
-  tractor: { x: -448, z: -286 },
+  tractor: { x: -365, z: -295 },
   repair: { x: -286, z: -354 },
   fruitTrees: { x: -266, z: -284 },
   cityExitRadius: 235,
