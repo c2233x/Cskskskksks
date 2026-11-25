@@ -3936,33 +3936,36 @@ function removeCarRadioStation(index, reason='Sin señal'){
             return group;
         }
 
+
         function createSmallPene(x, z) {
+            // Guardian caricaturesco no sexual: conserva las referencias usadas por IA/animacion.
             const group=new THREE.Group();
-            const scale=.78+Math.random()*.12;
-            const bodyMat=new THREE.MeshStandardMaterial({color:0x557f9b,roughness:.55,metalness:.5});
-            const headMat=new THREE.MeshStandardMaterial({color:0xb4cbd8,roughness:.38,metalness:.55});
-            const darkMat=new THREE.MeshStandardMaterial({color:0x1c2d3d,roughness:.62,metalness:.4});
-            const eyeMat=new THREE.MeshBasicMaterial({color:0x52eaff});
-            const shaft=new THREE.Mesh(new THREE.BoxGeometry(1.55,1.65,1.2),bodyMat);
-            shaft.position.y=1.65; group.add(shaft);
-            const head=new THREE.Mesh(new THREE.BoxGeometry(1.18,.9,.92),headMat);
-            head.position.y=2.9; group.add(head);
-            const visor=new THREE.Mesh(new THREE.BoxGeometry(.82,.17,.08),eyeMat);
-            visor.position.set(0,2.98,.49); group.add(visor);
-            const ballGeo=new THREE.SphereGeometry(.42,7,6);
-            const ball1=new THREE.Mesh(ballGeo,bodyMat); ball1.position.set(-1.02,1.95,0); group.add(ball1);
-            const ball2=new THREE.Mesh(ballGeo,bodyMat); ball2.position.set(1.02,1.95,0); group.add(ball2);
+            const scale=.88+Math.random()*.10;
+            const bodyMat=new THREE.MeshStandardMaterial({color:0x7895a8,roughness:.78,metalness:.08});
+            const headMat=new THREE.MeshStandardMaterial({color:0xc6d5dc,roughness:.72,metalness:.04});
+            const darkMat=new THREE.MeshStandardMaterial({color:0x344653,roughness:.82});
+            const eyeMat=new THREE.MeshBasicMaterial({color:0x283f4c});
+            const shaft=new THREE.Mesh(new THREE.BoxGeometry(1.45,1.55,.9),bodyMat);
+            shaft.position.y=1.55;group.add(shaft);
+            const head=new THREE.Mesh(new THREE.SphereGeometry(.62,10,8),headMat);
+            head.position.y=2.78;group.add(head);
             for(const side of [-1,1]){
-                const leg=new THREE.Mesh(new THREE.BoxGeometry(.42,.9,.48),darkMat);
-                leg.position.set(side*.39,.55,0); group.add(leg);
-                const foot=new THREE.Mesh(new THREE.BoxGeometry(.58,.25,.76),darkMat);
-                foot.position.set(side*.39,.14,.12); group.add(foot);
+                const eye=new THREE.Mesh(new THREE.SphereGeometry(.085,7,6),eyeMat);
+                eye.position.set(side*.22,2.84,.54);group.add(eye);
+                const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.19,.72,3,6),bodyMat);
+                arm.position.set(side*.91,1.72,0);arm.rotation.z=side*.22;group.add(arm);
+                const leg=new THREE.Mesh(new THREE.BoxGeometry(.38,.78,.46),darkMat);
+                leg.position.set(side*.38,.42,0);group.add(leg);
+                const foot=new THREE.Mesh(new THREE.BoxGeometry(.52,.22,.68),darkMat);
+                foot.position.set(side*.38,.11,.12);group.add(foot);
             }
-            const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,.58,6),darkMat);
-            antenna.position.y=3.58; group.add(antenna);
-            const beacon=new THREE.Mesh(new THREE.SphereGeometry(.15,6,5),eyeMat);
-            beacon.position.y=3.9; group.add(beacon);
-            group.scale.set(scale,scale,scale); group.position.set(x,0,z);
+            const helmet=new THREE.Mesh(new THREE.BoxGeometry(1.02,.22,.82),darkMat);
+            helmet.position.y=3.27;group.add(helmet);
+            const badge=new THREE.Mesh(new THREE.BoxGeometry(.42,.32,.08),new THREE.MeshStandardMaterial({color:0xd8b15c,roughness:.6}));
+            badge.position.set(0,1.7,.49);group.add(badge);
+            const ball1=new THREE.Object3D(),ball2=new THREE.Object3D();
+            group.add(ball1);group.add(ball2);
+            group.scale.setScalar(scale);group.position.set(x,0,z);
             group.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});
             group.userData={health:28,maxHealth:28,speed:.12+Math.random()*.08,attackCooldown:0,walkCycle:Math.random()*10,shaft,ball1,ball2,head,isProtester:false,isNPC:true,flyTimer:0};
             return group;
@@ -7887,6 +7890,55 @@ function startProtestMission() {
         }
     
 
+
+        // FIX 1.8.1: zoom multitáctil y controles visibles + / -.
+        const zoomStyle=document.createElement('style');
+        zoomStyle.textContent=`
+          #cameraZoomControls{position:fixed;right:92px;bottom:104px;z-index:1800;display:flex;flex-direction:column;gap:8px;pointer-events:auto}
+          #cameraZoomControls button{width:42px;height:42px;border-radius:50%;border:2px solid #d7f3ff;background:rgba(8,25,43,.82);color:#fff;font-size:25px;font-weight:900;line-height:1;box-shadow:0 3px 12px #0008;touch-action:manipulation}
+          #cameraZoomControls button:active{transform:scale(.92);background:#17628a}
+          @media(min-width:900px){#cameraZoomControls{right:104px;bottom:110px}}
+        `;
+        document.head.appendChild(zoomStyle);
+        if(!document.getElementById('cameraZoomControls')){
+            const z=document.createElement('div');z.id='cameraZoomControls';z.innerHTML='<button type="button" id="cameraZoomIn" aria-label="Acercar">+</button><button type="button" id="cameraZoomOut" aria-label="Alejar">−</button>';document.body.appendChild(z);
+            document.getElementById('cameraZoomIn').addEventListener('click',()=>{cameraDistance=Math.max(7,cameraDistance-3);});
+            document.getElementById('cameraZoomOut').addEventListener('click',()=>{cameraDistance=Math.min(48,cameraDistance+3);});
+        }
+        const zoomPointers=new Map();
+        let pinchStartDistance=0,pinchStartCameraDistance=25;
+        const pointerDistance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+        document.addEventListener('pointerdown',e=>{
+            if(e.pointerType!=='touch'||!gameStarted||isCinematic||isDead||isDriving)return;
+            const zui=e.target&&e.target.closest&&e.target.closest('#cameraZoomControls,button,a,input,select,textarea,[role="dialog"],[role="button"],#joystickArea,#actionButtons,#flightControls,#interactionPrompt');
+            if(zui)return;
+            zoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+            if(zoomPointers.size===2){
+                const pts=[...zoomPointers.values()];
+                pinchStartDistance=pointerDistance(pts[0],pts[1]);pinchStartCameraDistance=cameraDistance;
+                window.__cuidaCameraPointerId=null;isCameraTouch=false;isZooming=true;
+            }
+            if(renderer&&renderer.domElement)renderer.domElement.style.touchAction='none';
+        },true);
+        document.addEventListener('pointermove',e=>{
+            if(e.pointerType!=='touch'||!zoomPointers.has(e.pointerId)||isCinematic)return;
+            zoomPointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
+            if(zoomPointers.size>=2){
+                const pts=[...zoomPointers.values()];
+                const dist=Math.max(1,pointerDistance(pts[0],pts[1]));
+                cameraDistance=Math.max(7,Math.min(48,pinchStartCameraDistance*(pinchStartDistance/dist)));
+            }
+        },true);
+        const finishZoomPointer=e=>{
+            zoomPointers.delete(e.pointerId);
+            if(zoomPointers.size<2)isZooming=false;
+            if(zoomPointers.size===1){
+                const [id,pt]=[...zoomPointers.entries()][0];
+                window.__cuidaCameraPointerId=id;lastTouchX=pt.x;lastTouchY=pt.y;isCameraTouch=true;
+            }else if(zoomPointers.size===0){window.__cuidaCameraPointerId=null;isCameraTouch=false;}
+        };
+        document.addEventListener('pointerup',finishZoomPointer,true);
+        document.addEventListener('pointercancel',finishZoomPointer,true);
         // FIX 1.8.0: cámara táctil global compartida entre scripts.
         window.__cuidaCameraPointerId=null;
         document.addEventListener('pointerdown',e=>{
