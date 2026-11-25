@@ -2142,7 +2142,19 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
                 // Misma versión: solo comprobamos el árbol de GitHub para encontrar archivos nuevos.
                 if (loadingText) loadingText.textContent = 'Iniciando';
-                const entries = await githubCollectFilesFromTree();
+                let entries = [];
+                try {
+                    entries = await githubCollectFilesFromTree();
+                    githubLogMsg(`Listado obtenido con Git Trees: ${entries.length} archivos.`, 'ok');
+                } catch (treeError) {
+                    githubLogMsg(`Git Trees no respondió: ${treeError.message}. Probando el listado normal de carpetas de GitHub...`, 'error');
+                    // Alternativa real: recorrer solamente Cuida a Benja/ con Contents API.
+                    // No se usa el ZIP completo ni se mezclan los archivos de El Bromas.
+                    entries = [];
+                    await githubCollectFiles(GITHUB_FOLDER, entries, []);
+                    if (!entries.length) throw new Error('Git Trees y Contents API no encontraron archivos en /' + GITHUB_FOLDER + '/.');
+                    githubLogMsg(`Listado alternativo obtenido con Contents API: ${entries.length} archivos.`, 'ok');
+                }
                 const stored = await getStoredCountForVersion(oldVersion || currentGameVersion);
                 entriesTotalForUI = entries.length;
                 savedFilesCount = stored;
