@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.2",
+  "version": "1.9.3",
   "updates": [
+    {
+      "version": "1.9.3",
+      "title": "Vehículos visibles y diagnóstico de voz",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "Se acercó el tractor al patio central y la pickup se estaciona a su lado para que ambos vehículos sean fáciles de encontrar.",
+        "Se reforzó la visibilidad de las piezas del tractor y la pickup desactivando el descarte por cámara en sus mallas.",
+        "Se estrechó la zona de activación de los botones físicos de TV y radio, se valida que estén dentro de la pantalla y se limpian las hitboxes al reconstruir la granja.",
+        "Se añadieron los botones PROBAR VOZ: HOLA, LOGS VOZ y COPIAR LOGS para probar y diagnosticar el sintetizador de voz local del dispositivo.",
+        "Los logs de voz registran disponibilidad del motor, voces instaladas, inicio, finalización y errores de reproducción."
+      ]
+    },
     {
       "version": "1.9.2",
       "title": "Pickup, martillo y correcciones de granja",
