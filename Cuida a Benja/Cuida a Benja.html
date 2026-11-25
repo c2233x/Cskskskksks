@@ -4828,18 +4828,21 @@ function removeCarRadioStation(index, reason='Sin señal'){
             makeFarmBox(storage,-23,0,0,1.7,13,36,wood);
             makeFarmBox(storage,23,0,0,1.7,13,36,wood);
             makeFarmBox(storage,0,0,-17,46,13,1.7,wood);
-            makeFarmBox(storage,-14,0,17,20,13,1.7,wood);
-            makeFarmBox(storage,14,0,17,20,13,1.7,wood);
+            // Frente con entrada amplia: deja un pasillo real para entrar caminando.
+            makeFarmBox(storage,-16,0,17,16,13,1.7,wood);
+            makeFarmBox(storage,16,0,17,16,13,1.7,wood);
             for(const x of [-21,0,21]){
                 const beam=new THREE.Mesh(new THREE.BoxGeometry(1.2,1.1,37),darkWood);beam.position.set(x,13,0);storage.add(beam);
             }
             const roofA=new THREE.Mesh(new THREE.BoxGeometry(25,1.1,38),roof);roofA.position.set(-11.5,14.2,0);roofA.rotation.z=-.12;storage.add(roofA);
             const roofB=new THREE.Mesh(new THREE.BoxGeometry(25,1.1,38),roof);roofB.position.set(11.5,14.2,0);roofB.rotation.z=.12;storage.add(roofB);
-            for(const x of [-20,-7,7,20]){
+            for(const x of [-20,0,20]){
                 const post=new THREE.Mesh(new THREE.BoxGeometry(.8,13,.8),darkWood);post.position.set(x,6.5,16.8);storage.add(post);
             }
             storage.position.set(FARM_STORAGE_POS.x,storageY,FARM_STORAGE_POS.z);farmGroup.add(storage);
-            addFarmCollider(FARM_STORAGE_POS.x-23,FARM_STORAGE_POS.z,1.9,36,0,'storage-left');addFarmCollider(FARM_STORAGE_POS.x+23,FARM_STORAGE_POS.z,1.9,36,0,'storage-right');addFarmCollider(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z-17,46,1.9,0,'storage-back');addFarmCollider(FARM_STORAGE_POS.x-14,FARM_STORAGE_POS.z+17,20,1.9,0,'storage-front-left');addFarmCollider(FARM_STORAGE_POS.x+14,FARM_STORAGE_POS.z+17,20,1.9,0,'storage-front-right');
+            addFarmCollider(FARM_STORAGE_POS.x-23,FARM_STORAGE_POS.z,1.9,36,0,'storage-left');addFarmCollider(FARM_STORAGE_POS.x+23,FARM_STORAGE_POS.z,1.9,36,0,'storage-right');addFarmCollider(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z-17,46,1.9,0,'storage-back');
+            // Laterales del frente separados para no cerrar el hueco de la puerta.
+            addFarmCollider(FARM_STORAGE_POS.x-16,FARM_STORAGE_POS.z+17,1.9,16,0,'storage-front-left');addFarmCollider(FARM_STORAGE_POS.x+16,FARM_STORAGE_POS.z+17,1.9,16,0,'storage-front-right');
             
             const itemGeometry={
                 maiz:new THREE.CylinderGeometry(.22,.34,1.35,7),
@@ -5599,7 +5602,11 @@ function updateFarmCarryVisual(force=false){
 }
 function speakFarmLine(speaker,line){
  const box=document.getElementById('farmSubtitles');farmLastSubtitleAt=Date.now();if(box){box.textContent=(speaker?String(speaker).toUpperCase()+': ':'')+line;box.style.display='block';}
- try{if('speechSynthesis'in window&&typeof SpeechSynthesisUtterance!=='undefined'){window.speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(line);u.lang='es-MX';u.rate=.94;const voices=window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];const v=voices.find(x=>/^es([-_]|$)/i.test(x.lang));if(v)u.voice=v;window.speechSynthesis.speak(u);}}catch(e){}
+ try{if('speechSynthesis'in window&&typeof SpeechSynthesisUtterance!=='undefined'){
+  const synth=window.speechSynthesis;synth.cancel();const u=new SpeechSynthesisUtterance(line);u.lang='es-MX';u.rate=.91;u.pitch=.82;u.volume=1;
+  const chooseVoice=()=>{const voices=synth.getVoices?synth.getVoices():[];const spanish=voices.filter(x=>/^es([-_]|$)/i.test(x.lang));const male=spanish.find(x=>/(male|mascul|hombre|jorge|diego|pablo|carlos|raul|miguel|antonio)/i.test(x.name+' '+(x.voiceURI||'')));const v=male||spanish.find(x=>/es-MX|es-US|es-419/i.test(x.lang))||spanish[0];if(v)u.voice=v;};
+  chooseVoice();if(!synth.getVoices().length)synth.addEventListener('voiceschanged',chooseVoice,{once:true});synth.speak(u);
+ }}catch(e){}
  const stamp=farmLastSubtitleAt;window.setTimeout(()=>{if(box&&farmLastSubtitleAt===stamp)box.style.display='none';},Math.max(4200,Math.min(8500,line.length*65)));
 }
 function farmThrowFood(){
@@ -6096,11 +6103,26 @@ function setupFarmTVPhysicalControls(){
   if(!storyModeActive||farmCityMode||!character||!farmTVPhysicalHitTargets.length)return;
   if(Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z)>42)return;
   const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height)return;
-  camera.updateMatrixWorld();if(farmTVProp)farmTVProp.updateMatrixWorld(true);
+  camera.updateMatrixWorld(true);
+  if(farmTVProp)farmTVProp.updateMatrixWorld(true);
+  if(farmRadioProp)farmRadioProp.updateMatrixWorld(true);
   const pointer=new THREE.Vector2(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
   const ray=new THREE.Raycaster();ray.setFromCamera(pointer,camera);
-  const tvHit=ray.intersectObjects(farmTVPhysicalHitTargets,false)[0];
-  const radioHit=(!tvHit&&farmRadioProp&&Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z)<24)?ray.intersectObjects(farmRadioPhysicalHitTargets,false)[0]:null;
+  // No basta con que el rayo toque una hitbox: comprobamos tambien que el toque
+  // caiga justo encima del boton proyectado en pantalla. Evita que el joystick,
+  // la camara o cualquier toque lejano active accidentalmente la TV/radio.
+  const exactHit=(targets,maxPixels)=>{
+   if(!targets||!targets.length)return null;
+   const hits=ray.intersectObjects(targets,false);
+   for(const hit of hits){
+    const p=hit.object.getWorldPosition(new THREE.Vector3()).project(camera);
+    const sx=rect.left+(p.x+1)*.5*rect.width,sy=rect.top+(1-p.y)*.5*rect.height;
+    if(Math.hypot(event.clientX-sx,event.clientY-sy)<=maxPixels)return hit;
+   }
+   return null;
+  };
+  const tvHit=exactHit(farmTVPhysicalHitTargets,42);
+  const radioHit=(!tvHit&&farmRadioProp&&Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z)<24)?exactHit(farmRadioPhysicalHitTargets,42):null;
   if(!tvHit&&!radioHit)return;
   event.preventDefault();event.stopPropagation();
   if(radioHit){const action=radioHit.object.userData.radioAction;if(action==='power')setFarmRadioPower(!farmRadioPowerOn);else{const next=(farmRadioStationIndex+(action==='next'?1:-1)+FARM_RADIO_STATIONS.length)%FARM_RADIO_STATIONS.length;selectFarmRadioStation(next);if(!farmRadioPowerOn)setFarmRadioPower(true);}showToast(action==='power'?'radio encendida/apagada':action==='next'?'siguiente emisora':'emisora anterior');return;}
