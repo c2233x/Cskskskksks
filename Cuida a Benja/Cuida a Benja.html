@@ -856,7 +856,7 @@ window.CUIDA_BENJA_FARM_MAP = {
   coop: { x: -240, z: -340 },
   delivery: { x: -218, z: -435 },
   well: { x: -390, z: -440 },
-  tractor: { x: -448, z: -286 },
+  tractor: { x: -410, z: -400 },
   repair: { x: -286, z: -354 },
   fruitTrees: { x: -266, z: -284 },
   cityExitRadius: 235,
@@ -891,7 +891,7 @@ window.CUIDA_BENJA_FARM_MAP = {
     water: { title: "LLENA EL BEBEDERO", target: "well", label: "ve al pozo", progress: "recoge agua limpia para la granja", icon: "💧" },
     tractor: { title: "PON EL TRACTOR A PUNTO", target: "tractor", label: "ve al tractor", progress: "revisa el tractor y prepara heno", icon: "🚜" },
     feed: { title: "CUIDA A BENJA", target: "pig", label: "vuelve con benja", progress: "lanzale comida a benja cuando tenga hambre", icon: "🐷" },
-    warehouse: { title: "ORDENA EL ALMACEN", target: "warehouse", label: "ve al almacen", progress: "guarda en el almacen todo lo que llevas", icon: "🏠" }
+    warehouse: { title: "REVISAR ALMACEN", target: "warehouse", label: "ve al almacen", progress: "revisa las existencias guardadas", icon: "🏠" }
   },
   // En esta zona no hay NPC de construccion ni trabajadores automáticos.
   ambientWorkers: 0,
@@ -939,7 +939,7 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
         const WORLD_TERRAIN_SEGMENTS=IS_MOBILE_DEVICE?56:88;
         const FARM_MAP_CONFIG=window.CUIDA_BENJA_FARM_MAP||{
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
-    crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-365,z:-295},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
+    crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-410,z:-400},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
     tv:{x:-414,z:-365},flatRadius:245,ambientZones:[
         {id:'huerto',x:-220,z:-250,radius:105,insects:true},
         {id:'arboleda',x:-266,z:-284,radius:95,insects:true},
@@ -978,7 +978,7 @@ const FARM_MISSION_DATA=FARM_MAP_CONFIG.missions?
         water:{title:'LLENA EL BEBEDERO',target:FARM_WELL_POS,label:'ve al pozo',progress:'recoge agua limpia para la granja',icon:'💧'},
         tractor:{title:'PON EL TRACTOR A PUNTO',target:FARM_TRACTOR_POS,label:'ve al tractor',progress:'revisa el tractor y prepara heno',icon:'🚜'},
         feed:{title:'CUIDA A BENJA',target:FARM_PIG_POS,label:'vuelve con benja',progress:'lanzale comida a benja cuando tenga hambre',icon:'🐷'},
-        warehouse:{title:'ORDENA EL ALMACEN',target:FARM_STORAGE_POS,label:'ve al almacen',progress:'guarda en el almacen todo lo que llevas',icon:'🏠'}
+        warehouse:{title:'REVISAR ALMACEN',target:FARM_STORAGE_POS,label:'ve al almacen',progress:'revisa las existencias guardadas',icon:'🏠'}
     };
 let CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP||null;
 
@@ -5649,7 +5649,7 @@ function farmUpdateBenjaHud(){
     storyFeedInventory=farmTotalFood(farmCarriedGoods)+farmTotalFood(farmWarehouseStock);
     refreshFarmStorageVisuals();farmUpdateWaterTankVisual();updateFarmMoneyLabel();farmUpdateInventoryPanel();saveStoryProgress();
     showToast('guardaste '+moved+' productos. el stock se acumulo.');
-    if(farmMissionId==='warehouse')farmCompleteMission('ALMACEN ORGANIZADO','todo quedo guardado. ahora ya tenemos existencias para los siguientes encargos.','🏠');
+    if(farmMissionId==='warehouse')farmCompleteMission('ALMACEN REVISADO','ya revise las existencias guardadas y se que productos tenemos.','📦');
    }else if(action==='withdraw'){
     if(!type||!(farmWarehouseStock[type]>0)){showToast('no hay unidades de ese producto');return;}
     farmWarehouseStock[type]--;farmCarriedGoods[type]=(farmCarriedGoods[type]||0)+1;
@@ -5672,6 +5672,9 @@ function farmUpdateBenjaHud(){
 function openFarmInventoryPanel(mode){
  const panel=document.getElementById('farmInventoryPanel');if(!panel)return;
  farmInventoryPanelMode=mode||'warehouse';farmUpdateInventoryPanel();panel.style.display='block';
+ if(storyModeActive&&!farmCityMode&&farmMissionId==='warehouse'&&farmInventoryPanelMode==='warehouse'){
+  farmCompleteMission('ALMACEN REVISADO','ya revise las existencias guardadas y se que productos tenemos.','📦');
+ }
 }
 
 
@@ -5698,24 +5701,35 @@ function updateFarmCarryVisual(force=false){
  }
  farmCarryVisualGroup.position.set(0,3.55,-.78);character.add(farmCarryVisualGroup);character.userData.farmCarryGroup=farmCarryVisualGroup;
 }
+function farmChooseMaleSpanishVoice(voices){
+ const list=Array.isArray(voices)?voices:[];
+ const spanish=list.filter(v=>/^es([-_]|$)/i.test(String(v.lang||'')));
+ const maleNames=/male|mascul|hombre|jorge|pablo|diego|carlos|raul|raúl|miguel|juan|antonio|enrique|alvaro|álvaro|andres|andrés|felipe|sergio|manuel|javier|roberto|pedro|david|daniel|luis|hector|héctor|mario|fernando|gabriel|gonzalo|eduardo|mateo|alonso|alejandro|oscar|óscar|rafael|ruben|rubén|sfb|male_/i;
+ const femaleNames=/female|femenin|mujer|monica|mónica|paulina|sabina|elena|laura|lucia|lucía|maria|maría|valentina|sofia|sofía|helena|ines|inés|carmen|ana|andrea|isabel|beatriz|camila|claudia|cristina|dolores|julia|rosa/i;
+ const male=spanish.filter(v=>{
+  const gender=String(v.gender||v.voiceGender||'').toLowerCase();
+  return (gender==='male'||maleNames.test(String(v.name||'')))&&!femaleNames.test(String(v.name||''));
+ });
+ const score=v=>(v.localService?100:0)+(/es-MX|es-US|es-419/i.test(String(v.lang||''))?20:0);
+ male.sort((a,b)=>score(b)-score(a));
+ if(male.length)return male[0];
+ const safe=spanish.filter(v=>!femaleNames.test(String(v.name||'')));
+ safe.sort((a,b)=>score(b)-score(a));
+ return safe[0]||null;
+}
 function speakFarmLine(speaker,line){
  const box=document.getElementById('farmSubtitles');
  farmLastSubtitleAt=Date.now();
  if(box){box.textContent=(speaker?String(speaker).toUpperCase()+': ':'')+line;box.style.display='block';}
  if('speechSynthesis'in window&&typeof SpeechSynthesisUtterance!=='undefined'){
   try{
-   const synth=window.speechSynthesis;synth.cancel();synth.resume();
+   const synth=window.speechSynthesis;
+   synth.cancel();synth.resume();
    const u=new SpeechSynthesisUtterance(line);
-   const isNarrator=String(speaker||'').toLowerCase().includes('narrador');
-   u.lang='es-MX';u.rate=isNarrator?.88:.91;u.pitch=isNarrator?.72:.92;u.volume=1;
-   const voices=synth.getVoices?synth.getVoices():[];
-   const spanish=voices.filter(v=>/^es([-_]|$)/i.test(String(v.lang||'')));
-   const maleNames=/male|mascul|hombre|jorge|pablo|diego|carlos|raul|raúl|miguel|juan|antonio|enrique|alvaro|álvaro|andres|andrés|felipe|sergio|manuel|javier|roberto|pedro|david|daniel|luis|hector|héctor|mario|fernando|gabriel|gonzalo|eduardo|mateo|alonso|alejandro|oscar|óscar|rafael|ruben|rubén/i;
-   const femaleNames=/female|femenin|mujer|monica|mónica|paulina|sabina|elena|laura|lucia|lucía|maria|maría|valentina|sofia|sofía|helena|ines|inés|carmen|ana|andrea|isabel|beatriz|camila|claudia|cristina|dolores|julia|rosa/i;
-   const maleSpanish=spanish.filter(v=>(String(v.gender||'').toLowerCase()==='male'||maleNames.test(v.name||''))&&!femaleNames.test(v.name||''));
-   const preferred=maleSpanish.find(v=>/es-MX|es-US|es-419/i.test(v.lang||''))||maleSpanish[0];
-   const fallback=spanish.find(v=>!femaleNames.test(v.name||''))||spanish[0];
-   const voice=isNarrator?(preferred||fallback):(spanish.find(v=>/es-MX|es-US|es-419/i.test(v.lang||''))||spanish[0]);
+   const voice=farmChooseMaleSpanishVoice(synth.getVoices?synth.getVoices():[]);
+   // El tono grave se aplica a todos los diálogos, no solo al narrador.
+   u.lang=voice&&voice.lang?voice.lang:'es-MX';
+   u.rate=.9;u.pitch=.68;u.volume=1;
    if(voice)u.voice=voice;
    synth.speak(u);
   }catch(e){}
@@ -6243,9 +6257,9 @@ function farmEnsurePhysicalControlOverlay(){
   ['radio-prev','radio','prev','◀'],['radio-power','radio','power','⏻'],['radio-next','radio','next','▶']
  ];
  defs.forEach(([id,kind,action,label])=>{
-  const b=document.createElement('button');b.type='button';b.id='farmPhysical-'+id;b.dataset.kind=kind;b.dataset.action=action;b.textContent=label;
+  const b=document.createElement('button');b.type='button';b.id='farmPhysical-'+id;b.dataset.kind=kind;b.dataset.action=action;b.textContent='';
   b.setAttribute('aria-label',(kind==='tv'?'TV ':'Radio ')+action);
-  b.style.cssText='display:none;position:fixed;width:48px;height:48px;min-width:48px;min-height:48px;margin:0;padding:0;transform:translate(-50%,-50%);border:1px solid rgba(255,239,204,.85);border-radius:50%;background:rgba(8,18,22,.72);color:#fff;font-size:21px;font-weight:1000;line-height:1;box-shadow:0 3px 12px rgba(0,0,0,.5),inset 0 1px 4px rgba(255,255,255,.16);pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;';
+  b.style.cssText='display:none;position:fixed;width:62px;height:62px;min-width:62px;min-height:62px;margin:0;padding:0;transform:translate(-50%,-50%);border:0;border-radius:50%;background:transparent;color:transparent;font-size:0;line-height:0;box-shadow:none;opacity:0;pointer-events:auto;touch-action:manipulation;-webkit-tap-highlight-color:transparent;user-select:none;appearance:none;outline:none;';
   b.addEventListener('click',e=>{
    e.preventDefault();e.stopPropagation();
    const a=b.dataset.action,k=b.dataset.kind;
@@ -6841,7 +6855,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
             else if(id==='eggs'){farmCarriedGoods.huevos+=4;storyMoney+=20;updateFarmMoneyLabel();farmCompleteMission('HUEVOS RECOGIDOS','los nidos estaban llenos. con esto podemos completar una entrega.','🥚');}
             else if(id==='delivery'){
                 const veg=(farmCarriedGoods.zanahoria||0)+(farmWarehouseStock.zanahoria||0),egg=(farmCarriedGoods.huevos||0)+(farmWarehouseStock.huevos||0);
-                if(veg<2||egg<1){showToast('te faltan 2 verduras y 1 huevo. recoge la cosecha o revisa el almacen');setFarmGuideTarget(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z,'revisa las existencias');return;}
+                if(veg<2||egg<1){showToast('te faltan 2 verduras y 1 huevo. recoge la cosecha o revisa el almacen');setFarmGuideTarget(FARM_STORAGE_POS.x,FARM_STORAGE_POS.z,'revisar almacen');return;}
                 farmTakeItem('zanahoria',2);farmTakeItem('huevos',1);storyMoney+=34;updateFarmMoneyLabel();farmCompleteMission('PEDIDO ENTREGADO','la vecina recibio todo. el dinero de la entrega ya esta en tu bolsillo.','📦');
             }else if(id==='repair'){
                 if((farmCarriedGoods.madera||0)+(farmWarehouseStock.madera||0)<2){showToast('necesitas 2 maderas. compra mas o revisa el almacen');setFarmGuideTarget(FARM_SHOP_POS.x,FARM_SHOP_POS.z,'compra madera');return;}
@@ -6919,7 +6933,7 @@ function getStoryMissionName(){return (FARM_MISSION_DATA[farmMissionId]||FARM_MI
   if(m){
    const dist=Math.hypot(character.position.x-m.target.x,character.position.z-m.target.z);
    if(dist<(farmMissionId==='feed'?22:20)){
-    if(farmMissionId==='warehouse')prompt='pulsa ATACAR para abrir el almacen y guardar la carga';
+    if(farmMissionId==='warehouse')prompt='pulsa ATACAR para revisar el almacen';
     else if(farmMissionId==='delivery')prompt='pulsa ATACAR para entregar 2 verduras y 1 huevo';
     else if(farmMissionId==='repair')prompt='pulsa ATACAR para reforzar el corral';
     else if(farmMissionId==='feed')prompt='lanzale comida a benja cuando tenga hambre';
@@ -8385,7 +8399,7 @@ function createFarmPickupVehicle(){
 }
 function farmEnsurePickupControls(){
  if(document.getElementById('farmPickupControls'))return;const p=document.createElement('div');p.id='farmPickupControls';p.style.cssText='position:fixed;left:50%;bottom:145px;transform:translateX(-50%);z-index:1900;display:none;gap:8px;pointer-events:auto;';
- const mk=(id,label)=>{const b=document.createElement('button');b.id=id;b.type='button';b.textContent=label;b.style.cssText='padding:10px 13px;border:1px solid #d6bd8a;border-radius:10px;background:rgba(20,38,30,.96);color:white;font-weight:900;font-size:12px;touch-action:manipulation;';return b;};
+ const mk=(id,label)=>{const b=document.createElement('button');b.id=id;b.type='button';b.textContent='';b.style.cssText='padding:10px 13px;border:1px solid #d6bd8a;border-radius:10px;background:rgba(20,38,30,.96);color:white;font-weight:900;font-size:12px;touch-action:manipulation;';return b;};
  const a=mk('farmPickupLoad','📦 CARGAR PAILA'),b=mk('farmPickupUnload','📤 DESCARGAR');p.append(a,b);document.body.appendChild(p);a.addEventListener('click',()=>farmPickupTransfer(true));b.addEventListener('click',()=>farmPickupTransfer(false));
 }
 function farmNearestPlacedBuild(){if(!character||!farmPlacedBuilds.length)return -1;let best=-1,dist=20;farmPlacedBuilds.forEach((r,i)=>{const d=Math.hypot(character.position.x-r.x,character.position.z-r.z);if(d<dist){dist=d;best=i;}});return best;}
