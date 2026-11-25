@@ -8426,7 +8426,7 @@ function startProtestMission() {
         const cuidaCameraTouchTarget=e=>{
             const t=e.target;
             if(!t)return false;
-            return !!(t.closest&&t.closest('#joystickArea,#actionButtons,#flightControls,#interactionPrompt,#cameraZoomControls,button,a,input,select,textarea,[role="dialog"],[role="button"],.modal,.panel'));
+            return !!(t.closest&&t.closest('#joystickArea,#actionButtons,#flightControls,#interactionPrompt,#cameraZoomControls,#carCameraControls,button,a,input,select,textarea,[role="dialog"],[role="button"],.modal,.panel'));
         };
         document.addEventListener('pointerdown',e=>{
             if(e.pointerType!=='touch'||!gameStarted||isCinematic||isDead||isDriving||cuidaCameraTouchTarget(e))return;
