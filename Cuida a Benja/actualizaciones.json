@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.8",
+  "version": "1.9.9",
   "updates": [
+    {
+      "version": "1.9.9",
+      "title": "Tractor junto a la casa, controles invisibles y misión del almacén",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "Se unifican las coordenadas del tractor y la camioneta en el mapa principal y el mapa externo; ahora quedan estacionados cerca de la pocilga sin bloquear su entrada.",
+        "Los controles táctiles superpuestos de TV y radio dejan de dibujar círculos y flechas. Siguen aceptando toques en la misma posición y los botones físicos 3D de los aparatos permanecen visibles.",
+        "La misión ahora se llama REVISAR ALMACEN y muestra que hay que revisar las existencias guardadas.",
+        "Abrir el almacén durante esa misión completa el encargo y mueve el objetivo al siguiente paso.",
+        "Todos los diálogos priorizan voces masculinas en español cuando el dispositivo las ofrece y usan un tono más grave; la voz local sigue dependiendo de que el navegador/WebView exponga speechSynthesis y tenga voces españolas instaladas."
+      ]
+    },
     {
       "version": "1.9.8",
       "title": "Almacén ampliado, camioneta en ciudad y objetos recogibles",
