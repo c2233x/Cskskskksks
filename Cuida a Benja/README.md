@@ -2,7 +2,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.7.4**
+**Version actual: 1.7.5**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
@@ -48,7 +48,7 @@ El televisor tiene una pantalla física que permanece en el mundo. El video HLS 
 
 Canales disponibles para probar: 43 entradas hondureñas e internacionales, organizadas por categorías (noticias, general, entretenimiento, educativo, religioso, música, deportes, internacional, anime y caricaturas). Los accesos de Pluto TV abren el catálogo oficial en el navegador. Pluto TV no queda integrado como señal HLS directa en la pantalla 3D; la disponibilidad y reproducción se gestionan en su propio servicio. El buscador filtra por nombre o categoría y `BUSCAR Y PROBAR` comprueba cada enlace en el navegador; `DETENER BÚSQUEDA` cancela el escaneo. Una señal marcada como disponible funcionó en ese dispositivo durante la prueba, pero puede cambiar según la emisión, región o navegador.
 
-La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. El audio original de chicharras se carga desde `Sonidos/ambiente/chicharra_original.mp3` en las zonas de insectos; el viento suena por toda la granja y los pájaros aparecen como ambiente. El volumen varía según la zona y la distancia. El audio ambiente pertenece a `Cuida a Benja/Sonidos/ambiente/` y se reproduce en las zonas de insectos. Al volver desde la ciudad, la música de fondo se detiene y no se reinicia en la granja.
+La radio física está junto al televisor y quedó más cerca y con un radio de interacción mayor; ofrece emisoras hondureñas, encendido manual y control de volumen. El sonido baja al alejarse de la radio. La radio del carro mantiene sus controles propios. En la granja no hay música de fondo. El audio original de chicharras se carga desde `Sonidos/ambiente/la chicharra japonesa(MP3_160K).mp3` en las zonas de insectos; el viento suena por toda la granja y los pájaros aparecen como ambiente. El volumen varía según la zona y la distancia. El audio ambiente pertenece a `Cuida a Benja/Sonidos/ambiente/` y se reproduce en las zonas de insectos. Al volver desde la ciudad, la música de fondo se detiene y no se reinicia en la granja.
 
 ## HUD y desplazamiento
 El nombre del jugador es Cornatan. La salud y el hambre de Benja aparecen en barras separadas encima del HUD del jugador. Los paneles de tienda, almacén, televisión y trabajos permiten desplazamiento táctil.
