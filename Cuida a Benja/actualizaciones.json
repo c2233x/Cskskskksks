@@ -1,8 +1,21 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.9.6",
+  "version": "1.9.7",
   "updates": [
+    {
+      "version": "1.9.7",
+      "title": "Controles físicos, pozo y televisión analógica",
+      "date": "25 de noviembre de 2026",
+      "changes": [
+        "Los botones físicos de TV y radio usan seguimiento del toque desde que comienza en el lienzo hasta que se levanta el dedo; se amplió la tolerancia sobre cada botón y se evita activar controles al tocar otras interfaces.",
+        "Las flechas de canal/emisora ahora se muestran como flechas claras. El botón de encendido es rojo apagado y verde encendido, con un LED de estado debajo.",
+        "Cuando un canal no ofrece señal, la pantalla física muestra estática de televisión antigua y el mensaje SIN SEÑAL; al apagar la TV la pantalla queda negra.",
+        "La misión del pozo ahora llena el balde y completa correctamente el encargo en la misma interacción, sin que la recogida normal de agua consuma antes el toque.",
+        "Comprar el balde lo añade a la carga, actualiza su representación visual y explica cómo llenarlo en el pozo; el balde se mantiene reutilizable.",
+        "El narrador prioriza voces españolas masculinas reconocibles y usa un tono más grave. La voz disponible depende de las voces instaladas en el dispositivo."
+      ]
+    },
     {
       "version": "1.9.6",
       "title": "Vehículos de granja y botones físicos",
