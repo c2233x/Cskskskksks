@@ -783,8 +783,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="tuboBigFireBtn">🔫<br/>DISPARAR</div>
 <div id="morteroTimer">Mortero: 20s</div>
 <div id="crosshair"></div>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="./three.min.js?v=1.7.7"></script>
 <script>
 // Cuida a Benja - datos del mapa de la granja.
 // El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
@@ -1470,7 +1469,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
         }
 
         async function fetchBlobWithProgressOnce(url, onProgress) {
-            const response = await fetch(url, { cache: 'no-store' });
+            const response = await fetchWithTimeout(url, { cache: 'no-store' }, 15000);
             if (!response.ok) {
                 const err = new Error(`HTTP ${response.status}`);
                 err.status = response.status;
@@ -1544,10 +1543,10 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             let lastNetworkError;
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
-                    response = await fetch(url, {
+                    response = await fetchWithTimeout(url, {
                         cache: 'no-store',
                         headers: { 'Accept': 'application/vnd.github+json' }
-                    });
+                    }, 6500);
                     lastNetworkError = null;
                     break;
                 } catch (networkError) {
@@ -1602,7 +1601,7 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             let response, lastError;
             for (let attempt = 1; attempt <= 3; attempt++) {
                 try {
-                    response = await fetch(treeUrl, { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } });
+                    response = await fetchWithTimeout(treeUrl, { cache: 'no-store', headers: { 'Accept': 'application/vnd.github+json' } }, 6500);
                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
                     const data = await response.json();
                     if (data.truncated) throw new Error('Árbol de GitHub truncado');
@@ -1638,15 +1637,20 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
 
         function openGameCache() {
             return new Promise((resolve, reject) => {
-                const req = indexedDB.open(GAME_CACHE_DB, 1);
+                if (!window.indexedDB) { reject(new Error('IndexedDB no está disponible; se continuará sin caché.')); return; }
+                let settled = false;
+                const finish = (fn, value) => { if (settled) return; settled = true; clearTimeout(timer); fn(value); };
+                const timer = setTimeout(() => finish(reject, new Error('Tiempo de espera agotado al abrir el caché local.')), 5000);
+                let req;
+                try { req = indexedDB.open(GAME_CACHE_DB, 1); }
+                catch (error) { finish(reject, error); return; }
                 req.onupgradeneeded = () => {
                     const db = req.result;
-                    if (!db.objectStoreNames.contains(GAME_CACHE_STORE)) {
-                        db.createObjectStore(GAME_CACHE_STORE, { keyPath: 'key' });
-                    }
+                    if (!db.objectStoreNames.contains(GAME_CACHE_STORE)) db.createObjectStore(GAME_CACHE_STORE, { keyPath: 'key' });
                 };
-                req.onsuccess = () => resolve(req.result);
-                req.onerror = () => reject(req.error || new Error('No se pudo abrir el caché local.'));
+                req.onsuccess = () => finish(resolve, req.result);
+                req.onerror = () => finish(reject, req.error || new Error('No se pudo abrir el caché local.'));
+                req.onblocked = () => finish(reject, new Error('El caché local está bloqueado por otra pestaña o sesión.'));
             });
         }
 
@@ -1786,29 +1790,44 @@ let farmPigstyLevel=0,farmWaterStorageLevel=1,farmBenjaCleanliness=100,farmBenja
             } catch (_) {}
         }
 
+        async function fetchWithTimeout(url, options = {}, timeoutMs = 7000) {
+            const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+            const requestOptions = { ...options };
+            if (controller) requestOptions.signal = controller.signal;
+            let timer;
+            try {
+                return await Promise.race([
+                    fetch(url, requestOptions),
+                    new Promise((_, reject) => {
+                        timer = setTimeout(() => {
+                            try { if (controller) controller.abort(); } catch (_) {}
+                            reject(new Error('Tiempo de espera agotado: ' + url));
+                        }, timeoutMs);
+                    })
+                ]);
+            } finally { clearTimeout(timer); }
+        }
+
         async function fetchVersionDirect() {
-            const candidates = [
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodeURIComponent(GITHUB_FOLDER)}/Version.txt`,
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Version`,
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/Version.txt`,
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/version.txt`,
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodeURIComponent(GITHUB_FOLDER)}/Version`,
-                `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${encodeURIComponent(GITHUB_FOLDER)}/Version.txt`
-            ];
-            for (const url of candidates) {
+            const folder = GITHUB_FOLDER.split('/').map(encodeURIComponent).join('/');
+            const raw = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${folder}/Version.txt`;
+            const cdn = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${folder}/Version.txt`;
+            for (const url of [raw, cdn]) {
                 try {
-                    const r = await fetch(url, { cache: 'no-store' });
-                    if (r.ok) {
-                        const text = (await r.text()).trim();
-                        if (text) return text;
-                    }
-                } catch (_) {}
+                    const r = await fetchWithTimeout(url, { cache: 'no-store' }, 3500);
+                    if (!r.ok) continue;
+                    const value = (await r.text()).trim();
+                    if (value) return value;
+                } catch (error) {
+                    githubLogMsg(`Versión no disponible desde ${url.includes('raw.githubusercontent') ? 'GitHub Raw' : 'jsDelivr'}: ${error.message}`);
+                }
             }
             return null;
         }
 
         async function getGameVersion() {
-            const remote = await fetchVersionDirect();
+            let remote = null;
+            try { remote = await fetchVersionDirect(); } catch (_) { remote = null; }
             const saved = localStorage.getItem('ElBromas2_GameVersion');
             if (startupLatestVersion) startupLatestVersion.textContent = remote || '-';
             if (startupCurrentVersion) startupCurrentVersion.textContent = saved || '-';
