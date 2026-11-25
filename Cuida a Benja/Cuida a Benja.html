@@ -1004,7 +1004,7 @@ let farmTVShowNoSignal=false;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
         let farmTVPanelBound=false,farmTVCurrentChannel=null,farmTVPowerOn=false,farmTVVolume=.55,farmTVScreenMaterial=null,farmTVLastAudioCheck=0;
         let farmTVHlsPlayer=null,farmTVHlsScriptPromise=null,farmTVPlaybackToken=0,farmTVIframeFallback=false;
-let farmTVPlaceholderTexture=null,farmTVVideoTexture=null;
+let farmTVPlaceholderTexture=null,farmTVVideoTexture=null,farmTVLoadingCanvas=null,farmTVLoadingContext=null,farmTVLoadingTexture=null,farmTVLoadingActive=false,farmTVLoadingSince=0;
 let farmTVScanToken=0,farmTVScanHls=null,farmTVScanVideo=null,farmTVScanCancelCurrent=null,farmTVScanActive=false;
         let cityTravelRetryAt=0;
         let farmRadioProp=null,farmRadioPanelBound=false,farmRadioAudio=new Audio(),farmRadioPowerOn=false,farmRadioStationIndex=0,farmRadioVolume=.55,farmRadioLastCheck=0;
@@ -1015,7 +1015,7 @@ let farmRadioScanToken=0,farmRadioScanActive=false,farmRadioScanAudio=null,farmR
         let farmThrownFood=[],farmCarryVisualHash='',farmCarryVisualGroup=null,farmLastSubtitleAt=0;
         let farmMissionHintWasVisible=false;
         let farmStorageVisuals={},farmStorageBins={},farmMissionDecor=[];
-let farmPickupVehicle=null,farmPickupCargoGroup=null,farmPickupCargo={},farmHammerOwned=false,farmHammerPanel=null;
+let farmPickupVehicle=null,farmPickupCargoGroup=null,farmPickupCargo={},farmHammerOwned=false,farmHammerPanel=null,farmHammerSelectedIndex=-1,farmVehiclesCheckAt=0;
 let cityLootObjects=[],cityLootCarried=[],farmPickupHomePose=null,farmPickupInCity=false;
 const CITY_SCAVENGE_LOOT=[
  {id:'caja-herramientas',label:'Caja de herramientas',icon:'🧰',color:0xb97838},
@@ -4975,7 +4975,7 @@ function updateFarmCinematic(){
                 console.warn('Modelo de almacen simplificado para '+type,error);
                 const col=index%4,row=Math.floor(index/4),lx=shelfXs[col],lz=shelfZs[row];
                 if(!farmStorageBins[type]){const palletFallback=new THREE.Mesh(new THREE.BoxGeometry(11,.55,10),darkWood);palletFallback.position.set(lx,.34,lz);palletFallback.frustumCulled=false;storage.add(palletFallback);farmStorageBins[type]=palletFallback;}
-                const fallback=new THREE.Group();fallback.frustumCulled=false;fallback.userData.storageFallback={geometry:itemGeometry[type]||new THREE.BoxGeometry(1.1,1.1,1.1),material:itemMaterials[type]||wood,lx,lz,type};storage.add(fallback);farmStorageVisuals[type]=fallback;
+                const fallback=new THREE.Group();fallback.frustumCulled=false;fallback.userData.storageFallback={geometry:new THREE.BoxGeometry(1.1,1.1,1.1),material:wood,lx,lz,type};storage.add(fallback);farmStorageVisuals[type]=fallback;
                 farmRefreshStorageFallback(fallback,Math.max(0,Math.min(60,Number(farmWarehouseStock[type])||0)));
               }
             });
