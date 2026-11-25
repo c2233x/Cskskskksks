@@ -343,6 +343,15 @@
         body.hudEditing .actionBtn,body.hudEditing #joystickArea,body.hudEditing #flightControls,body.hudEditing #morteroFireBtn,body.hudEditing #tuboBigFireBtn,body.hudEditing #settingsBtn{outline:2px dashed #00eaff;outline-offset:3px;touch-action:none!important}
         body.hudEditing .actionBtn{cursor:move!important}
 
+
+#cuidaLogsAccess{position:fixed;z-index:99998;right:12px;bottom:12px;padding:10px 15px;border:1px solid #54d99b;border-radius:24px;background:#071a1b;color:#a7ffd1;font:700 13px Arial;box-shadow:0 4px 18px #0009;touch-action:manipulation}
+#cuidaLogsModal{position:fixed;inset:0;z-index:99999;display:none;align-items:center;justify-content:center;background:#020611ed;padding:16px;box-sizing:border-box}
+#cuidaLogsCard{width:min(620px,96vw);max-height:88vh;overflow:auto;background:#0b1428;border:1px solid #39bd8b;border-radius:16px;padding:18px;color:#effff7;box-shadow:0 18px 60px #000b;font:14px Arial}
+#cuidaLogsCard h3{margin:0 0 12px;font-size:19px}
+#cuidaLogsPin{width:100%;box-sizing:border-box;padding:13px;border-radius:9px;border:1px solid #60718b;background:#081020;color:white;font-size:18px;margin:8px 0}
+#cuidaLogsCard button{padding:10px 14px;border-radius:9px;border:1px solid #40c78c;background:#103a31;color:#dffff0;font-weight:700;margin:5px 5px 5px 0}
+#cuidaLogsOutput{white-space:pre-wrap;overflow:auto;max-height:52vh;background:#030914;border:1px solid #263b54;border-radius:8px;padding:10px;font:11px/1.45 monospace;word-break:break-word}
+#cuidaLogsHint{color:#a8b8cc;font-size:12px}
 </style>
 <style>
 #storyDialog,#storyInfoPanel{position:fixed;inset:0;z-index:1400;display:none;align-items:center;justify-content:center;padding:18px;background:rgba(1,6,13,.82);backdrop-filter:blur(7px);touch-action:pan-y}
@@ -496,7 +505,22 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="startupDebugPanel" style="display:none"><div id="startupDebugTitle">Detalles del error</div><pre id="startupDebugLog"></pre><button id="copyDebugLog" type="button">Copiar al portapapeles</button></div>
 <input id="folderInput" multiple="" type="file" webkitdirectory="" style="display:none!important"/>
 </div>
-<div id="githubLoader">
+
+<button id="cuidaLogsAccess" type="button">📋 Logs</button>
+<div id="cuidaLogsModal" role="dialog" aria-modal="true" aria-label="Registro de diagnóstico">
+ <div id="cuidaLogsCard">
+  <h3>Registro de diagnóstico</h3>
+  <div id="cuidaLogsGate"><p>Introduce la contraseña para consultar los logs temporales.</p>
+   <input id="cuidaLogsPin" type="password" autocomplete="off" placeholder="Contraseña">
+   <div id="cuidaLogsPinError" aria-live="polite"></div><button id="cuidaLogsUnlock" type="button">Acceder</button>
+  </div>
+  <div id="cuidaLogsPanel" style="display:none"><p id="cuidaLogsHint">Registro temporal de esta sesión. Incluye errores, peticiones de red y pasos de carga.</p>
+   <pre id="cuidaLogsOutput"></pre><button id="cuidaLogsCopy" type="button">Copiar logs al portapapeles</button><button id="cuidaLogsClear" type="button">Limpiar logs</button>
+  </div>
+  <button id="cuidaLogsClose" type="button">Cerrar</button>
+ </div>
+</div>
+\n<div id="githubLoader"><div id="githubLoader">
 <div id="githubLoaderBox">
 <div id="githubLoaderTitle">Cargando</div>
 <div id="githubLoaderStatus"></div>
@@ -785,7 +809,53 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <div id="crosshair"></div>
 <script src="./three.min.js?v=1.7.7"></script>
 <script>
-// Cuida a Benja - datos del mapa de la granja.
+
+/* ===== DIAGNÓSTICO TEMPORAL DE ARRANQUE ===== */
+(function installCuidaTemporaryLogs(){
+ const KEY='cuida_benja_temp_logs_v1',MAX=1400,MAX_CHARS=420000;let records=[];
+ try{const saved=sessionStorage.getItem(KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))records=parsed.slice(-MAX);}}catch(_){}
+ const safe=v=>{try{if(v instanceof Error)return v.name+': '+v.message+(v.stack?'\\n'+v.stack:'');if(typeof v==='string')return v;if(v&&typeof v==='object')return JSON.stringify(v);return String(v);}catch(_){return String(v);}};
+ window.cuidaAddLog=function(level,message){
+  const line='['+new Date().toISOString()+'] ['+String(level||'INFO').toUpperCase()+'] '+safe(message);
+  records.push(line);if(records.length>MAX)records=records.slice(-MAX);
+  let total=records.reduce((n,x)=>n+x.length,0);while(total>MAX_CHARS&&records.length>20)total-=records.shift().length;
+  try{sessionStorage.setItem(KEY,JSON.stringify(records));}catch(_){}
+  const out=document.getElementById('cuidaLogsOutput');if(out&&document.getElementById('cuidaLogsPanel')?.style.display!=='none'){out.textContent=records.join('\\n');out.scrollTop=out.scrollHeight;}
+ };
+ window.cuidaGetLogs=()=>records.join('\\n');
+ window.cuidaAddLog('INFO','Diagnóstico iniciado. URL: '+location.href.split('?')[0]+' | navegador: '+navigator.userAgent);
+ window.addEventListener('error',e=>{
+  const target=e.target;if(target&&target!==window){window.cuidaAddLog('RESOURCE_ERROR',(target.tagName||'recurso')+' '+(target.src||target.href||'sin URL'));return;}
+  window.cuidaAddLog('JS_ERROR',(e.message||'Error JavaScript')+' | '+(e.filename||'')+':'+(e.lineno||0)+':'+(e.colno||0)+' | '+(e.error?.stack||''));
+ },true);
+ window.addEventListener('unhandledrejection',e=>window.cuidaAddLog('PROMISE_REJECTION',safe(e.reason)));
+ window.addEventListener('DOMContentLoaded',()=>window.cuidaAddLog('DOM','DOMContentLoaded; readyState='+document.readyState),{once:true});
+ window.addEventListener('load',()=>window.cuidaAddLog('WINDOW','load; readyState='+document.readyState),{once:true});
+ const originalFetch=window.fetch.bind(window);
+ window.fetch=function(input,init){
+  const raw=typeof input==='string'?input:(input?.url||String(input));
+  const url=(()=>{try{const u=new URL(raw,location.href);return u.origin+u.pathname;}catch(_){return raw.split('?')[0];}})();
+  const started=Date.now();window.cuidaAddLog('FETCH_START',url);
+  return originalFetch(input,init).then(response=>{window.cuidaAddLog(response.ok?'FETCH_OK':'FETCH_HTTP_ERROR',url+' | HTTP '+response.status+' | '+(Date.now()-started)+'ms');return response;})
+   .catch(error=>{window.cuidaAddLog('FETCH_FAILED',url+' | '+error.name+': '+error.message+' | '+(Date.now()-started)+'ms');throw error;});
+ };
+ ['error','warn'].forEach(level=>{const original=console[level].bind(console);console[level]=(...args)=>{window.cuidaAddLog('CONSOLE_'+level,args.map(safe).join(' '));original(...args);};});
+ const open=document.getElementById('cuidaLogsAccess'),modal=document.getElementById('cuidaLogsModal'),pin=document.getElementById('cuidaLogsPin'),gate=document.getElementById('cuidaLogsGate'),panel=document.getElementById('cuidaLogsPanel'),output=document.getElementById('cuidaLogsOutput'),error=document.getElementById('cuidaLogsPinError');
+ function unlock(){if(pin.value!=='pipi'){error.textContent='Contraseña incorrecta.';window.cuidaAddLog('SECURITY','Intento de acceso a logs con contraseña incorrecta.');return;}
+  gate.style.display='none';panel.style.display='block';error.textContent='';output.textContent=window.cuidaGetLogs();output.scrollTop=output.scrollHeight;window.cuidaAddLog('INFO','Panel de logs abierto.');}
+ open.addEventListener('click',()=>{modal.style.display='flex';gate.style.display='block';panel.style.display='none';pin.value='';error.textContent='';pin.focus();});
+ document.getElementById('cuidaLogsUnlock').addEventListener('click',unlock);pin.addEventListener('keydown',e=>{if(e.key==='Enter')unlock();});
+ document.getElementById('cuidaLogsClose').addEventListener('click',()=>modal.style.display='none');
+ document.getElementById('cuidaLogsCopy').addEventListener('click',async()=>{
+  const value=window.cuidaGetLogs();
+  try{if(navigator.clipboard?.writeText)await navigator.clipboard.writeText(value);else throw new Error('Clipboard API no disponible');}
+  catch(_){const ta=document.createElement('textarea');ta.value=value;ta.style.position='fixed';ta.style.opacity='0';document.body.appendChild(ta);ta.select();try{document.execCommand('copy');}finally{ta.remove();}}
+  document.getElementById('cuidaLogsCopy').textContent='Copiados';window.cuidaAddLog('INFO','Logs copiados al portapapeles.');
+ });
+ document.getElementById('cuidaLogsClear').addEventListener('click',()=>{records=[];try{sessionStorage.removeItem(KEY);}catch(_){}window.cuidaAddLog('INFO','Registro limpiado manualmente.');output.textContent=window.cuidaGetLogs();});
+ window.cuidaAddLog('INFO','Interfaz de logs preparada.');
+})();
+\n// Cuida a Benja - datos del mapa de la granja.// Cuida a Benja - datos del mapa de la granja.
 // El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
 window.CUIDA_BENJA_FARM_MAP = {
   id: "granja",
