@@ -29,7 +29,7 @@ window.CUIDA_BENJA_FARM_MAP = {
   coop: { x: -240, z: -340 },
   delivery: { x: -218, z: -435 },
   well: { x: -390, z: -440 },
-  tractor: { x: -380, z: -312 },
+  tractor: { x: -410, z: -400 },
   repair: { x: -286, z: -354 },
   fruitTrees: { x: -266, z: -284 },
   cityExitRadius: 235,
@@ -64,7 +64,7 @@ window.CUIDA_BENJA_FARM_MAP = {
     water: { title: "LLENA EL BEBEDERO", target: "well", label: "ve al pozo", progress: "recoge agua limpia para la granja", icon: "💧" },
     tractor: { title: "PON EL TRACTOR A PUNTO", target: "tractor", label: "ve al tractor", progress: "revisa el tractor y prepara heno", icon: "🚜" },
     feed: { title: "CUIDA A BENJA", target: "pig", label: "vuelve con benja", progress: "lanzale comida a benja cuando tenga hambre", icon: "🐷" },
-    warehouse: { title: "ORDENA EL ALMACEN", target: "warehouse", label: "ve al almacen", progress: "guarda en el almacen todo lo que llevas", icon: "🏠" }
+    warehouse: { title: "REVISAR ALMACEN", target: "warehouse", label: "ve al almacen", progress: "revisa las existencias guardadas", icon: "🏠" }
   },
   // En esta zona no hay NPC de construccion ni trabajadores automáticos.
   ambientWorkers: 0,
