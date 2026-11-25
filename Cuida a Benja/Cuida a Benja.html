@@ -388,13 +388,13 @@ body.farmCinematic #cinematicLetterTop{height:7vh}body.farmCinematic #cinematicL
 #farmBenjaHealthTrack{width:96px;height:8px;border-radius:9px;overflow:hidden;background:#362528;border:1px solid rgba(255,255,255,.4)}
 #farmBenjaHealthFill{height:100%;width:100%;background:linear-gradient(90deg,#54c953,#bcf46b);transition:width .2s}
 #farmBenjaHealthText{font-size:9px;color:#f9dcb4}#farmBenjaHungerText{font-size:9px;color:#ffd38b;margin-left:3px}
-#farmInventoryPanel{position:fixed;left:50%;top:8%;transform:translateX(-50%);z-index:1500;display:none;width:min(390px,92vw);max-height:82vh;max-height:82dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px;border:2px solid #d5ac64;border-radius:17px;background:linear-gradient(150deg,rgba(24,31,28,.98),rgba(7,15,18,.98));box-shadow:0 16px 55px rgba(0,0,0,.72);color:#fff;touch-action:pan-y;pointer-events:auto}
+#farmInventoryPanel{position:fixed;left:50%;top:8%;transform:translateX(-50%);z-index:1500;display:none;width:min(760px,96vw);max-height:82vh;max-height:82dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding:14px;border:2px solid #d5ac64;border-radius:17px;background:linear-gradient(150deg,rgba(24,31,28,.98),rgba(7,15,18,.98));box-shadow:0 16px 55px rgba(0,0,0,.72);color:#fff;touch-action:pan-y;pointer-events:auto}
 #farmInventoryHeader{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
 #farmInventoryHeader b{font-size:14px;color:#ffdd9b}
 #farmInventoryHeader button{width:32px;height:32px;border:0;border-radius:9px;background:#8b3434;color:#fff;font-size:18px;font-weight:900}
 #farmInventoryMoney{font-size:12px;color:#ffe2a7;font-weight:900;margin-bottom:8px}
-#farmInventorySummary{font-size:11px;line-height:1.55;color:#e1e7dc;padding:8px;border-radius:9px;background:rgba(255,255,255,.06);white-space:pre-line}
-#farmInventoryButtons{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px;max-height:36vh;max-height:36dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:2px 5px 8px 0}
+#farmInventorySummary{font-size:12px;line-height:1.7;color:#e1e7dc;padding:12px;border-radius:9px;background:rgba(255,255,255,.06);white-space:pre-line}
+#farmInventoryButtons{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:9px;margin-top:12px;max-height:46vh;max-height:36dvh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;touch-action:pan-y;padding:2px 5px 8px 0}
 #farmInventoryButtons button{min-height:39px;padding:7px;border:1px solid #b68a4e;border-radius:9px;background:linear-gradient(145deg,#435a43,#26352a);color:#fff;font-size:11px;font-weight:900;touch-action:manipulation}
 #farmInventoryButtons button.primary{grid-column:1/-1;background:linear-gradient(145deg,#bb8741,#78502c);border-color:#ffd48e}
 #farmInventoryHint{font-size:9px;color:#a7b7a7;line-height:1.4;margin-top:10px;text-align:center}
@@ -842,8 +842,8 @@ window.CUIDA_BENJA_FARM_MAP = {
   ambientZones: [
     { id: "patio-central", x: -354, z: -322, radius: 0, insects: false },
     { id: "pocilga-benja", x: -286, z: -354, radius: 0, insects: false },
-    { id: "huerto", x: -220, z: -250, radius: 28, insects: true },
-    { id: "arboleda", x: -266, z: -284, radius: 24, insects: true },
+    { id: "huerto", x: -220, z: -250, radius: 105, insects: true },
+    { id: "arboleda", x: -266, z: -284, radius: 95, insects: true },
     { id: "camino-tractor", x: -448, z: -286, radius: 0, insects: false },
     { id: "sendero-norte", x: -320, z: -242, radius: 0, insects: false },
     { id: "pozo-y-agua", x: -410, z: -450, radius: 0, insects: false }
@@ -941,8 +941,8 @@ window.addEventListener('unhandledrejection', function(e){ try { var r=e.reason,
     center:{x:-330,z:-330},pig:{x:-286,z:-354},work:{x:-388,z:-302},shop:{x:-258,z:-302},warehouse:{x:-362,z:-220},waterStorage:{x:-435,z:-470},ponds:[{id:'laguna-grande',x:-270,z:-242,radius:22,depth:.9},{id:'laguna-pequena',x:-465,z:-255,radius:13,depth:.55}],
     crops:{x:-220,z:-250},coop:{x:-240,z:-340},delivery:{x:-218,z:-435},well:{x:-390,z:-440},tractor:{x:-448,z:-286},repair:{x:-286,z:-354},fruitTrees:{ x: -266, z: -284 },
     tv:{x:-414,z:-365},flatRadius:245,ambientZones:[
-        {id:'huerto',x:-220,z:-250,radius:28,insects:true},
-        {id:'arboleda',x:-266,z:-284,radius:24,insects:true},
+        {id:'huerto',x:-220,z:-250,radius:105,insects:true},
+        {id:'arboleda',x:-266,z:-284,radius:95,insects:true},
         {id:'pozo',x:-390,z:-440,radius:48,insects:false}
     ],
     cityExitRadius:235,cityGate:{x:-135,z:-330},saveWeightGoal:52,
@@ -988,7 +988,7 @@ let farmBenjaFenceGroup=null;
 let farmWaterTankWater=null,farmWaterTankLabel=null,farmWaterTankLabelTexture=null;
 let farmPlacedBuildGroup=null,farmPlacedBuilds=[],farmBuildPreview=null,farmBuildType=null,farmBuildRotation=0,farmBuildPanelBound=false;
 let farmTorchLights=[],farmCityLampPool=[],farmCityLampUpdateAt=0,farmTorchUpdateAt=0,farmTVPointLight=null;
-let farmTVPhysicalButtons=[],farmTVPhysicalHitTargets=[],farmTVPhysicalControlsBound=false,farmClockLastUi=0;
+let farmTVPhysicalButtons=[],farmTVPhysicalHitTargets=[],farmTVPhysicalControlsBound=false,farmRadioPhysicalHitTargets=[],farmRadioPhysicalControlsBound=false,farmClockLastUi=0;
 let farmTVShowNoSignal=false;
         let farmCityMode=false,cityActiveJob=null,cityJobBoard=null,cityNightWarningDone=false,cityWaveReward=1;
         let cityWorldGroup=null,cityWorldLoaded=false,cityMapScriptPromise=null,mapTravelInProgress=false;
@@ -4982,8 +4982,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const labelMesh=new THREE.Mesh(new THREE.PlaneGeometry(1.2,.42),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(labelCanvas),transparent:true,side:THREE.DoubleSide}));
                 labelMesh.position.set(x,2.12,2.2);tv.add(labelMesh);
                 farmTVPhysicalButtons.push(base,cap);
-                const hitTarget=new THREE.Mesh(new THREE.BoxGeometry(3.5,2.5,2.1),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
-                hitTarget.position.set(x,1.62,2.45);hitTarget.userData.tvChannelAction=action;tv.add(hitTarget);farmTVPhysicalHitTargets.push(hitTarget);
+                const hitTarget=new THREE.Mesh(new THREE.BoxGeometry(.95,.9,.85),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
+                hitTarget.position.set(x,1.62,2.42);hitTarget.userData.tvChannelAction=action;tv.add(hitTarget);farmTVPhysicalHitTargets.push(hitTarget);
             }
             makeChannelButton(-1.55,'◀','prev',0x446078);
             makeChannelButton(0,'⏻','power',0x9b6338);
@@ -5012,7 +5012,16 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 const knob=new THREE.Mesh(new THREE.CylinderGeometry(.3,.3,.28,12),new THREE.MeshStandardMaterial({color:0xc9b27f,metalness:.22,roughness:.55}));
                 knob.rotation.x=Math.PI/2;knob.position.set(x,1.3,1.45);radio.add(knob);
             }
-            const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.MeshStandardMaterial({color:0x9aa5a4,metalness:.7,roughness:.3}));
+            function radioButton(x,label,action){
+ const knob=new THREE.Mesh(new THREE.CylinderGeometry(.27,.27,.24,14),new THREE.MeshStandardMaterial({color:0xd8bd83,metalness:.2,roughness:.5}));
+ knob.rotation.x=Math.PI/2;knob.position.set(x,.72,1.55);radio.add(knob);
+ const hit=new THREE.Mesh(new THREE.BoxGeometry(.8,.85,.75),new THREE.MeshBasicMaterial({transparent:true,opacity:.001,depthWrite:false,colorWrite:false}));
+ hit.position.set(x,.72,1.65);hit.userData.radioAction=action;radio.add(hit);farmRadioPhysicalHitTargets.push(hit);
+ const canvas=document.createElement('canvas');canvas.width=160;canvas.height=64;const c=canvas.getContext('2d');c.fillStyle='#f3dfb7';c.fillRect(0,0,160,64);c.fillStyle='#34251a';c.font='bold 28px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText(label,80,32);
+ const plate=new THREE.Mesh(new THREE.PlaneGeometry(.7,.28),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas),transparent:true,side:THREE.DoubleSide}));plate.position.set(x,1.18,1.56);radio.add(plate);
+}
+radioButton(-2.2,'−','prev');radioButton(-.8,'⏻','power');radioButton(.7,'+','next');
+const antenna=new THREE.Mesh(new THREE.CylinderGeometry(.055,.08,5,7),new THREE.MeshStandardMaterial({color:0x9aa5a4,metalness:.7,roughness:.3}));
             antenna.position.set(2.8,5.8,-.2);antenna.rotation.z=-.22;radio.add(antenna);
             radio.position.set(p.x,y,p.z);radio.rotation.y=-.18;radio.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;}});farmGroup.add(radio);farmRadioProp=radio;addFarmCollider(p.x,p.z,7.8,3.1,-.18,'farm-radio');
             
@@ -5529,7 +5538,7 @@ function farmUpdateBenjaHud(){
   buyables.filter(type=>FARM_GOODS[type].buildable).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'">'+(good.icon||'📦')+' Comprar y colocar '+good.label+' · $'+good.price+'</button>';});
   html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
  }else{
-  html+='<button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button>';
+  html+='<div class="farmShopSectionTitle">📦 GUARDAR Y ORGANIZAR</div><button type="button" class="primary" data-farm-action="store">GUARDAR TODA LA CARGA</button><div class="farmShopSectionTitle">🎒 RETIRAR PRODUCTOS</div>';
   Object.keys(FARM_GOODS).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="withdraw" data-good="'+type+'">'+(good.icon||'📦')+' Sacar 1 '+good.label+' ('+(farmWarehouseStock[type]||0)+')</button>';if(good.buildable&&(farmCarriedGoods[type]||0)>0)html+='<button type="button" data-farm-action="place-item" data-good="'+type+'">🛠️ COLOCAR '+good.label+' ('+farmCarriedGoods[type]+')</button>';});
   html+='<button type="button" data-farm-action="wash-benja">🚿 BAÑAR A BENJA · 3 AGUA</button>';
   html+='<button type="button" data-farm-action="upgrade-pigsty">🐷 MEJORAR POCILGA · NIVEL '+farmPigstyLevel+'/4</button>';
@@ -5621,7 +5630,7 @@ function setFarmCicadas(active,strength=1){
  if(!active&&!farmCicadaAudio)return;
  const audio=ensureFarmCicadaAudio();if(!audio)return;
  const level=Math.max(0,Math.min(1,Number(strength)||0));
- audio.volume=(active&&audioUnlocked)?Math.min(1,.82*level*level):0;
+ audio.volume=(active&&audioUnlocked)?Math.min(1,.72*level):0;
  if(active&&audioUnlocked){
   if(audio.paused){const p=audio.play();if(p&&p.catch)p.catch(()=>{});}
  }else{
@@ -5678,7 +5687,7 @@ function updateFarmAmbience(){
   if(d<zone.radius&&(!active||d/zone.radius<distance/active.radius)){active=zone;distance=d;}
  }
  if(active){
-  const edge=Math.max(0,1-distance/active.radius),level=Math.pow(edge,.9);
+  const edge=Math.max(0,1-distance/active.radius),smooth=edge*edge*(3-2*edge),level=.12+.88*smooth;
   startFarmAmbience(active,level);
  }else{
   // El viento continúa en toda la granja aunque no haya insectos en esa zona.
@@ -6090,12 +6099,16 @@ function setupFarmTVPhysicalControls(){
   camera.updateMatrixWorld();if(farmTVProp)farmTVProp.updateMatrixWorld(true);
   const pointer=new THREE.Vector2(((event.clientX-rect.left)/rect.width)*2-1,-((event.clientY-rect.top)/rect.height)*2+1);
   const ray=new THREE.Raycaster();ray.setFromCamera(pointer,camera);
-  const hit=ray.intersectObjects(farmTVPhysicalHitTargets,false)[0];if(!hit)return;
-  event.preventDefault();event.stopPropagation();const action=hit.object.userData.tvChannelAction;
+  const tvHit=ray.intersectObjects(farmTVPhysicalHitTargets,false)[0];
+  const radioHit=(!tvHit&&farmRadioProp&&Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z)<24)?ray.intersectObjects(farmRadioPhysicalHitTargets,false)[0]:null;
+  if(!tvHit&&!radioHit)return;
+  event.preventDefault();event.stopPropagation();
+  if(radioHit){const action=radioHit.object.userData.radioAction;if(action==='power')setFarmRadioPower(!farmRadioPowerOn);else{const next=(farmRadioStationIndex+(action==='next'?1:-1)+FARM_RADIO_STATIONS.length)%FARM_RADIO_STATIONS.length;selectFarmRadioStation(next);if(!farmRadioPowerOn)setFarmRadioPower(true);}showToast(action==='power'?'radio encendida/apagada':action==='next'?'siguiente emisora':'emisora anterior');return;}
+  const action=tvHit.object.userData.tvChannelAction;
   if(action==='power'){setFarmTVPower(!farmTVPowerOn);showToast(farmTVPowerOn?'televisor encendido':'televisor apagado');}
   else if(action==='prev'||action==='next'){cycleFarmTVChannel(action==='next'?1:-1);if(!farmTVPowerOn)setFarmTVPower(true);showToast(action==='next'?'siguiente canal':'canal anterior');}
  },{capture:true});
- farmTVPhysicalControlsBound=true;
+ farmTVPhysicalControlsBound=true;farmRadioPhysicalControlsBound=true;
 }
 function setupFarmTVControls(){
  if(farmTVPanelBound)return;
