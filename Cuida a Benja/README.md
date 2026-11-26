@@ -16,6 +16,7 @@ El juego carga directamente, sin pedir código de acceso. Three.js r128 se sirve
 - Se reorganizaron calles, edificios, parque, farolas, carteles y vehiculos dentro de una zona transitable compacta.
 - Se desactivaron los drones que reconstruian la ciudad en el modo historia.
 - Las oleadas aparecen al llegar a ciudad y los intrusos nocturnos vuelven a activarse correctamente y rodean obstaculos.
+- La niebla de ciudad permite ver las avenidas a mayor distancia y vuelve al ajuste de granja al salir; las marcas centrales duplicadas se retiraron.
 
 ## Novedades de la version 1.10.4
 - Se eliminaron los cuatro botones de giro y zoom del vehiculo; los gestos de camara se conservan.
