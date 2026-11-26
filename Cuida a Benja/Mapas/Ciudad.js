@@ -5,8 +5,8 @@ window.CUIDA_BENJA_CITY_MAP = {
   title: "Ciudad principal",
   spawn: { x: 0, z: 0 },
   jobBoard: { x: 34, z: -24 },
-  returnGate: { x: 0, z: -140 },
-  exitRadius: 245,
+  returnGate: { x: 0, z: -210 },
+  exitRadius: 310,
   jobs: [
     { id: "delivery", title: "REPARTIDOR", detail: "lleva un paquete al barrio norte", target: { x: 125, z: -65 }, reward: 24, icon: "📦" },
     { id: "taxi", title: "SERVICIO DE TAXI", detail: "recoge al cliente en la avenida", target: { x: -105, z: 72 }, reward: 30, icon: "🚕" },
@@ -15,9 +15,13 @@ window.CUIDA_BENJA_CITY_MAP = {
     { id: "market", title: "ENCARGO DEL MERCADO", detail: "recoge suministros en el mercado", target: { x: 90, z: 165 }, reward: 22, icon: "🛒" },
     { id: "lights", title: "REPARAR ALUMBRADO", detail: "revisa las farolas de la avenida", target: { x: -35, z: -175 }, reward: 26, icon: "💡" },
     { id: "courier", title: "MENSAJERO", detail: "entrega documentos en la oficina", target: { x: -190, z: 35 }, reward: 32, icon: "✉️" },
-    { id: "clean", title: "LIMPIEZA DE CALLES", detail: "lleva el equipo a la plaza", target: { x: 195, z: -150 }, reward: 20, icon: "🧹" }
+    { id: "clean", title: "LIMPIEZA DE CALLES", detail: "lleva el equipo a la plaza", target: { x: 195, z: -150 }, reward: 20, icon: "🧹" },
+    { id: "harbor", title: "CARGA DEL MUELLE", detail: "lleva cajas al distrito de carga", target: { x: 225, z: 85 }, reward: 34, icon: "🚚" },
+    { id: "cinema", title: "REVISAR EL CINE", detail: "entrega un paquete en el boulevard", target: { x: -225, z: -70 }, reward: 29, icon: "🎬" },
+    { id: "garden", title: "CUIDAR LOS JARDINES", detail: "lleva herramientas al barrio sur", target: { x: 70, z: 225 }, reward: 25, icon: "🌴" },
+    { id: "station", title: "SERVICIO DE ESTACION", detail: "entrega repuestos en la estacion", target: { x: -210, z: 175 }, reward: 31, icon: "🚉" }
   ],
-  waves: { first: 1, max: 18, initialCount: 5, addPerWave: 2, rewardPerInvader: 1 },
+  waves: { first: 1, max: 18, initialCount: 6, addPerWave: 2, rewardPerInvader: 1 },
   vehiclesRemainEnabled: true
 };
 
