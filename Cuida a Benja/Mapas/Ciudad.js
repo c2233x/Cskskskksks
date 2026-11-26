@@ -5,7 +5,7 @@ window.CUIDA_BENJA_CITY_MAP = {
   title: "Ciudad principal",
   spawn: { x: 0, z: 0 },
   jobBoard: { x: 38, z: -22 },
-  returnGate: { x: -132, z: -330 },
+  returnGate: { x: -95, z: -343 },
   exitRadius: 345,
   jobs: [
     { id: "delivery", title: "REPARTIDOR", detail: "lleva un paquete al barrio norte", target: { x: 125, z: -65 }, reward: 24, icon: "📦" },
