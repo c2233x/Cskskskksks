@@ -210,3 +210,11 @@ El botón flotante `Logs` abre el panel de diagnóstico con la contraseña `pipi
 - La llegada ocurre en la carretera de entrada de la ciudad, junto al cartel grande `CAMPO`.
 - El regreso ya no depende de alejarse en cualquier direccion del centro: se activa al cruzar el extremo señalizado de la carretera `CAMPO`.
 - El taller tiene almacenamiento persistente de repuestos, cajas de herramientas y piezas mecanicas. Los objetos se descargan desde la camioneta y las mejoras consumen el inventario guardado.
+
+
+## v1.11.1 · Ciudad, calles y túnel de montaña
+
+- El asfalto urbano gana iluminación propia y la niebla deja de ocultar las avenidas antes de tiempo.
+- La ciudad se amplía con siete ejes viales, nuevos barrios, edificios altos, farolas y cuatro encargos adicionales.
+- La carretera de la granja sigue una ladera hasta una entrada integrada en la montaña; el paso se talla a través del relieve y tiene una segunda boca.
+- La primera oleada de ciudad se inicia una sola vez al terminar la llegada y las siguientes continúan al despejar la zona.
