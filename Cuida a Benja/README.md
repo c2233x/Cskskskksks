@@ -17,6 +17,8 @@ El juego carga directamente, sin pedir código de acceso. Three.js r128 se sirve
 - Las oleadas aparecen tras la llegada a ciudad; el taller ahora tiene colisiones y esta en una zona mas apartada.
 - La granja tiene una carretera hacia ciudad y el cartel de regreso dice CAMPO.
 - Benja se revuelca en el barro y sus voces se limitan a corta distancia.
+- El avatar y los vehiculos bloquean pendientes de montaña demasiado abruptas y no atraviesan la superficie.
+- La malla de carreteras de ciudad evita los cruces superpuestos y el cartel CAMPO queda con el texto visible al frente.
 
 ## Mapas separados
 Los mapas tienen archivos propios dentro de `Mapas/` y se cargan por separado:
