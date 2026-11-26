@@ -1,8 +1,23 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.10.2",
+  "version": "1.10.4",
   "updates": [
+    {
+      "version": "1.10.4",
+      "title": "Vehiculos estables, muros conectables y oleadas visibles",
+      "date": "26 de noviembre de 2026",
+      "changes": [
+        "Se quitaron del HUD los cuatro botones de giro y zoom de camara del vehiculo; los gestos de pantalla se conservan.",
+        "La suspension y altura de los vehiculos se suavizan y las inclinaciones del terreno tienen limites para evitar rebotes en montañas.",
+        "Los muros de madera y ladrillo se alinean por sus extremos, conectan esquinas y se pueden apilar hasta tres niveles; las piezas guardan su altura.",
+        "La primera oleada aparece despues de la transicion a ciudad, mas cerca del jugador y con cantidad basada en la configuracion del mapa.",
+        "El taller se movio a una zona mas apartada, tiene colisiones en sus paredes y nuevos detalles 3D e iluminacion.",
+        "La granja incluye una carretera señalizada hacia ciudad; la ciudad recibe al jugador en el cruce principal y el regreso se activa al seguir la via CAMPO.",
+        "Los tramos de carretera de ciudad se adaptan mejor a la altura del terreno y el letrero CAMPO es mas grande.",
+        "Benja se revuelca con una animacion de cuerpo completo; la frase del lodito se limita y sus voces solo se escuchan a corta distancia."
+      ]
+    },
     {
       "version": "1.10.2",
       "title": "Balde, subtitulos y mejoras visuales",
