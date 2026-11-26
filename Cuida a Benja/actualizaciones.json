@@ -1,8 +1,19 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.0",
+  "version": "1.11.1",
   "updates": [
+    {
+      "version": "1.11.1",
+      "title": "Ciudad ampliada, calles visibles y tunel atravesando la montaña",
+      "date": "26 de noviembre de 2026",
+      "changes": [
+        "Se aclaro el asfalto con iluminacion propia y se ajusto la niebla para mantener visibles las avenidas a distancia.",
+        "La ciudad se amplio a una red de siete ejes viales, nuevos barrios, mas edificios altos y farolas distribuidas por el distrito.",
+        "El camino de granja sigue una ladera montañosa; el terreno se talla en un paso y el tunel cruza la montaña hasta una segunda boca.",
+        "La primera oleada aparece una sola vez despues de completar la llegada a ciudad; al derrotar a los enemigos comienza la siguiente."
+      ]
+    },
     {
       "version": "1.11.0",
       "title": "Tunel a ciudad y rediseño completo del distrito urbano",
