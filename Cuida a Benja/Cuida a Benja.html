@@ -2903,18 +2903,34 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
         }
 
         function getTerrainY(x, z, currentY = null) {
-            const grassY = getTerrainYRaw(groundPlane, 0, x, z); const dirtY = getTerrainYRaw(dirtPlane, -2, x, z); const stoneY = getTerrainYRaw(stonePlane, -5, x, z);
-            let highest = Math.max(grassY, dirtY, stoneY);
-            for (const prop of destructibleProps) {
-                if (prop.userData && prop.userData.isRoad) {
-                    const rw = prop.userData.roadWidth || 25; const rd = prop.userData.roadDepth || 24;
-                    if (Math.abs(x - prop.position.x) < rw/2 && Math.abs(z - prop.position.z) < rd/2) {
-                        const roadTop = prop.position.y + 0.06;
-                        if (currentY !== null) { if (currentY >= roadTop - 2.5) highest = Math.max(highest, roadTop); } else { highest = Math.max(highest, roadTop); }
+            const grassY=getTerrainYRaw(groundPlane,0,x,z),dirtY=getTerrainYRaw(dirtPlane,-2,x,z),stoneY=getTerrainYRaw(stonePlane,-5,x,z);
+            let highest=Math.max(grassY,dirtY,stoneY);
+            for(const prop of destructibleProps){
+                if(prop.userData&&prop.userData.isRoad){
+                    const rw=prop.userData.roadWidth||25,rd=prop.userData.roadDepth||24;
+                    if(Math.abs(x-prop.position.x)<rw/2&&Math.abs(z-prop.position.z)<rd/2){
+                        const roadTop=prop.position.y+.06;
+                        if(currentY!==null){if(currentY>=roadTop-2.5)highest=Math.max(highest,roadTop);}
+                        else highest=Math.max(highest,roadTop);
                     }
                 }
             }
             return highest;
+        }
+        // El personaje y los vehiculos no atraviesan paredes de terreno. Se recorre
+        // el trayecto en muestras cortas para detectar desniveles abruptos entre frames.
+        function canTraverseTerrain(fromX,fromZ,toX,toZ,maxSlope=1.05){
+            const dx=toX-fromX,dz=toZ-fromZ,distance=Math.hypot(dx,dz);
+            if(distance<.0001)return true;
+            const steps=Math.max(2,Math.ceil(distance/1.1));
+            const horizontal=distance/steps,limit=horizontal*maxSlope+.035;
+            let lastY=getTerrainY(fromX,fromZ,null);
+            for(let i=1;i<=steps;i++){
+                const t=i/steps,x=fromX+dx*t,z=fromZ+dz*t,y=getTerrainY(x,z,null);
+                if(!Number.isFinite(y)||Math.abs(y-lastY)>limit)return false;
+                lastY=y;
+            }
+            return true;
         }
         
         function rebuildTerrain(x, z, radius) {
@@ -3784,6 +3800,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                     }
                 }
             }
+            if(!blocked&&!canTraverseTerrain(oldX,oldZ,car.position.x,car.position.z,1.05))blocked=true;
             if(blocked){
                 car.position.x=oldX;car.position.z=oldZ;
                 if(carCrashCooldown<=0 && speedAbs>.18){playExplosionSound();carCrashCooldown=32;}
@@ -3844,34 +3861,50 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
 
         function createRoads() {
-            // En Android se dibujan tramos más largos para reducir llamadas de dibujo sin abrir huecos entre segmentos.
-            const chunkSize=IS_MOBILE_DEVICE?36:25;
-            const roadLimit=375;
-            for(let i=-2;i<=2;i++){for(let x=-roadLimit;x<=roadLimit;x+=chunkSize)buildSingleRoad(x,i*95,chunkSize,24);}
-            for(let i=-2;i<=2;i++){for(let z=-roadLimit;z<=roadLimit;z+=chunkSize){if(Math.abs(z)%95<12)continue;buildSingleRoad(i*95,z,24,chunkSize);}}
-        }
-        
-        function buildSingleRoad(x, z, w=25, d=24) {
-            for (const prop of destructibleProps) {
-                if (prop.userData && prop.userData.isRoad) {
-                    const roadWidth = prop.userData.roadWidth || 25; const roadDepth = prop.userData.roadDepth || 24;
-                    if (Math.abs(x - prop.position.x) < (roadWidth + w) / 4 && Math.abs(z - prop.position.z) < (roadDepth + d) / 4) return;
+            // Las avenidas se construyen sin solapar los cruces: asi no hay caras
+            // coplanares que produzcan parches claros o parpadeos en Android.
+            const axes=[-190,-95,0,95,190],limit=375,halfRoad=12;
+            for(const z of axes){
+                let cursor=-limit;
+                for(const x of axes){
+                    const end=x-halfRoad;
+                    if(end>cursor+.1)buildSingleRoad((cursor+end)/2,z,end-cursor,24);
+                    cursor=x+halfRoad;
                 }
+                if(cursor<limit-.1)buildSingleRoad((cursor+limit)/2,z,limit-cursor,24);
             }
-            const roadMat = new THREE.MeshStandardMaterial({ color: 0x111111, roughness: 0.65, metalness: 0.25, polygonOffset:true, polygonOffsetFactor:-1, polygonOffsetUnits:-1 });
-            const terrainY=getTerrainY(x,z,null),roadY=Math.max(terrainY+.08,.08);const r=new THREE.Mesh(new THREE.BoxGeometry(w,0.12,d),roadMat);r.position.set(x,roadY,z);r.receiveShadow=true;r.userData={isRoad:true,roadWidth:w,roadDepth:d};scene.add(r);destructibleProps.push(r);
-            const lineMat = new THREE.MeshBasicMaterial({ color: 0xffcc00, polygonOffset:true, polygonOffsetFactor:-2, polygonOffsetUnits:-2 }); const line = new THREE.Mesh(new THREE.PlaneGeometry(0.3, d - 4), lineMat); line.rotation.x = -Math.PI / 2; line.position.set(x, roadY + 0.07, z); line.userData = { isRoadLine: true, roadX: x, roadZ: z }; scene.add(line); destructibleProps.push(line);
-            
-            const ty = getTerrainY(x, z, null);
-            if (ty < roadY - 1.5) {
-                const pHeight = roadY - ty; const pilMat = new THREE.MeshStandardMaterial({color: 0x333333});
-                const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, pHeight), pilMat); p1.position.set(x - w/3, roadY - pHeight/2, z - d/3); scene.add(p1);
-                const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, pHeight), pilMat); p2.position.set(x + w/3, roadY - pHeight/2, z + d/3); scene.add(p2);
-                const p3 = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, pHeight), pilMat); p3.position.set(x - w/3, roadY - pHeight/2, z + d/3); scene.add(p3);
-                const p4 = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.5, pHeight), pilMat); p4.position.set(x + w/3, roadY - pHeight/2, z - d/3); scene.add(p4);
-                r.userData.pillars = [p1, p2, p3, p4];
-            }
+            // Las avenidas norte-sur atraviesan los cruces; las horizontales terminan
+            // exactamente en sus bordes, sin duplicar superficies.
+            for(const x of axes)buildSingleRoad(x,0,24,limit*2);
         }
+
+        function buildSingleRoad(x,z,w=25,d=24){
+            const horizontal=w>=d;
+            for(const prop of destructibleProps){
+                if(!prop.userData||!prop.userData.isRoad)continue;
+                const pw=prop.userData.roadWidth||25,pd=prop.userData.roadDepth||24;
+                if(horizontal!==(pw>=pd))continue;
+                const overlapX=Math.abs(x-prop.position.x)<(pw+w)/2-.04;
+                const overlapZ=Math.abs(z-prop.position.z)<(pd+d)/2-.04;
+                if(overlapX&&overlapZ)return;
+            }
+            const terrainY=getTerrainY(x,z,null),roadY=terrainY+.075;
+            const roadMat=new THREE.MeshLambertMaterial({color:0x24292e});
+            roadMat.polygonOffset=true;roadMat.polygonOffsetFactor=-2;roadMat.polygonOffsetUnits=-2;roadMat.depthWrite=true;
+            const road=new THREE.Mesh(new THREE.BoxGeometry(w,.12,d),roadMat);
+            road.position.set(x,roadY,z);road.receiveShadow=false;road.castShadow=false;road.renderOrder=24;
+            road.userData={isRoad:true,roadWidth:w,roadDepth:d};scene.add(road);destructibleProps.push(road);
+
+            const lineMat=new THREE.MeshBasicMaterial({color:0xe5c95f,transparent:true,opacity:.9,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
+            const span=horizontal?w:d,dashLength=Math.min(8,Math.max(3,span-7));
+            for(let offset=-span/2+8;offset<span/2-4;offset+=22){
+                const dash=new THREE.Mesh(new THREE.BoxGeometry(horizontal?dashLength:.24,.025,horizontal?.24:dashLength),lineMat);
+                dash.position.set(x+(horizontal?offset:0),roadY+.074,z+(horizontal?0:offset));
+                dash.renderOrder=25;dash.frustumCulled=false;scene.add(dash);
+            }
+            return road;
+        }
+
         
         function createWindowTexture() {
             const canvas = document.createElement('canvas'); canvas.width = 128; canvas.height = 128; const ctx = canvas.getContext('2d'); ctx.fillStyle = '#000000'; ctx.fillRect(0,0,128,128); ctx.fillStyle = '#ffffff';
@@ -6914,15 +6947,26 @@ function unloadCityWorld(){
 function ensureCityFieldRoadSign(){
  if(!cityWorldGroup||cityWorldGroup.getObjectByName('CuidaBenja_CarreteraCampo'))return;
  const gate=CITY_MAP_CONFIG.returnGate||{x:-95,z:-343},road=new THREE.Group();road.name='CuidaBenja_CarreteraCampo';
- const roadY=getTerrainY(gate.x,gate.z+48,null)+.1;
- const asphalt=new THREE.Mesh(new THREE.BoxGeometry(24,.16,280),new THREE.MeshStandardMaterial({color:0x343a3e,roughness:.96}));asphalt.position.set(gate.x,roadY,gate.z+48);asphalt.receiveShadow=true;road.add(asphalt);
- const stripeMat=new THREE.MeshBasicMaterial({color:0xf4e6b4});
- for(let z=-126;z<=126;z+=24){const stripe=new THREE.Mesh(new THREE.BoxGeometry(.32,.19,9),stripeMat);stripe.position.set(gate.x,roadY+.1,gate.z+48+z);road.add(stripe);}
+ for(let i=0;i<10;i++){
+  const z=gate.z-78+i*28,roadY=getTerrainY(gate.x,z,null)+.075;
+  const asphalt=new THREE.Mesh(new THREE.BoxGeometry(24,.12,28),new THREE.MeshLambertMaterial({color:0x24292e}));
+  asphalt.position.set(gate.x,roadY,z);asphalt.receiveShadow=false;asphalt.renderOrder=24;road.add(asphalt);
+  for(let dz=-8;dz<=8;dz+=16){
+   const dash=new THREE.Mesh(new THREE.BoxGeometry(.24,.025,7),new THREE.MeshBasicMaterial({color:0xe5c95f,depthWrite:false}));
+   dash.position.set(gate.x,roadY+.074,z+dz);dash.renderOrder=25;road.add(dash);
+  }
+ }
  const postMat=new THREE.MeshStandardMaterial({color:0x60452c,roughness:.9}),boardMat=new THREE.MeshStandardMaterial({color:0x245b35,roughness:.75});
  for(const x of [-10,10]){const post=new THREE.Mesh(new THREE.BoxGeometry(.8,10,.8),postMat);post.position.set(gate.x+x,5,gate.z+3);road.add(post);}
  const board=new THREE.Mesh(new THREE.BoxGeometry(24,6.2,.9),boardMat);board.position.set(gate.x,11.2,gate.z+3);road.add(board);
- const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const ctx=canvas.getContext('2d');ctx.fillStyle='#174b2b';ctx.fillRect(0,0,1024,256);ctx.strokeStyle='#f3df9b';ctx.lineWidth=16;ctx.strokeRect(10,10,1004,236);ctx.fillStyle='#fff2c4';ctx.font='bold 176px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CAMPO',512,132);
- const tex=new THREE.CanvasTexture(canvas),sign=new THREE.Mesh(new THREE.PlaneGeometry(23,5.4),new THREE.MeshBasicMaterial({map:tex}));sign.position.set(gate.x,11.2,gate.z+2.5);road.add(sign);
+ const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;
+ const ctx=canvas.getContext('2d');ctx.fillStyle='#174b2b';ctx.fillRect(0,0,1024,256);
+ ctx.strokeStyle='#f3df9b';ctx.lineWidth=16;ctx.strokeRect(10,10,1004,236);
+ ctx.fillStyle='#fff2c4';ctx.font='bold 176px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CAMPO',512,132);
+ const tex=new THREE.CanvasTexture(canvas);tex.encoding=THREE.sRGBEncoding;tex.needsUpdate=true;
+ const face=new THREE.Mesh(new THREE.PlaneGeometry(23,5.4),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,depthWrite:false}));
+ // El tablero ocupa z=gate+3 +/-0.45; el panel debe quedar al frente, no detrás.
+ face.position.set(gate.x,11.2,gate.z+3.48);face.renderOrder=26;road.add(face);
  cityWorldGroup.add(road);
 }
         function showMapTravelOverlay(title,subtitle){
@@ -7661,7 +7705,12 @@ function startProtestMission() {
             if (isFlying) speed = isRunning ? 0.9 : 0.6;
             
             if (isKnockedBack) {
-                character.position.add(knockbackVel); knockbackVel.y -= 0.12;
+                const kbOldX=character.position.x,kbOldZ=character.position.z;
+                character.position.add(knockbackVel);
+                if(!canTraverseTerrain(kbOldX,kbOldZ,character.position.x,character.position.z,1.15)){
+                    character.position.x=kbOldX;character.position.z=kbOldZ;knockbackVel.x*=.12;knockbackVel.z*=.12;
+                }
+                knockbackVel.y -= 0.12;
                 const ty = getTerrainY(character.position.x, character.position.z, character.position.y);
                 if (character.position.y <= ty + 0.5) { character.position.y = ty + 0.5; knockbackVel.x *= 0.6; knockbackVel.z *= 0.6; knockbackVel.y = Math.abs(knockbackVel.y) * 0.4; }
                 knockbackTimer--;
@@ -7677,10 +7726,11 @@ function startProtestMission() {
                     moveX = (f * forwardX + r * rightX) * speed; moveZ = (f * forwardZ + r * rightZ) * speed;
                 }
                 
-                const prevX = character.position.x; const prevZ = character.position.z;
-                const newX = prevX + moveX; const newZ = prevZ + moveZ;
-                if (!checkCollision(newX, prevZ)) character.position.x = newX;
-                if (!checkCollision(character.position.x, newZ)) character.position.z = newZ;
+                const prevX=character.position.x,prevZ=character.position.z;
+                const newX=prevX+moveX,newZ=prevZ+moveZ;
+                const slopeLimit=isJumping?1.4:1.05;
+                if(!checkCollision(newX,prevZ)&&(isFlying||canTraverseTerrain(prevX,prevZ,newX,prevZ,slopeLimit)))character.position.x=newX;
+                if(!checkCollision(character.position.x,newZ)&&(isFlying||canTraverseTerrain(character.position.x,prevZ,character.position.x,newZ,slopeLimit)))character.position.z=newZ;
                 
                 if (!isCinematic && !morteroActive && !isTuboActive) {
                     if (Math.abs(moveX) > 0.01 || Math.abs(moveZ) > 0.01) { character.rotation.y = Math.atan2(moveX, moveZ); isMoving = true; walkCycle += isRunning ? 0.14 : 0.09; } else { isMoving = false; }
@@ -7706,7 +7756,9 @@ function startProtestMission() {
                 } else if (isJumping) {
                     character.position.y += jumpVelocity * 0.06; jumpVelocity -= 0.38; if (character.position.y <= ty) { character.position.y = ty; isJumping = false; jumpVelocity = 0; }
                 } else if (!isCinematic) {
-                    character.position.y += (ty - character.position.y) * 0.4; character.rotation.x *= 0.8;
+                    // Nunca dejar que los pies queden por debajo de la superficie de la montaña.
+                    character.position.y=Math.max(ty,character.position.y+(ty-character.position.y)*.82);
+                    character.rotation.x*=.8;
                 }
             }
             
