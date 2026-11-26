@@ -1,8 +1,23 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.10.4",
+  "version": "1.11.0",
   "updates": [
+    {
+      "version": "1.11.0",
+      "title": "Tunel a ciudad y rediseño completo del distrito urbano",
+      "date": "26 de noviembre de 2026",
+      "changes": [
+        "Se recorto la carretera de la granja al tramo señalado y se construyo una boca de tunel de piedra; al entrar a la boca se viaja a ciudad, a pie o en vehiculo.",
+        "La ciudad ahora tiene un distrito plano con transicion suave a las montañas exteriores, para que las avenidas y edificios no queden suspendidos.",
+        "Se reconstruyo la red vial como una sola malla continua, con cruces sin losas duplicadas, lineas y pasos peatonales agrupados para Android.",
+        "Se reorganizaron edificios, carteles, farolas, parque y vehiculos dentro del distrito transitable; la carretera CAMPO queda dentro del trazado de ciudad.",
+        "Se desactivaron los drones constructores y la reconstruccion automatica en el modo historia de Cuida a Benja.",
+        "La primera oleada ahora aparece de forma garantizada al llegar a ciudad, cerca del jugador y con los NPC visibles.",
+        "Los intrusos nocturnos aparecen mas cerca de Benja, se mueven rodeando obstaculos y el estado guardado ya no bloquea futuras incursiones.",
+        "La niebla de ciudad se aleja para que las avenidas sigan visibles a distancia; al volver a la granja se restaura la niebla original y se limpiaron las marcas centrales duplicadas."
+      ]
+    },
     {
       "version": "1.10.4",
       "title": "Vehiculos, construccion, oleadas y colisiones de terreno",
