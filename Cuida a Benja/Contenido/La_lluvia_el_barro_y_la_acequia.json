@@ -1,0 +1,113 @@
+{
+  "id": "update_1_lluvia_barro",
+  "title": "La lluvia, el barro y la acequia",
+  "type": "content_pack",
+  "status": "propuesta_publicada_no_integrada",
+  "version": "1",
+  "story": {
+    "title": "El problema del barro",
+    "trigger": "Al comenzar un nuevo día, con una probabilidad baja de lluvia o al activar la misión desde el tablón.",
+    "stages": [
+      {
+        "id": "charco",
+        "title": "¿Y ese charco?",
+        "objectives": ["Acercarse al corral", "Inspeccionar el charco", "Encontrar por dónde entra el agua"],
+        "reward": { "money": 2 },
+        "dialogue": [
+          { "speaker": "Cornatan", "text": "Que paso aqui... si ayer estaba seco." },
+          { "speaker": "Cornatan", "text": "Benja, salite de ahi que te vas a llenar de barro." },
+          { "speaker": "Benja", "text": "Oink oink!" }
+        ]
+      },
+      {
+        "id": "materiales",
+        "title": "Buscando materiales",
+        "objectives": ["Recoger 3 sacos de grava", "Encontrar 2 tablas", "Llevarlos al punto de reparacion"],
+        "reward": { "money": 4, "unlock": "materiales_reparacion" },
+        "dialogue": [
+          { "speaker": "Cornatan", "text": "A saber de donde viene tanta agua." },
+          { "speaker": "Cornatan", "text": "Voy a tapar este lado antes de que se me vuelva piscina esto." }
+        ]
+      },
+      {
+        "id": "acequia",
+        "title": "Arreglando la acequia",
+        "objectives": ["Colocar grava", "Instalar la rejilla de madera", "Reparar el canal y activar Usar"],
+        "reward": { "money": 6, "unlock": "drenaje_granja" },
+        "dialogue": [
+          { "speaker": "Cornatan", "text": "Ahi va, ahora que el agua se vaya por otro lado." },
+          { "speaker": "Cornatan", "text": "Espero que esta vez aguante porque no pienso hacer esto otra vez." }
+        ]
+      },
+      {
+        "id": "lavar_benja",
+        "title": "Benja no quiere salir",
+        "objectives": ["Buscar el balde", "Llenarlo de agua", "Lavar a Benja", "Acompañarlo al corral"],
+        "reward": { "money": 8, "unlock": "decoracion_corral" },
+        "dialogue": [
+          { "speaker": "Cornatan", "text": "Bueno, por lo menos ya no se va a inundar esto." },
+          { "speaker": "Cornatan", "text": "Y vos dejaste el corral hecho un desastre." },
+          { "speaker": "Benja", "text": "Oink!" }
+        ]
+      }
+    ],
+    "cinematic": {
+      "start": ["Fade breve a negro", "Plano del corral mojado", "Enfoque al charco y a Benja", "Subtitulos inferiores y camara libre al terminar"],
+      "finish": ["Mostrar canal reparado", "Benja sale del barro", "Cornatan hace una reaccion breve"],
+      "skipAllowed": true,
+      "doNotPlayWhileDriving": true
+    }
+  },
+  "items": [
+    { "id": "saco_grava", "name": "Saco de grava", "amount": 3, "purpose": "Reparacion de drenajes y construcciones" },
+    { "id": "rejilla_madera", "name": "Rejilla de madera", "amount": 1, "purpose": "Cubrir el canal de drenaje" },
+    { "id": "balde_agua", "name": "Balde de agua", "amount": 1, "purpose": "Lavar a Benja y regar" },
+    { "id": "tabla_madera", "name": "Tabla de madera", "amount": 2, "purpose": "Reparaciones de la granja" }
+  ],
+  "npc": {
+    "id": "don_tacho",
+    "name": "Don Tacho",
+    "description": "Vecino rural bromista, aparece cerca del camino o su cobertizo; frases cortas contextuales y sin IA pesada.",
+    "lines": [
+      "Si vas a arreglar ese camino no lo hagas cuando llueve hombre.",
+      "Ese chancho tiene mas suerte que uno, mira donde se mete.",
+      "Te vi pasar en la camioneta, casi te llevas el poste."
+    ],
+    "spawnRules": "Solo granja, baja frecuencia, no aparece durante cinemáticas ni bloquea objetivos."
+  },
+  "randomEvent": {
+    "id": "tormenta_granja",
+    "name": "La tormenta",
+    "effects": ["Lluvia y audio ambiental", "Charcos visuales predefinidos", "Benja busca una zona cubierta", "Camino con efecto de barro superficial"],
+    "durationSeconds": 90,
+    "performanceNotes": "Usar charcos reutilizables y lluvia limitada; evitar simulacion de agua y particulas densas."
+  },
+  "farmUpgrade": {
+    "id": "drenaje",
+    "name": "Drenaje rural",
+    "levels": [
+      "Canal de tierra",
+      "Canal reforzado con grava",
+      "Canal con rejilla de madera",
+      "Canal revestido con salida decorativa"
+    ],
+    "physicalModelChanges": true
+  },
+  "secret": {
+    "id": "barril_heno",
+    "name": "El barril escondido",
+    "locationHint": "Detras de unos fardos de heno, fuera del recorrido inicial.",
+    "contents": ["3 mazorcas", "$5", "Ficha vieja del campo"],
+    "dialogue": "Y este barril que hace aqui escondido...",
+    "collectible": "Ficha vieja del campo"
+  },
+  "implementationNotes": [
+    "Guardar progreso de cada etapa para que no se reinicie ni duplique recompensas.",
+    "No cargar NPC, eventos ni objetos de ciudad mientras la granja esta activa.",
+    "Los charcos y objetos de mision deben limpiarse al cambiar de zona.",
+    "Indicadores de mision fuera del centro de pantalla.",
+    "No iniciar cinemáticas mientras el jugador conduce; permitir saltarlas.",
+    "Subtitulos en la parte inferior sincronizados con voz si existe.",
+    "Evitar objetos superpuestos con las piezas antiguas del corral y revisar colisiones."
+  ]
+}
