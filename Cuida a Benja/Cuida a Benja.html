@@ -8507,11 +8507,17 @@ function startProtestMission() {
                     c.updateProjectionMatrix(); window.sunLight.shadow.needsUpdate=true;
                 }
             }
-            // Niebla de chunks: fuera de la distancia seleccionada el mundo desaparece suavemente.
-            if(scene && scene.fog){
-                const chunkRadius = Math.max(2, Number(g.chunkDistance) || 8) * 50;
-                scene.fog.near = Math.max(45, chunkRadius * 0.62);
-                scene.fog.far = Math.max(scene.fog.near + 40, chunkRadius * 1.04);
+            // Niebla de chunks. En ciudad se mantiene un horizonte amplio para que
+            // las avenidas completas no desaparezcan al alejarse o cambiar calidad grafica.
+            if(scene&&scene.fog){
+                const chunkRadius=Math.max(2,Number(g.chunkDistance)||8)*50;
+                const chunkNear=Math.max(45,chunkRadius*.62),chunkFar=Math.max(chunkNear+40,chunkRadius*1.04);
+                if(farmCityMode){
+                    scene.fog.near=Math.max(200,chunkNear);
+                    scene.fog.far=Math.max(IS_MOBILE_DEVICE?920:1050,chunkFar);
+                }else{
+                    scene.fog.near=chunkNear;scene.fog.far=chunkFar;
+                }
             }
             if(Array.isArray(drivableCars)){
                 const carDist=Math.max(100,Number(g.carDrawDistance)||360)*(g.ultraPerformance?0.72:1), carDist2=carDist*carDist;
