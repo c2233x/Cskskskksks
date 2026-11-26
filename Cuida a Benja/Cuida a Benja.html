@@ -3868,7 +3868,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
             showCarHint(findNearestCar(8));
         }
 
-        const CITY_STREET_AXES=[-150,-75,0,75,150],CITY_STREET_LIMIT=220,CITY_STREET_HALF=8,CITY_ROAD_TOP=.14;
+        const CITY_STREET_AXES=[-150,-75,0,75,150],CITY_STREET_LIMIT=220,CITY_STREET_HALF=8,CITY_ROAD_TOP=.095;
         function cityIsStreetAt(x,z){
             if(Math.abs(x)>CITY_STREET_LIMIT||Math.abs(z)>CITY_STREET_LIMIT)return false;
             return CITY_STREET_AXES.some(a=>Math.abs(x-a)<=CITY_STREET_HALF+.12)||CITY_STREET_AXES.some(a=>Math.abs(z-a)<=CITY_STREET_HALF+.12);
@@ -3904,13 +3904,16 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const road=cityMakeSurface(roadVertices,roadIndices,roadMat,'Ciudad_RedVialContinua',5);
             if(road){road.userData={isCityRoadNetwork:true,roadTop:CITY_ROAD_TOP};destructibleProps.push(road);}
             for(const z of axes){
+                // Linea central discontinua, sin una raya solida duplicada por debajo.
                 for(let x=-limit+14;x<limit-8;x+=22){if(axes.some(a=>Math.abs(x-a)<13))continue;cityPushRect(markVertices,markIndices,x,z,5,.26,.145);}
-                cityPushRect(markVertices,markIndices,0,z,limit*2,.16,.142);
+                // Bordes exteriores de cada avenida.
                 cityPushRect(markVertices,markIndices,0,z-7.45,limit*2,.16,.143);
                 cityPushRect(markVertices,markIndices,0,z+7.45,limit*2,.16,.143);
             }
             for(const x of axes){
                 for(let z=-limit+14;z<limit-8;z+=22){if(axes.some(a=>Math.abs(z-a)<13))continue;cityPushRect(markVertices,markIndices,x,z,.26,5,.145);}
+                cityPushRect(markVertices,markIndices,x-7.45,0,.16,limit*2,.143);
+                cityPushRect(markVertices,markIndices,x+7.45,0,.16,limit*2,.143);
             }
             for(const x of axes)for(const z of axes)for(let k=-3;k<=3;k++){
                 cityPushRect(markVertices,markIndices,x+k*2.05,z-10.2,.72,2.5,.146);
@@ -7065,7 +7068,7 @@ async function travelToFarm(){
 async function enterCityMap(arrivedInPickup=false){
  if(!storyModeActive||farmCityMode)return;
  if(!cityWorldLoaded)await ensureCityWorldLoaded();
- farmCityMode=true;const usePromptCity=document.getElementById('interactionPrompt');if(usePromptCity)usePromptCity.style.display='none';farmRaidActive=false;farmRaidTriggered=false;farmRaidSpawnedCount=0;stopFarmAmbience();setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();farmClearNPCs(true);
+ farmCityMode=true;if(scene&&scene.fog){scene.fog.near=220;scene.fog.far=IS_MOBILE_DEVICE?920:1050;}const usePromptCity=document.getElementById('interactionPrompt');if(usePromptCity)usePromptCity.style.display='none';farmRaidActive=false;farmRaidTriggered=false;farmRaidSpawnedCount=0;stopFarmAmbience();setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();farmClearNPCs(true);
  if(farmGroup)farmGroup.visible=false;if(benjaPig)benjaPig.visible=false;
  if(cityWorldGroup){cityWorldGroup.visible=true;if(cityWorldGroup.parent!==scene)scene.add(cityWorldGroup);}
  if(farmGuideMarker)farmGuideMarker.visible=false;
@@ -7100,7 +7103,7 @@ function returnToFarmMap(keepPickup=false){
  if(!farmCityMode)return;
  const keep=!!(keepPickup&&isDriving&&cityTravelVehicle&&drivenCar===cityTravelVehicle);
  if(isDriving&&!keep)exitDrivenCar();
- farmCityMode=false;stopStoryBackgroundMusic();waveActive=false;waitingNextWave=false;farmClearNPCs(true);
+ farmCityMode=false;if(scene&&scene.fog){scene.fog.near=IS_MOBILE_DEVICE?145:140;scene.fog.far=IS_MOBILE_DEVICE?385:420;}stopStoryBackgroundMusic();waveActive=false;waitingNextWave=false;farmClearNPCs(true);
  unloadCityWorld();cityLootObjects=[];
  if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
  const p=FARM_MAP_CONFIG.cityGate||{x:-135,z:-330};
