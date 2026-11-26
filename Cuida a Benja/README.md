@@ -2,13 +2,20 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.10.4**
+**Version actual: 1.11.0**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
 ## Inicio
 El motor Three.js se carga desde el archivo local `three.min.js`; JSZip se solicita solo si hace falta el respaldo ZIP. La consulta de versión, el listado Git Trees, el Contents API, las descargas y el caché tienen límites de espera. Si Git Trees falla, se recorre la carpeta `Cuida a Benja/` mediante Contents API antes del ZIP.
 El juego carga directamente, sin pedir código de acceso. Three.js r128 se sirve desde `three.min.js` en esta misma carpeta para evitar que una dependencia externa bloquee la pantalla inicial. Si GitHub no responde, intenta usar recursos guardados y permite entrar en modo local.
+
+## Novedades de la version 1.11.0
+- El acceso a ciudad es ahora un tramo corto de carretera en la granja que termina en un tunel; entrar al tunel inicia el viaje.
+- El distrito urbano se aplanó con transicion hacia las montañas y se rehizo la red de calles sin losas superpuestas ni flotantes.
+- Se reorganizaron calles, edificios, parque, farolas, carteles y vehiculos dentro de una zona transitable compacta.
+- Se desactivaron los drones que reconstruian la ciudad en el modo historia.
+- Las oleadas aparecen al llegar a ciudad y los intrusos nocturnos vuelven a activarse correctamente y rodean obstaculos.
 
 ## Novedades de la version 1.10.4
 - Se eliminaron los cuatro botones de giro y zoom del vehiculo; los gestos de camara se conservan.
