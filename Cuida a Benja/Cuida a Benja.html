@@ -5748,7 +5748,7 @@ function farmBuildSaveKey(){return STORY_SAVE_KEY+'_placed_builds';}
             farmPlacedBuildGroup.add(group);farmBuildCollisionAdd(record.x,record.z,record.type,group.rotation.y);
             if(group.userData.torchLight)farmTorchLights.push(group.userData.torchLight);
             farmPlacedBuilds.push({type:record.type,x:record.x,z:record.z,rotation:group.rotation.y,level});
-            if(save)farmSavePlacedBuilds();
+            if(save){farmSavePlacedBuilds();if(typeof rebuildCarCollisionGrid==='function')rebuildCarCollisionGrid();}
             return true;
         }
         function farmRestorePlacedBuilds(){
