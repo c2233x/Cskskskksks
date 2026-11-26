@@ -33,7 +33,8 @@ window.CUIDA_BENJA_FARM_MAP = {
   repair: { x: -286, z: -354 },
   fruitTrees: { x: -266, z: -284 },
   cityExitRadius: 235,
-  cityGate: { x: -135, z: -330 },
+  cityTunnel: { x: -70, z: -330 },
+  cityGate: { x: -165, z: -330 },
   maxBenjaWeight: 100,
   saveWeightGoal: 52,
   goods: {
