@@ -1,8 +1,18 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.4",
+  "version": "1.11.5",
   "updates": [
+    {
+      "version": "1.11.5",
+      "title": "Rescate de inicio y Logs restaurado",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "El boton flotante Logs vuelve a estar disponible durante la carga y dentro del juego, con acceso protegido por codigo y opciones para copiar o limpiar los registros.",
+        "El vigilante de inicio detecta pausas prolongadas sin progreso aunque Version.txt ya haya respondido, y libera el bloqueo del cargador para permitir reintentar.",
+        "Los errores y la actividad del cargador se incorporan al diagnostico temporal de la sesion."
+      ]
+    },
     {
       "version": "1.11.4",
       "title": "Inicio estable y recuperacion del actualizador",
