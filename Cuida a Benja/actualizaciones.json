@@ -1,8 +1,19 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.6",
+  "version": "1.11.7",
   "updates": [
+    {
+      "version": "1.11.7",
+      "title": "Log de rendimiento integrado en Ajustes",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "Se retira el botón flotante del registro Logs anterior para dejar la interfaz de juego sin dos accesos de diagnóstico.",
+        "El monitor de rendimiento se mueve al panel Ajustes y queda disponible mediante un único botón llamado Log.",
+        "El panel Log conserva las métricas de FPS, bajones, tiempo de cuadro, estado de mapas, draw calls, triángulos, geometrías, texturas, recursos y memoria.",
+        "Se mantienen las opciones para actualizar, copiar el informe y reiniciar las muestras."
+      ]
+    },
     {
       "version": "1.11.6",
       "title": "Reparación de tienda y monitor de rendimiento",
