@@ -7356,14 +7356,11 @@ function setupFarmUiControls(){
    setTimeout(()=>{if(farmLastUsePulse===now){if(attackPhase===2){isAttacking=false;attackPhase=0;}farmUsePulseUntil=0;}},340);
   };
   const useEvent=e=>{e.preventDefault();e.stopPropagation();activate();};
-  useButton.addEventListener('pointerdown',e=>{
-   usePointerId=e.pointerId;
-   try{useButton.setPointerCapture(e.pointerId);}catch(_){}
-  },{passive:true});
-  // Un solo disparo por toque: pointerup ya no compite con el click sintetizado por Android.
+  useButton.addEventListener('pointerdown',e=>{usePointerId=e.pointerId;},{passive:true});
+  // Un solo disparo por toque; click conserva la compatibilidad con el WebView de Android.
   useButton.addEventListener('click',useEvent);
-  useButton.addEventListener('pointercancel',releaseUse,{passive:true});
-  useButton.addEventListener('lostpointercapture',releaseUse,{passive:true});
+  window.addEventListener('pointerup',e=>{if(usePointerId===e.pointerId)usePointerId=null;},{passive:true});
+  useButton.addEventListener('pointercancel',e=>{if(usePointerId===null||usePointerId===e.pointerId)releaseUse();},{passive:true});
   useButton.addEventListener('touchcancel',releaseUse,{passive:true});
   window.addEventListener('pointercancel',e=>{if(usePointerId===e.pointerId)releaseUse();},{passive:true});
   window.addEventListener('blur',releaseUse);
