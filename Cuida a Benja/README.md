@@ -1,3 +1,8 @@
+## Novedades de la version 1.11.7
+- Se retira el botón flotante del registro Logs anterior para evitar duplicados en pantalla.
+- El monitor de rendimiento se traslada a Ajustes y ahora se abre con un único botón llamado **Log**.
+- Se conservan las métricas de FPS, mapa, draw calls, geometrías, texturas, recursos y memoria, además de copiar el informe y reiniciar las muestras.
+
 ## Novedades de la version 1.11.6
 - Se corrige el cierre del evento de Respawn en Ajustes, replicado en las cinco copias del motor, para que el script completo pueda analizarse.
 - Se corrigen las cadenas JavaScript truncadas de las compras de comida y suministros de construcción, que impedían analizar el script.
@@ -20,7 +25,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.11.6**
+**Version actual: 1.11.7**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
