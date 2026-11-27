@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.2",
+  "version": "1.11.3",
   "updates": [
+    {
+      "version": "1.11.3",
+      "title": "Respawn, controles, carretera y miniaturas",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "El boton USAR libera estados de toque y evita quedarse pegado.",
+        "Se quita Reiniciar mundo de ajustes y se agrega Respawn personaje, conservando progreso.",
+        "Historial de versiones actualizado en Ajustes.",
+        "Carretera más visible y ancha, con menos sombras para mejorar FPS.",
+        "Miniaturas ilustradas en la tienda para alimentos y suministros."
+      ]
+    },
     {
       "version": "1.11.2",
       "title": "Viaje estable, controles tactiles y mapas sin arboles en estructuras",
