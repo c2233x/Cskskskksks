@@ -493,6 +493,10 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 #farmSubtitles{z-index:1900;bottom:24px;width:min(760px,90vw);padding:12px 18px;border:1px solid rgba(255,214,137,.72);border-bottom:3px solid rgba(196,143,76,.9);border-radius:8px 8px 15px 15px;background:linear-gradient(180deg,rgba(12,19,22,.9),rgba(3,7,10,.94));box-shadow:0 8px 24px rgba(0,0,0,.42);font-size:14px;letter-spacing:.01em;animation:subtitleFade .25s ease-out}
 @keyframes subtitleFade{from{opacity:0;transform:translate(-50%,8px)}to{opacity:1;transform:translate(-50%,0)}}
 #storyDialog,#sysRestartBtn,#restartModal{display:none!important}
+#interactionPrompt{touch-action:pan-x pan-y;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
+#farmInventoryButtons button{display:flex;align-items:center;gap:9px;text-align:left}
+.farmPropPreview{width:40px;height:40px;flex:0 0 40px;border-radius:8px;background:linear-gradient(145deg,#223044,#111827);display:inline-flex;align-items:center;justify-content:center;font-size:24px;box-shadow:inset 0 0 0 1px #41536b;}
+.farmPropPreview svg{width:34px;height:34px;filter:drop-shadow(0 2px 1px #0008)}
 </style>
 </head>
 <body>
@@ -718,7 +722,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
     </div>
     <div class="storyInfoSection">
       <h3>📚 HISTORIAL</h3>
-      <div id="storyUpdateList"><div class="storyUpdateCard"><div class="storyUpdateVersion">v1.1 · La granja de Benja</div><div class="storyUpdateDate">23 de noviembre de 2026</div><div class="storyUpdateText">cinematica de llegada, benja en el corral, sonidos de cerdo, flecha de mision y sistema para ganar monedas, comprar comida y aumentar su peso.</div></div></div>
+      <div id="storyUpdateList"><div class="storyUpdateCard"><div class="storyUpdateVersion">v1.11.2 · Controles, caminos y optimizacion</div><div class="storyUpdateDate">26 de noviembre de 2026</div><div class="storyUpdateText">Viaje a ciudad con respaldo de carga, controles tactiles mas resistentes, caminos y letreros mate visibles a distancia, exclusion de arboles en zonas de construccion y optimizacion del mundo.</div></div><div class="storyUpdateCard"><div class="storyUpdateVersion">v1.1 · La granja de Benja</div><div class="storyUpdateDate">23 de noviembre de 2026</div><div class="storyUpdateText">Cinematica de llegada, Benja en el corral, sonidos, flecha de mision, dinero, comida y crecimiento.</div></div></div>
     </div>
     <button class="storyAction" id="closeStoryInfo">VOLVER AL JUEGO</button>
   </div>
@@ -730,7 +734,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 <button class="settingsClose" id="settingsClose">×</button><h2>⚙️ Ajustes</h2>
 <div class="settingsMainScroll" id="settingsMainScroll">
 <div class="settingsScrollHint">Desliza hacia arriba o abajo para ver todas las opciones</div>
-<div class="settingsSection"><button class="settingsBtn" id="restartFromSettings">🔄 Reiniciar mundo</button></div>
+<div class="settingsSection"><button class="settingsBtn" id="restartFromSettings">📍 Respawn personaje</button><div style="font-size:11px;opacity:.8;margin:6px 2px">Solo vuelve a colocar a Cornatan. No reinicia la granja ni el progreso.</div></div>
 <div class="settingsSection"><button class="settingsBtn" id="openGraphics">🎨 Gráficos</button></div>
 <div class="settingsSection"><button class="settingsBtn" id="openHudEditor">🎮 Acomodar botones HUD</button></div>
 <div class="settingsSection"><button class="settingsBtn" id="openStoryInfo">📖 Historia y actualizaciones</button></div>
@@ -5618,7 +5622,7 @@ function createFarmCityRoad(){
             if(!farmGroup||farmGroup.getObjectByName('CarreteraRumboACiudad'))return;
             const road=new THREE.Group();road.name='CarreteraRumboACiudad';road.frustumCulled=false;
             const startDistance=115,endDistance=260,width=14,segment=10;
-            const asphaltMat=new THREE.MeshStandardMaterial({color:0x3b4246,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}),edgeMat=new THREE.MeshStandardMaterial({color:0x9e967f,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}),lineMat=new THREE.MeshStandardMaterial({color:0xb8a16a,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false});
+            const asphaltMat=new THREE.MeshStandardMaterial({color:0x50565a,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}),edgeMat=new THREE.MeshStandardMaterial({color:0xb2a991,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}),lineMat=new THREE.MeshStandardMaterial({color:0xc6b06e,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false});
             for(let distance=startDistance;distance<endDistance;distance+=segment){
                 const next=Math.min(endDistance,distance+segment);
                 const x1=FARM_CENTER.x+FARM_TUNNEL_DIR_X*distance,z1=FARM_CENTER.z+FARM_TUNNEL_DIR_Z*distance;
@@ -5628,10 +5632,10 @@ function createFarmCityRoad(){
                 const piece=new THREE.Group();piece.position.set(midX,(y1+y2)/2+.11,midZ);
                 const tangent=new THREE.Vector3(x2-x1,y2-y1,z2-z1).normalize();
                 piece.quaternion.setFromUnitVectors(new THREE.Vector3(1,0,0),tangent);
-                const asphalt=new THREE.Mesh(new THREE.BoxGeometry(len+.12,.18,width),asphaltMat);asphalt.receiveShadow=true;piece.add(asphalt);
-                const edgeA=new THREE.Mesh(new THREE.BoxGeometry(len,.035,.2),edgeMat);edgeA.position.set(0,.11,-width/2+.28);piece.add(edgeA);
-                const edgeB=edgeA.clone();edgeB.position.z=width/2-.28;piece.add(edgeB);
-                if(Math.floor((distance-startDistance)/segment)%2===0){const dash=new THREE.Mesh(new THREE.BoxGeometry(Math.min(5,len-.4),.035,.24),lineMat);dash.position.set(0,.112,0);piece.add(dash);}
+                const asphalt=new THREE.Mesh(new THREE.BoxGeometry(len+.12,.22,width+2.2),asphaltMat);asphalt.receiveShadow=false;asphalt.castShadow=false;piece.add(asphalt);
+                const edgeA=new THREE.Mesh(new THREE.BoxGeometry(len,.045,.24),edgeMat);edgeA.position.set(0,.13,-(width+2.2)/2+.32);edgeA.castShadow=false;edgeA.receiveShadow=false;piece.add(edgeA);
+                const edgeB=edgeA.clone();edgeB.position.z=(width+2.2)/2-.32;piece.add(edgeB);
+                if(Math.floor((distance-startDistance)/segment)%2===0){const dash=new THREE.Mesh(new THREE.BoxGeometry(Math.min(5,len-.4),.045,.28),lineMat);dash.position.set(0,.132,0);dash.castShadow=false;dash.receiveShadow=false;piece.add(dash);}
                 piece.frustumCulled=false;piece.traverse(o=>{o.frustumCulled=false;});road.add(piece);
             }
             const tunnel=new THREE.Group();tunnel.name='TunelHaciaCiudad';
@@ -7344,7 +7348,7 @@ function setupFarmUiControls(){
   useButton.dataset.useBound='1';useButton.setAttribute('role','button');useButton.setAttribute('tabindex','0');
   let usePointerId=null;
   const releaseUse=()=>{
-   farmUsePending=false;farmUsePulseUntil=0;
+   farmUsePending=false;farmUsePendingAt=0;farmUsePulseUntil=0;
    if(attackPhase===2){isAttacking=false;attackPhase=0;}
    usePointerId=null;
   };
@@ -7358,8 +7362,8 @@ function setupFarmUiControls(){
   const useEvent=e=>{e.preventDefault();e.stopPropagation();activate();};
   useButton.addEventListener('pointerdown',e=>{usePointerId=e.pointerId;},{passive:true});
   // Un solo disparo por toque; click conserva la compatibilidad con el WebView de Android.
-  useButton.addEventListener('click',useEvent);
-  window.addEventListener('pointerup',e=>{if(usePointerId===e.pointerId)usePointerId=null;},{passive:true});
+  useButton.addEventListener('click',e=>{releaseUse();useEvent(e);});
+  window.addEventListener('pointerup',e=>{if(usePointerId===e.pointerId)releaseUse();},{passive:true});
   useButton.addEventListener('pointercancel',e=>{if(usePointerId===null||usePointerId===e.pointerId)releaseUse();},{passive:true});
   useButton.addEventListener('touchcancel',releaseUse,{passive:true});
   window.addEventListener('pointercancel',e=>{if(usePointerId===e.pointerId)releaseUse();},{passive:true});
@@ -8805,7 +8809,7 @@ function startProtestMission() {
                 if(mainScroll){ mainScroll.style.display='block'; mainScroll.scrollTop=0; }
             });
             close.addEventListener('click',()=>{panel.style.display='none'; forceHudVisible();});
-            restart.addEventListener('click',()=>{panel.style.display='none';restartModal.style.display='block';}); openG.addEventListener('click',()=>{
+            restart.addEventListener('click',()=>{panel.style.display='none';restartModal.style.display='none';forceHudVisible();if(isDriving){isDriving=false;if(drivenCar){drivenCar.userData.speed=0;drivenCar.userData.velocity=0;}drivenCar=null;}if(character){character.position.set(0,getTerrainY(0,0,null)+.1,0);character.rotation.y=0;character.visible=true;}cameraTheta=0;cameraPhi=Math.PI/3;cameraDistance=25;isAttacking=false;attackPhase=0;farmUsePending=false;farmUsePulseUntil=0;farmLastUsePulse=0;showToast('Cornatan reaparecio en la granja. Benja y tu progreso siguen igual.');} openG.addEventListener('click',()=>{
                 const mainScroll=document.getElementById('settingsMainScroll');
                 if(mainScroll) mainScroll.style.display='none';
                 gp.style.display='block'; openG.style.display='none';
