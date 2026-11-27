@@ -1,8 +1,22 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.7",
+  "version": "1.11.8",
   "updates": [
+    {
+      "version": "1.11.8",
+      "title": "Diagnostico detallado de rendimiento por fases",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "Logs ahora registra los intervalos entre cuadros, el tiempo de CPU del bucle principal y la duracion de renderer.render por separado.",
+        "El perfilador mide funciones costosas del optimizador, visibilidad del mundo, historia, animaciones, vehiculos y controles cuando estas funciones estan disponibles para instrumentar.",
+        "Se agrega una cronologia de cuadros lentos, cambios de resolucion dinamica, redimensionamientos del canvas y aumentos de draw calls, triangulos, geometrias y texturas.",
+        "Se cuentan mallas totales y visibles, luces, sprites, objetos Points y programas de renderizado en intervalos de bajo costo.",
+        "Cuando el navegador lo soporta, se registran tareas largas y su atribucion disponible.",
+        "Se incorpora COPIAR LOG DETALLADO con causas probables, tiempos por fase y eventos recientes.",
+        "El informe aclara que renderer.render mide tiempo de CPU enviando comandos WebGL, no el tiempo exacto de ejecucion de la GPU."
+      ]
+    },
     {
       "version": "1.11.7",
       "title": "Log de rendimiento integrado en Ajustes",
