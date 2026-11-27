@@ -1,8 +1,16 @@
+## Novedades de la version 1.11.3
+- El boton USAR limpia estados de toque al activar y al soltar, evitando que Cornatan quede bloqueado.
+- Ajustes elimina Reiniciar mundo y ofrece Respawn personaje, que recoloca a Cornatan sin borrar el progreso de Benja ni de la granja.
+- Historial de actualizaciones ampliado dentro de Ajustes.
+- Carretera de la granja más ancha, clara y sin sombras costosas para mejorar lectura y FPS.
+- El puesto muestra miniaturas ilustradas de comida y suministros.
+
+
 # Cuida a Benja
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.11.2**
+**Version actual: 1.11.3**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
