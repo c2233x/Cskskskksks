@@ -1,4 +1,8 @@
-## Novedades de la version 1.11.5
+## Novedades de la version 1.11.6
+- Se corrigen las cadenas JavaScript truncadas de las compras de comida y suministros de construcción, que impedían analizar el script.
+- Se agrega Logs 2 como panel independiente con FPS actuales, promedio, mínimos, máximos, bajones, tiempo de cuadro, estado de mapas, draw calls, triángulos, geometrías, texturas y memoria disponible.
+- El panel permite consultar y copiar un informe de rendimiento de la sesión.
+
 - Se restaura el boton flotante Logs durante la carga y dentro del juego; el panel permite copiar y limpiar el diagnostico.
 - El vigilante de inicio detecta pausas sin progreso aunque la version remota ya se haya recibido y libera el cargador para reintentar.
 - Los errores de inicio quedan registrados en el panel de diagnostico.
@@ -15,7 +19,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.11.5**
+**Version actual: 1.11.6**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
