@@ -972,6 +972,251 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
  window.addEventListener('load',install,{once:true});
 })();
 
+
+/* ===== LOG DETALLADO · PERFILADOR POR FASES ===== */
+(function installCuidaDetailedProfiler(){
+ if(window.__cuidaDetailedProfilerInstalled)return;
+ window.__cuidaDetailedProfilerInstalled=true;
+ const perf=window.performance;
+ const state={frames:[],events:[],hotCalls:[],longTasks:[],latest:null,previousMetrics:null,
+  frameRenderMs:0,frameRenderCalls:0,lastFrameStart:0,lastSlowEvent:0,lastRenderEvent:0,
+  lastTopologyAt:0,renderer:null,totalMeshes:0,visibleMeshes:0,lights:0,sprites:0,points:0};
+ const MAX_FRAMES=420,MAX_EVENTS=65,MAX_HOT=320,MAX_LONG=40;
+ const now=()=>perf&&perf.now?perf.now():Date.now();
+ const safe=(fn,fallback)=>{try{const v=fn();return v==null?fallback:v;}catch(_){return fallback;}};
+ const round=n=>Number.isFinite(Number(n))?Number(n).toFixed(1):"--";
+ const stamp=()=>new Date().toLocaleTimeString();
+ function addEvent(type,detail,writeLog){
+  const item={time:stamp(),type:type,detail:String(detail||"")};
+  state.events.push(item);if(state.events.length>MAX_EVENTS)state.events.shift();
+  if(writeLog&&window.cuidaAddLog){try{window.cuidaAddLog(type,item.detail);}catch(_){}}
+ }
+ function getRenderer(){return safe(()=>typeof renderer!=="undefined"?renderer:null,null)||safe(()=>window.renderer,null);}
+ function getScene(){return safe(()=>typeof scene!=="undefined"?scene:null,null)||safe(()=>window.scene,null);}
+ function getCamera(){return safe(()=>typeof camera!=="undefined"?camera:null,null)||safe(()=>window.camera,null);}
+ function getMapName(){
+  const city=safe(()=>typeof farmCityMode!=="undefined"&&!!farmCityMode,false);
+  const running=safe(()=>typeof gameStarted!=="undefined"&&!!gameStarted,false);
+  return !running?"MENU":city?"CIUDAD":"GRANJA";
+ }
+ function metrics(){
+  const r=getRenderer(),sc=getScene(),info=r&&r.info?r.info:null;
+  const ren=info&&info.render?info.render:{},mem=info&&info.memory?info.memory:{};
+  const canvas=r&&r.domElement?r.domElement:null,c=getCamera(),p=c&&c.position?c.position:null;
+  return {time:Date.now(),map:getMapName(),calls:Number(ren.calls)||0,triangles:Number(ren.triangles)||0,
+   lines:Number(ren.lines)||0,points:Number(ren.points)||0,geometries:Number(mem.geometries)||0,
+   textures:Number(mem.textures)||0,programs:info&&info.programs?info.programs.length:0,
+   roots:sc&&sc.children?sc.children.length:0,width:canvas?canvas.width:0,height:canvas?canvas.height:0,
+   dpr:r&&r.getPixelRatio?Number(r.getPixelRatio()):0,
+   heap:safe(()=>performance.memory&&performance.memory.usedJSHeapSize||0,0),
+   camera:p?{x:p.x,y:p.y,z:p.z}:null};
+ }
+ function wrapRendererMethod(r,name,handler){
+  try{const original=r&&r[name];if(typeof original!=="function"||original.__cuidaDeepWrapped)return;
+   const wrapped=handler(original);wrapped.__cuidaDeepWrapped=true;r[name]=wrapped;}catch(_){}
+ }
+ function patchRenderer(){
+  const r=getRenderer();if(!r)return;
+  if(state.renderer!==r){state.renderer=r;addEvent("RENDERER_DETECTADO","Renderizador activo de Three.js detectado.");}
+  wrapRendererMethod(r,"render",original=>function(){
+   const start=now();state.frameRenderCalls++;
+   try{return original.apply(this,arguments);}
+   finally{const elapsed=now()-start;state.frameRenderMs+=elapsed;
+    if(elapsed>=14&&now()-state.lastRenderEvent>1800){
+     state.lastRenderEvent=now();const m=metrics();
+     addEvent("RENDER_LENTO","renderer.render "+round(elapsed)+" ms CPU; "+m.calls+" draw calls; "+m.triangles+" triangulos.");
+    }}
+  });
+  wrapRendererMethod(r,"setPixelRatio",original=>function(value){
+   const before=safe(()=>r.getPixelRatio(),0),result=original.apply(this,arguments);
+   const after=safe(()=>r.getPixelRatio(),Number(value)||0);
+   if(Math.abs(after-before)>=0.025)addEvent("RESOLUCION_DINAMICA","DPR del renderizador: "+round(before)+" → "+round(after)+".");
+   return result;
+  });
+  wrapRendererMethod(r,"setSize",original=>function(width,height){
+   const oldW=safe(()=>r.domElement.width,0),oldH=safe(()=>r.domElement.height,0),result=original.apply(this,arguments);
+   const newW=safe(()=>r.domElement.width,0),newH=safe(()=>r.domElement.height,0);
+   if(newW!==oldW||newH!==oldH)addEvent("CANVAS_RESIZE","Canvas "+oldW+"x"+oldH+" → "+newW+"x"+newH+".");
+   return result;
+  });
+ }
+ const hotNames=["updatePerformanceOptimizer","runAutoOptimizer","updateWorldChunkVisibility","updateStoryMode",
+  "updateBenjaAnimation","updateFarmThrownFood","updateFarmPondAnimations","updateFarmGuide",
+  "updateFarmCinematic","updateFarmTVScreenOverlay","farmUpdatePhysicalControlOverlay",
+  "updateDrivenCar","updateCarSmoke","updateCarProximity","updateDayNight","updateCarAudio",
+  "updateEnemies","updateMissions","farmPatchUiTick","farmUpdateWaterTankControls"];
+ function patchHotFunctions(){
+  hotNames.forEach(name=>{try{
+   const original=window[name];if(typeof original!=="function"||original.__cuidaDeepHotWrapped)return;
+   const wrapped=function(){const start=now();try{return original.apply(this,arguments);}
+    finally{const elapsed=now()-start;if(elapsed>=1.5){
+     state.hotCalls.push({time:Date.now(),name:name,ms:elapsed});if(state.hotCalls.length>MAX_HOT)state.hotCalls.shift();
+     if(elapsed>=9)addEvent("FUNCION_LENTA",name+" tardo "+round(elapsed)+" ms.");
+    }}};
+   wrapped.__cuidaDeepHotWrapped=true;window[name]=wrapped;
+  }catch(_){}});
+ }
+ const callbackCache=new WeakMap(),rafOriginal=window.requestAnimationFrame.bind(window);
+ window.requestAnimationFrame=function(callback){
+  if(typeof callback!=="function"||callback.name!=="animate")return rafOriginal(callback);
+  let wrapped=callbackCache.get(callback);
+  if(!wrapped){wrapped=function(){
+   patchRenderer();const start=now(),gap=state.lastFrameStart?start-state.lastFrameStart:0;
+   state.lastFrameStart=start;state.frameRenderMs=0;state.frameRenderCalls=0;
+   let result;
+   try{result=callback.apply(this,arguments);}
+   finally{
+    const cpu=now()-start,renderMs=state.frameRenderMs,logic=Math.max(0,cpu-renderMs);
+    state.frames.push({time:Date.now(),gap:gap,cpu:cpu,render:renderMs,logic:logic,calls:state.frameRenderCalls,fps:gap>0?1000/gap:0,map:getMapName()});
+    if(state.frames.length>MAX_FRAMES)state.frames.shift();
+    if((gap>=40||cpu>=40)&&now()-state.lastSlowEvent>1450){
+     state.lastSlowEvent=now();
+     const cause=renderMs>=14&&renderMs>=logic?"renderizado Three.js":logic>=18?"actualizaciones/logica del juego":"espera de navegador/compositor/GPU no separable desde JavaScript";
+     addEvent("FRAME_LENTO","Intervalo "+round(gap)+" ms; CPU bucle "+round(cpu)+" ms; render "+round(renderMs)+" ms; logica "+round(logic)+" ms. Indicador: "+cause+".");
+    }
+   }
+   return result;
+  };callbackCache.set(callback,wrapped);}
+  return rafOriginal(wrapped);
+ };
+ function collectTopology(){
+  const sc=getScene();if(!sc)return;
+  let meshes=0,visible=0,lights=0,sprites=0,points=0;
+  try{sc.traverse(o=>{if(!o)return;if(o.isMesh||o.isInstancedMesh){meshes++;if(o.visible)visible++;}
+   if(o.isLight)lights++;if(o.isSprite)sprites++;if(o.isPoints)points++;});}catch(_){}
+  state.totalMeshes=meshes;state.visibleMeshes=visible;state.lights=lights;state.sprites=sprites;state.points=points;
+  const next=metrics(),old=state.previousMetrics;
+  if(old){
+   const dc=next.calls-old.calls,dt=next.triangles-old.triangles,dg=next.geometries-old.geometries,dx=next.textures-old.textures;
+   if(dc>=24)addEvent("DRAW_CALLS_SUBEN","Draw calls: "+old.calls+" → "+next.calls+" (+"+dc+").");
+   if(dt>Math.max(8000,old.triangles*.18))addEvent("TRIANGULOS_SUBEN","Triangulos: "+old.triangles+" → "+next.triangles+" (+"+dt+").");
+   if(dg>=8)addEvent("GEOMETRIAS_CREADAS","Geometrias: "+old.geometries+" → "+next.geometries+" (+"+dg+").");
+   if(dx>=3)addEvent("TEXTURAS_CREADAS","Texturas: "+old.textures+" → "+next.textures+" (+"+dx+").");
+   if(old.roots!==next.roots)addEvent("ESCENA_CAMBIO","Objetos raiz: "+old.roots+" → "+next.roots+".");
+   if(old.map!==next.map)addEvent("CAMBIO_MAPA","Mapa: "+old.map+" → "+next.map+".");
+  }
+  state.previousMetrics=next;state.latest=next;state.lastTopologyAt=Date.now();
+ }
+ function stats(windowMs){
+  const cutoff=Date.now()-(windowMs||8000),a=state.frames.filter(f=>f.time>=cutoff&&f.gap>0);
+  if(!a.length)return {count:0,gap:0,cpu:0,render:0,logic:0,p95:0,max:0,slow:0};
+  const avg=k=>a.reduce((n,x)=>n+x[k],0)/a.length,sorted=a.map(x=>x.gap).sort((x,y)=>x-y);
+  return {count:a.length,gap:avg("gap"),cpu:avg("cpu"),render:avg("render"),logic:avg("logic"),
+   p95:sorted[Math.min(sorted.length-1,Math.floor(sorted.length*.95))],max:Math.max.apply(null,sorted),
+   slow:a.filter(x=>x.gap>=40||x.cpu>=40).length};
+ }
+ function topHot(windowMs){
+  const cutoff=Date.now()-(windowMs||10000),totals=Object.create(null);
+  state.hotCalls.forEach(x=>{if(x.time>=cutoff){const v=totals[x.name]||(totals[x.name]={total:0,max:0,count:0});
+   v.total+=x.ms;v.max=Math.max(v.max,x.ms);v.count++;}});
+  return Object.keys(totals).map(name=>({name:name,total:totals[name].total,max:totals[name].max,count:totals[name].count}))
+   .sort((a,b)=>b.total-a.total).slice(0,6);
+ }
+ function diagnosis(s,m){
+  const causes=[];
+  if(s.render>=12&&s.render>=s.logic*.72)causes.push("Renderizado Three.js: "+round(s.render)+" ms/frame de envio de dibujo CPU.");
+  if(s.logic>=15)causes.push("Logica del juego: "+round(s.logic)+" ms/frame fuera de renderer.render.");
+  const hot=topHot(10000);
+  if(hot.length&&hot[0].total>=28)causes.push("Funcion mas costosa medida: "+hot[0].name+" ("+round(hot[0].total)+" ms acumulados; pico "+round(hot[0].max)+" ms).");
+  const long=state.longTasks.filter(x=>Date.now()-x.time<10000);
+  if(long.length)causes.push("Tareas largas del navegador: "+long.length+" en 10 s; maximo "+round(Math.max.apply(null,long.map(x=>x.ms)))+" ms.");
+  if(m&&m.calls>=280)causes.push("Carga de escena alta: "+m.calls+" draw calls.");
+  if(m&&m.triangles>=60000)causes.push("Geometria elevada: "+m.triangles.toLocaleString()+" triangulos.");
+  if(!causes.length&&s.count)causes.push("Sin cuello dominante confirmado; revisar esperas del navegador/GPU y la escena.");
+  if(!s.count)causes.push("Esperando suficientes cuadros para comparar las fases.");
+  return causes;
+ }
+ function detailedReport(){
+  const s=stats(10000),m=state.latest||metrics(),hot=topHot(15000),events=state.events.slice(-25),long=state.longTasks.slice(-12);
+  return [
+   "CUIDA A BENJA · LOG DETALLADO · PERFILADO POR FASES","Fecha: "+new Date().toLocaleString(),"Mapa: "+getMapName(),
+   "Cuadros analizados (10 s): "+s.count,
+   "Intervalo entre cuadros promedio / p95 / maximo: "+round(s.gap)+" / "+round(s.p95)+" / "+round(s.max)+" ms",
+   "CPU bucle animate promedio: "+round(s.cpu)+" ms","renderer.render (CPU): "+round(s.render)+" ms",
+   "Logica/actualizaciones: "+round(s.logic)+" ms","Cuadros lentos (>40 ms): "+s.slow,
+   "Render: "+m.calls+" draw calls; "+m.triangles+" triangulos; "+m.lines+" lineas; "+m.points+" puntos.",
+   "Recursos GPU: "+m.geometries+" geometrias; "+m.textures+" texturas; "+m.programs+" programas.",
+   "Escena: "+m.roots+" objetos raiz; "+state.totalMeshes+" mallas; "+state.visibleMeshes+" visibles; "+state.lights+" luces; "+state.sprites+" sprites; "+state.points+" objetos Points.",
+   "Canvas: "+m.width+"x"+m.height+"; DPR "+round(m.dpr),
+   "Camara: "+(m.camera?"x="+round(m.camera.x)+" y="+round(m.camera.y)+" z="+round(m.camera.z):"no disponible"),
+   "Memoria JS: "+(m.heap?(m.heap/1048576).toFixed(1)+" MB":"no disponible"),
+   "CAUSAS / INDICIOS:",diagnosis(s,m).map((x,i)=>(i+1)+". "+x).join("\n"),
+   "FUNCIONES MAS COSTOSAS (15 s):",hot.length?hot.map(x=>x.name+": "+round(x.total)+" ms total; pico "+round(x.max)+" ms; "+x.count+" llamadas").join("\n"):"Sin funciones lentas instrumentables.",
+   "TAREAS LARGAS:",long.length?long.map(x=>x.timeText+" · "+round(x.ms)+" ms · "+x.attribution).join("\n"):"No detectadas o no soportadas por WebView.",
+   "EVENTOS RECIENTES:",events.length?events.map(x=>"["+x.time+"] ["+x.type+"] "+x.detail).join("\n"):"Sin eventos.",
+   "NOTA: renderer.render mide CPU enviando comandos WebGL; no mide exactamente el tiempo de GPU."
+  ].join("\n");
+ }
+ function fallbackCopy(value){
+  try{const ta=document.createElement("textarea");ta.value=value;ta.style.position="fixed";ta.style.opacity="0";
+   document.body.appendChild(ta);ta.select();document.execCommand("copy");ta.remove();return true;}catch(_){return false;}
+ }
+ async function copyDetailed(){
+  const value=detailedReport();
+  try{if(navigator.clipboard&&navigator.clipboard.writeText){await navigator.clipboard.writeText(value);return;}}catch(_){}
+  fallbackCopy(value);
+ }
+ function ensurePanel(){
+  const panel=document.getElementById("cuidaPerfPanel");if(!panel)return;
+  if(!panel.querySelector("#cuidaPerfDeepSection")){
+   const section=document.createElement("div");section.id="cuidaPerfDeepSection";section.className="cuidaPerfSection";
+   section.innerHTML="<b>DIAGNOSTICO DETALLADO · 10 SEGUNDOS</b>"+
+    "<p id='cuidaDeepDiagnosis' style='margin-top:6px;line-height:1.5'>Esperando mediciones por fase...</p>"+
+    "<p id='cuidaDeepBreakdown' class='cuidaPerfHint' style='margin-top:7px'>CPU / render / logica / p95: --</p>"+
+    "<p id='cuidaDeepScene' class='cuidaPerfHint' style='margin-top:5px'>Mallas y objetos: --</p>"+
+    "<p id='cuidaDeepHot' class='cuidaPerfHint' style='margin-top:5px'>Funciones costosas: --</p>"+
+    "<p id='cuidaDeepLong' class='cuidaPerfHint' style='margin-top:5px'>Tareas largas: --</p>"+
+    "<b style='display:block;margin-top:9px'>CRONOLOGIA DE EVENTOS</b>"+
+    "<pre id='cuidaDeepEvents' style='white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto;margin-top:5px;color:#d7f4e7;font-size:10px'>Sin eventos todavía.</pre>"+
+    "<p class='cuidaPerfHint'>Render mide CPU de Three.js; no es cronometro exacto de GPU.</p>";
+   panel.appendChild(section);
+  }
+  if(!panel.querySelector("#cuidaPerfCopyDeep")){
+   const row=document.createElement("div");row.className="cuidaPerfRow";
+   const button=document.createElement("button");button.type="button";button.id="cuidaPerfCopyDeep";
+   button.textContent="COPIAR LOG DETALLADO";button.addEventListener("click",copyDetailed);
+   row.appendChild(button);panel.appendChild(row);
+  }
+ }
+ function updatePanel(){
+  ensurePanel();const panel=document.getElementById("cuidaPerfPanel");
+  if(!panel||panel.style.display!=="block")return;
+  const s=stats(10000),m=state.latest||metrics(),hot=topHot(10000);
+  const set=(id,value)=>{const el=panel.querySelector("#"+id);if(el)el.textContent=value;};
+  set("cuidaDeepDiagnosis",diagnosis(s,m).map((x,i)=>(i+1)+". "+x).join("\n"));
+  set("cuidaDeepBreakdown","CPU animate "+round(s.cpu)+" ms · render "+round(s.render)+" ms · logica "+round(s.logic)+" ms · p95 "+round(s.p95)+" ms · max "+round(s.max)+" ms · lentos "+s.slow+"/"+s.count);
+  set("cuidaDeepScene","Mallas "+state.totalMeshes+" · visibles "+state.visibleMeshes+" · luces "+state.lights+" · sprites "+state.sprites+" · draw calls "+m.calls+" · triangulos "+m.triangles.toLocaleString());
+  set("cuidaDeepHot",hot.length?"Funciones (10 s): "+hot.map(x=>x.name+" "+round(x.total)+" ms").join(" · "):"Funciones costosas: sin mediciones >1.5 ms por llamada.");
+  const long=state.longTasks.filter(x=>Date.now()-x.time<10000);
+  set("cuidaDeepLong","Tareas largas (>50 ms): "+long.length+(long.length?" · maximo "+round(Math.max.apply(null,long.map(x=>x.ms)))+" ms":""));
+  set("cuidaDeepEvents",state.events.slice(-10).map(x=>"["+x.time+"] "+x.type+": "+x.detail).join("\n")||"Sin eventos todavía.");
+ }
+ function installLongTasks(){
+  try{if(typeof PerformanceObserver!=="function")return;
+   const observer=new PerformanceObserver(list=>list.getEntries().forEach(entry=>{
+    const attribution=entry.attribution&&entry.attribution.length?
+     entry.attribution.map(x=>[x.name,x.containerType,x.containerName].filter(Boolean).join("/")).join(", "):"atribucion no disponible";
+    state.longTasks.push({time:Date.now(),timeText:stamp(),ms:entry.duration,attribution:attribution});
+    if(state.longTasks.length>MAX_LONG)state.longTasks.shift();
+    addEvent("TAREA_LARGA","Hilo ocupado "+round(entry.duration)+" ms; "+attribution+".");
+   }));
+   observer.observe({entryTypes:["longtask"]});
+  }catch(_){}
+ }
+ ["pointerdown","touchstart","keydown","wheel"].forEach(type=>window.addEventListener(type,()=>{state.lastInput={type:type,time:Date.now()};},{capture:true,passive:true}));
+ function periodic(){
+  patchRenderer();patchHotFunctions();
+  if(Date.now()-state.lastTopologyAt>=5000)collectTopology();
+  updatePanel();
+ }
+ installLongTasks();patchRenderer();patchHotFunctions();setInterval(periodic,1200);
+ window.__cuidaDetailedProfiler={report:detailedReport,
+  snapshot:()=>({stats:stats(10000),metrics:state.latest||metrics(),events:state.events.slice(),hot:topHot(15000)}),
+  clear:()=>{state.frames.length=0;state.events.length=0;state.hotCalls.length=0;state.longTasks.length=0;addEvent("LOG_REINICIADO","Historial detallado reiniciado.");}};
+ addEvent("PERFILADOR_LISTO","Medicion de cuadros, CPU de render, funciones lentas y tareas largas activada.");
+})();
+
+
 // Cuida a Benja - datos del mapa de la granja.// Cuida a Benja - datos del mapa de la granja.
 // El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
 window.CUIDA_BENJA_FARM_MAP = {
