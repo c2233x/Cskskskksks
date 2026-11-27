@@ -1,3 +1,11 @@
+## Novedades de la version 1.11.8
+- Logs mide por separado el tiempo de CPU del bucle principal, el envio de dibujo de Three.js y el intervalo entre cuadros.
+- Se registra una cronologia de cuadros lentos, cambios de resolucion/canvas y aumentos de draw calls, triangulos, geometrias y texturas.
+- Se instrumentan funciones del optimizador, culling, historia, animaciones, vehiculos y controles para detectar llamadas costosas.
+- Se muestran mallas totales/visibles, luces, sprites, objetos Points, tareas largas cuando el navegador las expone y eventos recientes.
+- El boton COPIAR LOG DETALLADO genera un informe ampliado con causas probables y datos de la sesion.
+- La medicion de renderer.render corresponde al tiempo de CPU enviando comandos WebGL; no equivale al tiempo exacto de GPU.
+
 ## Novedades de la version 1.11.7
 - Se retira el botón flotante del registro Logs anterior para evitar duplicados en pantalla.
 - El monitor de rendimiento se traslada a Ajustes y ahora se abre con un único botón llamado **Log**.
@@ -25,7 +33,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.11.7**
+**Version actual: 1.11.8**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
