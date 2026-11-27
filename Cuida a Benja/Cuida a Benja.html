@@ -1936,7 +1936,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
                     if (source.json) {
                         const data = await r.json();
                         if (data && data.content && data.encoding === 'base64') {
-                            value = atob(String(data.content).replace(/\\s/g, ''));
+                            value = atob(String(data.content));
                         } else if (data && typeof data.content === 'string') {
                             value = data.content;
                         }
@@ -8919,9 +8919,9 @@ function startProtestMission() {
             setTimeout(() => {
                 const visible = startScreen && getComputedStyle(startScreen).display !== 'none';
                 const percent = startupProgressPercent ? String(startupProgressPercent.textContent || '').trim() : '0%';
-                const count = startupProgressCount ? String(startupProgressCount.textContent || '').replace(/\\s/g, '') : '';
+                const count = startupProgressCount ? String(startupProgressCount.textContent || '').trim() : '';
                 const latest = startupLatestVersion ? String(startupLatestVersion.textContent || '').trim() : '-';
-                const noProgress = /^0(?:\\.0)?%$/.test(percent) && count === '0/0' && latest === '-';
+                const noProgress = percent === '0%' && count === '0/0' && latest === '-';
                 if (!gameStarted && visible && noProgress && !startScreen.classList.contains('error')) {
                     githubLoader.dataset.loading = '0';
                     if (loadingText) loadingText.textContent = 'Sin respuesta';
