@@ -1,0 +1,297 @@
+{
+  "id": "update_2_la_huerta_de_dona_lila",
+  "title": "La huerta de Doña Lila",
+  "type": "content_pack",
+  "status": "propuesta_publicada_no_integrada",
+  "version": "1",
+  "story": {
+    "title": "Semillas perdidas, cosecha nueva",
+    "trigger": "Disponible tras completar el tutorial de la granja; Doña Lila aparece ocasionalmente junto al camino de entrada.",
+    "stages": [
+      {
+        "id": "semillas_perdidas",
+        "title": "Se me regaron las semillas",
+        "objectives": [
+          "Hablar con Doña Lila",
+          "Encontrar 4 sobres de semillas en puntos fijos de la granja",
+          "Entregar los sobres en la caja de madera"
+        ],
+        "reward": {
+          "money": 3,
+          "unlock": "huerto_semillas"
+        },
+        "dialogue": [
+          {
+            "speaker": "Doña Lila",
+            "text": "Ay, se me abrio la caja en el camino. ¿Me ayudas a juntar estos sobres?"
+          },
+          {
+            "speaker": "Cornatan",
+            "text": "Claro, pero si encuentro uno lleno de frijoles me lo quedo para el almuerzo."
+          },
+          {
+            "speaker": "Doña Lila",
+            "text": "Son semillas, hombre. No te las vayas a comer."
+          }
+        ]
+      },
+      {
+        "id": "preparar_huerto",
+        "title": "Una huerta de verdad",
+        "objectives": [
+          "Recoger 1 saco de compost",
+          "Llevar 2 tablas al terreno marcado",
+          "Usar el bancal para dejar listo el suelo"
+        ],
+        "reward": {
+          "money": 4,
+          "unlock": "bancal_semillas"
+        },
+        "dialogue": [
+          {
+            "speaker": "Cornatan",
+            "text": "Voy a dejar esto listo, a ver si por fin sale algo que no sea puro monte."
+          },
+          {
+            "speaker": "Doña Lila",
+            "text": "No lo llenes de agua. Con que quede húmedo, basta."
+          }
+        ]
+      },
+      {
+        "id": "plantar",
+        "title": "A sembrar se ha dicho",
+        "objectives": [
+          "Elegir maíz, zanahoria o tomate",
+          "Plantarlos en 3 espacios del bancal",
+          "Regar cada espacio una vez"
+        ],
+        "reward": {
+          "money": 5,
+          "unlock": "huerto_basico"
+        },
+        "dialogue": [
+          {
+            "speaker": "Cornatan",
+            "text": "Bueno, tres plantitas. Ahora toca tener paciencia."
+          },
+          {
+            "speaker": "Doña Lila",
+            "text": "Y no las arranques cada cinco minutos para ver si crecieron."
+          }
+        ]
+      },
+      {
+        "id": "espantar_pajaros",
+        "title": "Los visitantes de la huerta",
+        "objectives": [
+          "Cuando aparezcan pájaros, buscar 2 piezas de tela y 1 palo",
+          "Armar el espantapájaros en el borde del huerto",
+          "Comprobar que las plantas quedan protegidas"
+        ],
+        "reward": {
+          "money": 7,
+          "unlock": "espantapajaros_huerto"
+        },
+        "dialogue": [
+          {
+            "speaker": "Cornatan",
+            "text": "Ya llegaron los que se quieren llevar la cosecha antes que yo."
+          },
+          {
+            "speaker": "Doña Lila",
+            "text": "Pon el espantapájaros al borde, que no estorbe para regar."
+          },
+          {
+            "speaker": "Cornatan",
+            "text": "Listo. Si se asustan de este muñeco, de mí también se van a asustar."
+          }
+        ]
+      }
+    ],
+    "optionalCityMission": {
+      "id": "entrega_de_la_plaza",
+      "title": "Una canasta para la plaza",
+      "objectives": [
+        "Cosechar 2 canastas de productos",
+        "Cargar las canastas en el vehículo o llevarlas en inventario",
+        "Entregarlas en el puesto del mercado de la ciudad"
+      ],
+      "reward": {
+        "money": 9
+      },
+      "spawnRules": "Solo cargar el marcador y el puesto cuando Ciudad.js esté activo; nunca crear objetos de ciudad en la granja.",
+      "dialogue": [
+        {
+          "speaker": "Vendedor",
+          "text": "¡Qué bueno que llegó la cosecha! Deja las canastas aquí y te pago."
+        },
+        {
+          "speaker": "Cornatan",
+          "text": "A ver si no me las piden todas de una vez, que también tengo que comer."
+        }
+      ]
+    },
+    "cinematic": {
+      "start": [
+        "Plano corto de la caja abierta junto al camino",
+        "4 sobres de semillas visibles en puntos cercanos",
+        "Subtítulos inferiores durante el diálogo"
+      ],
+      "finish": [
+        "Mostrar el bancal sembrado",
+        "Corte breve al espantapájaros",
+        "Benja olfatea la cesta y Cornatan lo aparta con humor"
+      ],
+      "skipAllowed": true,
+      "doNotPlayWhileDriving": true,
+      "durationSeconds": {
+        "startMax": 7,
+        "finishMax": 8
+      }
+    }
+  },
+  "items": [
+    {
+      "id": "sobre_semillas",
+      "name": "Sobre de semillas",
+      "variants": [
+        "Maíz",
+        "Zanahoria",
+        "Tomate",
+        "Girasol"
+      ],
+      "purpose": "Recurso coleccionable y selección de cultivo; apilable por tipo."
+    },
+    {
+      "id": "saco_compost",
+      "name": "Saco de compost",
+      "amount": 1,
+      "purpose": "Preparar bancales; se consume al completar el bancal."
+    },
+    {
+      "id": "bancal_madera",
+      "name": "Bancal de madera",
+      "amount": 1,
+      "purpose": "Tres espacios de siembra; modelo reutilizable y colisión sencilla."
+    },
+    {
+      "id": "espantapajaros",
+      "name": "Espantapájaros",
+      "amount": 1,
+      "purpose": "Decoración funcional que protege un área pequeña de cultivos."
+    },
+    {
+      "id": "canasta_cosecha",
+      "name": "Canasta de cosecha",
+      "amount": 2,
+      "purpose": "Agrupa productos para el traslado y la entrega en la ciudad."
+    }
+  ],
+  "npc": {
+    "id": "dona_lila",
+    "name": "Doña Lila",
+    "description": "Vecina que intercambia semillas y enseña lo básico del huerto. Modelo sencillo reutilizado, sin IA ni navegación compleja.",
+    "lines": [
+      "Si sembrás todo junto, después no vas a saber ni por dónde empezar.",
+      "Ese bancal quedó bonito. No lo pongás atravesado en el camino.",
+      "Cuando salga la primera cosecha, guardá unas semillas para la próxima."
+    ],
+    "spawnRules": "Granja solamente; no aparece durante cinemáticas ni en el corral de Benja; una instancia como máximo."
+  },
+  "randomEvent": {
+    "id": "pajaros_huerto",
+    "name": "Los pájaros se acercan",
+    "trigger": "Una vez por día de juego como máximo, si hay cultivos en etapa de crecimiento y el espantapájaros aún no está colocado.",
+    "effects": [
+      "Mostrar 2 o 3 pájaros a baja altura en el huerto",
+      "Reutilizar un único grupo de modelos/animación simple",
+      "Un breve sonido de aleteo",
+      "Al colocar el espantapájaros, los pájaros se alejan y el evento queda resuelto"
+    ],
+    "durationSeconds": 20,
+    "performanceNotes": "Sin partículas, sin físicas de vuelo y sin navegación; animación corta, objetos reciclados y solo mientras el huerto está visible."
+  },
+  "farmUpgrade": {
+    "id": "huerto",
+    "name": "Huerto de tres bancales",
+    "levels": [
+      "Terreno marcado",
+      "Bancal sencillo de 3 espacios",
+      "Bordes de madera y riego manual",
+      "Huerto decorado con espantapájaros y cesta"
+    ],
+    "physicalModelChanges": true,
+    "gameplayRules": [
+      "Los cultivos avanzan por etapas guardadas, no por animaciones permanentes",
+      "Cada espacio acepta una planta",
+      "El agua se consume una vez por acción, no por segundo"
+    ]
+  },
+  "cityUpgrade": {
+    "id": "puesto_cosecha_plaza",
+    "name": "Puesto de cosecha en la plaza",
+    "purpose": "Añadir un punto de entrega y un cartel de trabajos cortos, sin cargarlo hasta que Ciudad.js esté activo.",
+    "interaction": "Un único botón Usar abre la entrega y muestra la recompensa; cerrar el panel no duplica el pago."
+  },
+  "secret": {
+    "id": "lata_semillas_azules",
+    "name": "La lata de semillas viejas",
+    "locationHint": "Detrás del tanque de agua, junto a un árbol pequeño; no dentro de la zona de colisiones.",
+    "reward": [
+      "Coleccionable Semilla azul",
+      "2 sobres de semillas comunes"
+    ],
+    "dialogue": {
+      "speaker": "Cornatan",
+      "text": "Mirá vos... estas semillas estaban mejor guardadas que mis propias cosas."
+    },
+    "onceOnly": true
+  },
+  "quality": {
+    "fixes": [
+      "Guardar la misión por etapa y el inventario de semillas; no pagar dos veces al reabrir.",
+      "Marcar el bancal como zona reservada para evitar que árboles o props lo tapen.",
+      "La flecha de objetivo debe señalar el siguiente espacio libre y ocultarse durante diálogos.",
+      "El puesto de ciudad se instancia solo en Ciudad.js; la granja nunca precarga la ciudad.",
+      "Cosecha y pájaros se desactivan al cambiar de mapa y reutilizan objetos al volver."
+    ],
+    "assetBriefs": [
+      {
+        "id": "sobre_semillas_glb",
+        "format": "GLB",
+        "brief": "Sobre de papel kraft con etiqueta de cultivo, tamaño de objeto de inventario, pivote centrado; 1 modelo base con color/etiqueta variable."
+      },
+      {
+        "id": "bancal_glb",
+        "format": "GLB",
+        "brief": "Bancal bajo de madera, tres compartimentos, silueta clara, colisión rectangular simple y textura mate."
+      },
+      {
+        "id": "espantapajaros_glb",
+        "format": "GLB",
+        "brief": "Palo cruzado, camisa de tela y sombrero; 1 modelo estático con pocos materiales."
+      },
+      {
+        "id": "canasta_glb",
+        "format": "GLB",
+        "brief": "Canasta de mimbre baja con productos intercambiables por instancias, no modelos duplicados."
+      }
+    ]
+  },
+  "implementation": {
+    "priority": [
+      "Persistencia de misiones y objetos",
+      "Bancal y sembrado de tres espacios",
+      "Cosecha por etapas con temporizador de juego",
+      "Evento de pájaros reutilizable",
+      "Entrega opcional en ciudad, cargada solo en el mapa urbano"
+    ],
+    "safeguards": [
+      "No modificar el viaje entre granja y ciudad para esta misión",
+      "Evitar instanciar NPC o modelos mientras se reproduce una cinemática",
+      "Subtítulos en la zona inferior, sin tapar controles",
+      "Si no hay sistema de cultivos, mostrar la misión como paquete de contenido pendiente y no como jugable"
+    ]
+  }
+}
