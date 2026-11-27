@@ -851,7 +851,73 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
  };
  ['error','warn'].forEach(level=>{const original=console[level].bind(console);console[level]=(...args)=>{window.cuidaAddLog('CONSOLE_'+level,args.map(safe).join(' '));original(...args);};});
 
- // Panel visual de Logs retirado; se conserva el registro interno para diagnóstico.
+ // Botón y panel de diagnóstico: visibles durante la carga y también dentro del juego.
+ const installLogsUI=()=>{
+  if(document.getElementById('cuidaLogsButton'))return;
+  const style=document.createElement('style');
+  style.id='cuidaLogsUiStyle';
+  style.textContent=
+   '#cuidaLogsButton{position:fixed!important;right:12px!important;bottom:12px!important;z-index:2147483601!important;display:flex!important;align-items:center!important;justify-content:center!important;min-width:66px!important;min-height:42px!important;padding:8px 13px!important;border:2px solid #9ac7ff!important;border-radius:24px!important;background:#13243f!important;color:#fff!important;font:900 13px Arial,sans-serif!important;box-shadow:0 3px 16px #000b!important;touch-action:manipulation!important;pointer-events:auto!important}' +
+   '#cuidaLogsPanel{position:fixed!important;right:10px!important;bottom:62px!important;z-index:2147483600!important;width:min(460px,calc(100vw - 20px))!important;max-height:78vh!important;overflow:hidden!important;padding:12px!important;border:2px solid #8ebcff!important;border-radius:14px!important;background:#101923!important;color:#f3f7ff!important;font:13px Arial,sans-serif!important;box-shadow:0 12px 42px #000d!important;pointer-events:auto!important;touch-action:pan-y!important;overscroll-behavior:contain!important}' +
+   '#cuidaLogsPanel button{min-height:38px!important;padding:8px 10px!important;border:1px solid #7898bd!important;border-radius:8px!important;background:#263d58!important;color:#fff!important;font-weight:800!important;touch-action:manipulation!important}' +
+   '#cuidaLogsPanel input{width:100%!important;min-height:42px!important;margin:8px 0!important;padding:9px!important;border:1px solid #7898bd!important;border-radius:8px!important;background:#07111c!important;color:#fff!important;font-size:16px!important;touch-action:manipulation!important}' +
+   '#cuidaLogsPanel #cuidaLogsOutput{max-height:48vh!important;min-height:150px!important;overflow:auto!important;margin:10px 0 0!important;padding:10px!important;border-radius:8px!important;background:#050b12!important;color:#dce8f7!important;white-space:pre-wrap!important;overflow-wrap:anywhere!important;font:11px/1.45 monospace!important;touch-action:pan-y!important;user-select:text!important;-webkit-user-select:text!important}' +
+   '#cuidaLogsPanel .cuidaLogsRow{display:flex;gap:8px;align-items:center}' +
+   '#cuidaLogsPanel .cuidaLogsRow button{flex:1}' +
+   '#cuidaLogsPanel .cuidaLogsHint{margin:8px 0;color:#b5c8df;font-size:12px;line-height:1.4}';
+  document.head.appendChild(style);
+  const button=document.createElement('button');
+  button.id='cuidaLogsButton';button.type='button';button.textContent='Logs';button.setAttribute('aria-label','Abrir diagnóstico Logs');
+  const panel=document.createElement('section');
+  panel.id='cuidaLogsPanel';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-label','Diagnóstico Logs');panel.style.display='none';
+  panel.innerHTML='<div class="cuidaLogsRow"><b style="flex:1;color:#a8ceff;font-size:15px">DIAGNÓSTICO · CUIDA A BENJA</b><button id="cuidaLogsClose" type="button" aria-label="Cerrar">✕</button></div><div id="cuidaLogsGate"><p class="cuidaLogsHint">Introduce el código para abrir el registro de esta sesión.</p><input id="cuidaLogsPassword" type="password" inputmode="text" autocomplete="off" placeholder="Código de diagnóstico" aria-label="Código de diagnóstico"><div class="cuidaLogsRow"><button id="cuidaLogsUnlock" type="button">ABRIR LOGS</button></div><p id="cuidaLogsGateMessage" class="cuidaLogsHint" aria-live="polite"></p></div><div id="cuidaLogsContent" style="display:none"><div class="cuidaLogsRow"><button id="cuidaLogsCopy" type="button">COPIAR</button><button id="cuidaLogsClear" type="button">LIMPIAR</button></div><pre id="cuidaLogsOutput"></pre></div>';
+  document.body.appendChild(button);
+  document.body.appendChild(panel);
+  const gate=panel.querySelector('#cuidaLogsGate');
+  const content=panel.querySelector('#cuidaLogsContent');
+  const password=panel.querySelector('#cuidaLogsPassword');
+  const message=panel.querySelector('#cuidaLogsGateMessage');
+  const output=panel.querySelector('#cuidaLogsOutput');
+  const open=()=>{
+   panel.style.display='block';gate.style.display='block';content.style.display='none';
+   password.value='';message.textContent='';
+   window.cuidaAddLog('INFO','Panel Logs abierto');
+   setTimeout(()=>password.focus(),50);
+  };
+  const close=()=>{panel.style.display='none';};
+  const unlock=()=>{
+   if(password.value.trim()!=='pipi'){message.textContent='Código incorrecto.';password.value='';return;}
+   gate.style.display='none';content.style.display='block';
+   output.textContent=window.cuidaGetLogs();output.scrollTop=output.scrollHeight;
+   window.cuidaAddLog('INFO','Panel de registros desbloqueado');
+  };
+  button.addEventListener('click',e=>{
+   e.preventDefault();e.stopPropagation();
+   if(panel.style.display==='block')close();else open();
+  });
+  panel.querySelector('#cuidaLogsClose').addEventListener('click',close);
+  panel.querySelector('#cuidaLogsUnlock').addEventListener('click',unlock);
+  password.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();unlock();}});
+  panel.querySelector('#cuidaLogsCopy').addEventListener('click',async()=>{
+   const text=window.cuidaGetLogs();
+   try{await navigator.clipboard.writeText(text);}
+   catch(_){
+    try{const ta=document.createElement('textarea');ta.value=text;panel.appendChild(ta);ta.select();document.execCommand('copy');ta.remove();}
+    catch(__){}
+   }
+  });
+  panel.querySelector('#cuidaLogsClear').addEventListener('click',()=>{
+   records=[];try{sessionStorage.removeItem(KEY);}catch(_){}
+   output.textContent='';window.cuidaAddLog('INFO','Registros limpiados por el usuario.');
+  });
+  panel.addEventListener('pointerdown',e=>e.stopPropagation());
+  panel.addEventListener('touchstart',e=>e.stopPropagation(),{passive:true});
+  panel.addEventListener('touchmove',e=>e.stopPropagation(),{passive:true});
+ };
+ if(document.body)installLogsUI();
+ else document.addEventListener('DOMContentLoaded',installLogsUI,{once:true});
+ window.addEventListener('load',installLogsUI,{once:true});
+
 
 
 })();
@@ -1435,6 +1501,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
 
         function showStartupError(error) {
             const msg = error?.stack || error?.message || String(error || 'Error desconocido');
+            if (window.cuidaAddLog) window.cuidaAddLog('STARTUP_ERROR', msg);
             startScreen.classList.add('error');
             if (loadingText) loadingText.textContent = 'Error';
             if (startupProgressPercent) startupProgressPercent.textContent = 'Error';
@@ -1530,6 +1597,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
         let loadingAppliedCount = 0;
 
         function setGitHubProgress(percent, status, countText) {
+            window.__cuidaStartupLastProgressAt = Date.now();
             const p = Math.max(0, Math.min(100, percent));
             currentLoadProgress = Math.max(currentLoadProgress, p);
             const shownProgress = currentLoadProgress;
@@ -1621,6 +1689,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
         }
 
         function githubLogMsg(message, type='info') {
+            window.__cuidaStartupLastProgressAt = Date.now();
             if (window.cuidaAddLog) window.cuidaAddLog('STARTUP_' + String(type || 'info').toUpperCase(), message);
             const stamp = new Date().toLocaleTimeString();
             const prefix = type === 'error' ? '❌' : type === 'ok' ? '✅' : 'ℹ️';
@@ -8896,6 +8965,7 @@ function startProtestMission() {
         const initializeCuidaBenja = () => {
             if (window.__cuidaBenjaBootStarted) return;
             window.__cuidaBenjaBootStarted = true;
+            window.__cuidaStartupLastProgressAt = Date.now();
 
             // Arrancar el cargador ANTES de intentar pantalla completa.
             // En algunos WebView Android requestFullscreen lanza/rechaza la promesa
@@ -8914,20 +8984,27 @@ function startProtestMission() {
                 }
             }, 80);
 
-            // Evita que una descarga o consulta de versión deje la pantalla en 0/0
-            // indefinidamente. Libera el bloqueo para que el botón de reintento funcione.
-            setTimeout(() => {
-                const visible = startScreen && getComputedStyle(startScreen).display !== 'none';
-                const percent = startupProgressPercent ? String(startupProgressPercent.textContent || '').trim() : '0%';
-                const count = startupProgressCount ? String(startupProgressCount.textContent || '').trim() : '';
-                const latest = startupLatestVersion ? String(startupLatestVersion.textContent || '').trim() : '-';
-                const noProgress = percent === '0%' && count === '0/0' && latest === '-';
-                if (!gameStarted && visible && noProgress && !startScreen.classList.contains('error')) {
-                    githubLoader.dataset.loading = '0';
+            // Vigilante de inicio: detecta cualquier pausa sin progreso, aunque
+            // Version.txt ya haya respondido y el listado de archivos siga bloqueado.
+            if (!window.__cuidaBenjaStartupWatchdog) {
+                window.__cuidaBenjaStartupWatchdog = window.setInterval(() => {
+                    const visible = startScreen && getComputedStyle(startScreen).display !== 'none';
+                    if (gameStarted || !visible || startScreen.classList.contains('error')) return;
+                    const last = Number(window.__cuidaStartupLastProgressAt || Date.now());
+                    const idleMs = Date.now() - last;
+                    if (idleMs < 35000) return;
+                    const percent = startupProgressPercent ? String(startupProgressPercent.textContent || '').trim() : '0%';
+                    const count = startupProgressCount ? String(startupProgressCount.textContent || '').trim() : '0/0';
+                    const detail = 'El inicio lleva ' + Math.round(idleMs / 1000) + ' s sin avanzar (progreso ' + percent + ', archivos ' + count + '). Pulsa Reintentar o abre Logs para ver el fallo.';
+                    if (githubLoader) {
+                        githubLoader.dataset.cancelled = '1';
+                        githubLoader.dataset.loading = '0';
+                    }
+                    if (window.cuidaAddLog) window.cuidaAddLog('STARTUP_STALLED', detail);
                     if (loadingText) loadingText.textContent = 'Sin respuesta';
-                    showStartupError(new Error('El inicio no recibió respuesta de GitHub y quedó en 0/0. Revisa la conexión y pulsa Reintentar o Jugar de todos modos.'));
-                }
-            }, 22000);
+                    showStartupError(new Error(detail));
+                }, 4000);
+            }
 
             try { Promise.resolve(enterFullscreen()).catch(() => {}); } catch (_) {}
             setTimeout(() => {
