@@ -6274,9 +6274,9 @@ function farmUpdateBenjaHud(){
 }else if(mode==='shop'){
   const buyables=Object.keys(FARM_GOODS).filter(type=>FARM_GOODS[type]&&FARM_GOODS[type].buyable!==false&&Number(FARM_GOODS[type].price)>0);
   html+='<div class="farmShopSectionTitle">🌽 COMIDA Y SUMINISTROS</div>';
-  buyables.filter(type=>FARM_GOODS[type].food||type==='madera'||type==='balde').forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'"><span class="farmPropPreview">'+(good.icon||'📦')+'</span><span>Comprar '+good.label+' · +good.price+'</span></button>';});
+  buyables.filter(type=>FARM_GOODS[type].food||type==='madera'||type==='balde').forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'"><span class="farmPropPreview">'+(good.icon||'📦')+'</span><span>Comprar '+good.label+' · $' +good.price+'</span></button>';});
   html+='<div class="farmShopSectionTitle">🛠️ CONSTRUCCIÓN E ILUMINACIÓN</div>';
-  buyables.filter(type=>FARM_GOODS[type].buildable).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'"><span class="farmPropPreview">'+(good.icon||'📦')+'</span><span>Comprar 1 '+good.label+' · +good.price+'</span></button>';});
+  buyables.filter(type=>FARM_GOODS[type].buildable).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'"><span class="farmPropPreview">'+(good.icon||'📦')+'</span><span>Comprar 1 '+good.label+' · $' +good.price+'</span></button>';});
   html+='<button type="button" data-farm-action="buy-hammer">🔨 Comprar martillo de construcción · $35'+(farmHammerOwned?' · YA COMPRADO':'')+'</button>';
   html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
  }else{
@@ -15755,7 +15755,7 @@ setInterval(()=>{try{farmPatchUiTick();farmUpdateWaterTankControls();}catch(e){c
 </html>
    +good.price+'</span></button>';});
   html+='<div class="farmShopSectionTitle">🛠️ CONSTRUCCIÓN E ILUMINACIÓN</div>';
-  buyables.filter(type=>FARM_GOODS[type].buildable).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'"><span class="farmPropPreview">'+(good.icon||'📦')+'</span><span>Comprar 1 '+good.label+' · +good.price+'</span></button>';});
+  buyables.filter(type=>FARM_GOODS[type].buildable).forEach(type=>{const good=FARM_GOODS[type];html+='<button type="button" data-farm-action="buy" data-good="'+type+'"><span class="farmPropPreview">'+(good.icon||'📦')+'</span><span>Comprar 1 '+good.label+' · $' +good.price+'</span></button>';});
   html+='<button type="button" data-farm-action="buy-hammer">🔨 Comprar martillo de construcción · $35'+(farmHammerOwned?' · YA COMPRADO':'')+'</button>';
   html+='<button type="button" class="primary" data-farm-action="close">TERMINAR COMPRA</button>';
  }else{
