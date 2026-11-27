@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.5",
+  "version": "1.11.6",
   "updates": [
+    {
+      "version": "1.11.6",
+      "title": "Reparación de tienda y monitor de rendimiento",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "Se reparan tres cadenas de JavaScript incompletas en las opciones de compra de comida y construcción.",
+        "Se agrega el botón Logs 2 con medición en vivo de FPS actuales, promedio, mínimos y máximos.",
+        "El monitor cuenta muestras por debajo de 30 y 20 FPS, estima el tiempo de cuadro y muestra historial de rendimiento.",
+        "Se muestran el mapa activo, el estado de carga de granja y ciudad, objetos de escena, draw calls, triángulos, geometrías, texturas, recursos y memoria disponible.",
+        "El informe de rendimiento se puede copiar desde el panel."
+      ]
+    },
     {
       "version": "1.11.5",
       "title": "Rescate de inicio y Logs restaurado",
