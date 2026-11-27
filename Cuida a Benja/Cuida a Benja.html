@@ -830,7 +830,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
   records.push(line);if(records.length>MAX)records=records.slice(-MAX);
   let total=records.reduce((n,x)=>n+x.length,0);while(total>MAX_CHARS&&records.length>20)total-=records.shift().length;
   try{sessionStorage.setItem(KEY,JSON.stringify(records));}catch(_){}
-  const out=document.getElementById('cuidaLogsOutput');if(out&&document.getElementById('cuidaLogsPanel')?.style.display!=='none'){out.textContent=records.join('\n');out.scrollTop=out.scrollHeight;}
+
  };
  window.cuidaGetLogs=()=>records.join('\n');
  window.cuidaAddLog('INFO','Diagnóstico iniciado. URL: '+location.href.split('?')[0]+' | navegador: '+navigator.userAgent);
@@ -960,7 +960,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
   }else if(!settingsScroll){window.cuidaAddLog&&window.cuidaAddLog('UI_ERROR','No se encontro el panel Ajustes para insertar Log.');}
   document.body.appendChild(box);panel=box;
   const close=()=>{box.style.display='none';};
-  button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(box.style.display==='block')close();else{const old=document.getElementById('cuidaLogsPanel');if(old)old.style.display='none';box.style.display='block';draw();}});
+  button.addEventListener('click',e=>{e.preventDefault();e.stopPropagation();if(box.style.display==='block')close();else{box.style.display='block';draw();}});
   box.querySelector('#cuidaPerfClose').addEventListener('click',close);
   box.querySelector('#cuidaPerfRefresh').addEventListener('click',()=>{collect();draw();});
   box.querySelector('#cuidaPerfReset').addEventListener('click',()=>{samples.length=0;draw();});
