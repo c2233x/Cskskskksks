@@ -3902,7 +3902,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 if(cursor<limit-.05)cityPushRect(roadVertices,roadIndices,x,(cursor+limit)/2,width,limit-cursor,.24);
             }
             for(const x of axes)for(const z of axes)cityPushRect(roadVertices,roadIndices,x,z,width,width,.24);
-            const roadMat=new THREE.MeshStandardMaterial({color:0x3c444b,emissive:0x000000,emissiveIntensity:0,roughness:1,metalness:0,side:THREE.DoubleSide});
+            const roadMat=new THREE.MeshStandardMaterial({color:0x343b40,emissive:0x000000,emissiveIntensity:0,roughness:1,metalness:0,side:THREE.DoubleSide,fog:false});
             const road=cityMakeSurface(roadVertices,roadIndices,roadMat,'Ciudad_RedVialContinua',5);
             if(road){road.userData={isCityRoadNetwork:true,roadTop:CITY_ROAD_TOP};destructibleProps.push(road);}
             for(const z of axes){
@@ -3923,7 +3923,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 cityPushRect(markVertices,markIndices,x-10.2,z+k*2.05,2.5,.72,.31);
                 cityPushRect(markVertices,markIndices,x+10.2,z+k*2.05,2.5,.72,.31);
             }
-            const markMat=new THREE.MeshBasicMaterial({color:0xe6d9a0,transparent:true,opacity:.9,depthWrite:false,side:THREE.DoubleSide});
+            const markMat=new THREE.MeshStandardMaterial({color:0xb9ad8d,emissive:0x000000,emissiveIntensity:0,roughness:1,metalness:0,side:THREE.DoubleSide,fog:false});
             cityMakeSurface(markVertices,markIndices,markMat,'Ciudad_LineasYCruces',6);
         }
         function buildSingleRoad(x,z,w=24,d=24){
@@ -3941,7 +3941,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
 
         function createBuildings(){
             const colors=[0x34434b,0x48565d,0x756d61,0x56656a,0x3d4b54,0x6e7977,0x4c5a63],winTex=createWindowTexture();
-            sharedBuildingMaterials=colors.map(col=>{const wt=winTex.clone();wt.needsUpdate=true;wt.repeat.set(2,4);return new THREE.MeshStandardMaterial({color:col,roughness:.82,emissiveMap:wt,emissive:0x222222,emissiveIntensity:.62});});
+            sharedBuildingMaterials=colors.map(col=>{const wt=winTex.clone();wt.needsUpdate=true;wt.repeat.set(2,4);return new THREE.MeshStandardMaterial({color:col,roughness:.9,emissiveMap:wt,emissive:0x111111,emissiveIntensity:.12,fog:false});});
             const slots=[-175,-105,-35,35,105,175];let made=0;
             for(const x of slots)for(const z of slots){
                 if((Math.abs(x)===35&&Math.abs(z)===35)||(x===105&&z===105))continue;
@@ -3973,7 +3973,7 @@ function removeCarRadioStation(index, reason='Sin señal'){
         function createBillboards(){
             const places=[[-14,-112],[14,-37],[-14,37],[14,112],[-112,14],[112,-14]],count=IS_MOBILE_DEVICE?4:6;
             const backingMat=new THREE.MeshStandardMaterial({color:0x514534,roughness:.86}),frameMat=new THREE.MeshStandardMaterial({color:0x30271f,roughness:.82});
-            const boardMat=new THREE.MeshStandardMaterial({color:0xffffff,emissive:0x333333,emissiveIntensity:.55,roughness:.86});
+            const boardMat=new THREE.MeshStandardMaterial({color:0xe1ded2,emissive:0x000000,emissiveIntensity:0,roughness:.95,metalness:0,fog:false});
             for(let i=0;i<count;i++){
                 const [x,z]=places[i],group=new THREE.Group();
                 const pole=new THREE.Mesh(new THREE.CylinderGeometry(.32,.42,8,8),frameMat);pole.position.y=4;group.add(pole);
@@ -4033,6 +4033,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
             const treePoints=[[-19,-19],[19,-19],[-19,19],[19,19],[-19,0],[19,0],[0,-19],[0,19]];
             for(let i=0;i<treePoints.length;i++){
                 const [x,z]=treePoints[i],scale=.85+(i%3)*.12,tree=new THREE.Group();
+                const treeWorldX=parkX+x,treeWorldZ=parkZ+z,treeRoadClearance=CITY_STREET_HALF+4;
+                if(CITY_STREET_AXES.some(axis=>Math.abs(treeWorldX-axis)<treeRoadClearance||Math.abs(treeWorldZ-axis)<treeRoadClearance))continue;
                 const trunk=new THREE.Mesh(new THREE.CylinderGeometry(.32,.5,4.2,6),trunkMat);trunk.position.y=2.1;tree.add(trunk);
                 const crown=new THREE.Mesh(new THREE.SphereGeometry(2.6*scale,8,7),leafMat);crown.position.y=5.1;tree.add(crown);
                 tree.position.set(x,0,z);park.add(tree);
@@ -4988,59 +4990,83 @@ function updateFarmCinematic(){
             }
         }
         function createFarmNature(){
-            if(!farmGroup || !THREE.InstancedMesh)return;
-            const dummy=new THREE.Object3D(),sectorCount=8,treeBuckets=Array.from({length:sectorCount},()=>[]),pineBuckets=Array.from({length:sectorCount},()=>[]);
-            const trunkMat=new THREE.MeshLambertMaterial({color:0x65452b}),leafMat=new THREE.MeshLambertMaterial({color:0x3f7e3d}),pineMat=new THREE.MeshLambertMaterial({color:0x285d3b});
-            for(let i=0;i<72;i++){
-                const angle=i*2.39996+(Math.random()-.5)*.16,dist=158+Math.random()*83,scale=.72+Math.random()*.5;
-                const x=FARM_CENTER.x+Math.cos(angle)*dist,z=FARM_CENTER.z+Math.sin(angle)*dist;
-                if(Math.hypot(x-(FARM_CENTER.x-108),z-(FARM_CENTER.z-48))<28)continue;
-                if(Math.hypot(x-(FARM_CENTER.x+112),z-(FARM_CENTER.z-105))<28)continue;
-                treeBuckets[Math.min(sectorCount-1,Math.floor(((angle%(Math.PI*2)+Math.PI*2)%(Math.PI*2))/(Math.PI*2)*sectorCount))].push({x,z,scale,angle});
-            }
-            for(let sector=0;sector<sectorCount;sector++){
-                const trees=treeBuckets[sector];if(!trees.length)continue;
-                const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.38,.62,5.2,5),trunkMat,trees.length);
-                const crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.5,0),leafMat,trees.length);
-                trees.forEach((tree,i)=>{
-                    const y=farmGroundAt(tree.x,tree.z),sc=tree.scale;
-                    addFarmCollider(tree.x,tree.z,1.35*sc,1.35*sc,0,'farm-tree',6*sc);
-                    dummy.position.set(tree.x,y+2.6*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc,sc);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
-                    dummy.position.set(tree.x,y+6.3*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc*1.08,sc);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
-                });
-                for(const mesh of [trunks,crowns]){mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=!IS_MOBILE_DEVICE;mesh.receiveShadow=false;mesh.frustumCulled=false;farmGroup.add(mesh);}
-            }
-            for(let i=0;i<32;i++){
-                const angle=i*2.39996+.8,dist=184+Math.random()*95,scale=.72+Math.random()*.55;
-                const x=FARM_CENTER.x+Math.cos(angle)*dist,z=FARM_CENTER.z+Math.sin(angle)*dist;
-                pineBuckets[Math.min(sectorCount-1,Math.floor(((angle%(Math.PI*2)+Math.PI*2)%(Math.PI*2))/(Math.PI*2)*sectorCount))].push({x,z,scale,angle});
-            }
-            for(let sector=0;sector<sectorCount;sector++){
-                const pinesData=pineBuckets[sector];if(!pinesData.length)continue;
-                const pines=new THREE.InstancedMesh(new THREE.ConeGeometry(3.3,9,6),pineMat,pinesData.length);
-                pinesData.forEach((p,i)=>{const y=farmGroundAt(p.x,p.z);addFarmCollider(p.x,p.z,1.45*p.scale,1.45*p.scale,0,'farm-pine',9*p.scale);dummy.position.set(p.x,y+4.3*p.scale,p.z);dummy.rotation.set(0,p.angle,0);dummy.scale.set(p.scale,p.scale,p.scale);dummy.updateMatrix();pines.setMatrixAt(i,dummy.matrix);});
-                pines.instanceMatrix.needsUpdate=true;pines.castShadow=false;pines.receiveShadow=false;pines.frustumCulled=false;farmGroup.add(pines);
-            }
-            const grassMat=new THREE.MeshLambertMaterial({color:0x4e8a39});
-            const flowerMat=new THREE.MeshBasicMaterial({color:0xf5e7bd});
-            const flowerPositions=new Float32Array(180*3);
-            for(let i=0;i<180;i++){
-                const a=i*2.39996,dist=88+Math.random()*125;
-                flowerPositions[i*3]=FARM_CENTER.x+Math.cos(a)*dist;
-                flowerPositions[i*3+1]=farmGroundAt(flowerPositions[i*3],FARM_CENTER.z+Math.sin(a)*dist)+.2;
-                flowerPositions[i*3+2]=FARM_CENTER.z+Math.sin(a)*dist;
-            }
-            const flowerGeo=new THREE.BufferGeometry();flowerGeo.setAttribute('position',new THREE.BufferAttribute(flowerPositions,3));
-            const flowerCanvas=document.createElement('canvas');flowerCanvas.width=64;flowerCanvas.height=64;const flowerCtx=flowerCanvas.getContext('2d');
-            flowerCtx.clearRect(0,0,64,64);flowerCtx.fillStyle='#f2e5bc';
-            for(let p=0;p<5;p++){const a=p*Math.PI*2/5;flowerCtx.beginPath();flowerCtx.arc(32+Math.cos(a)*10,32+Math.sin(a)*10,8,0,Math.PI*2);flowerCtx.fill();}
-            flowerCtx.fillStyle='#e0b84a';flowerCtx.beginPath();flowerCtx.arc(32,32,6,0,Math.PI*2);flowerCtx.fill();
-            const flowerTexture=new THREE.CanvasTexture(flowerCanvas);
-            const flowers=new THREE.Points(flowerGeo,new THREE.PointsMaterial({color:0xf5e7bd,map:flowerTexture,transparent:true,alphaTest:.18,size:1.55,sizeAttenuation:true,depthWrite:false}));
-            flowers.frustumCulled=true;farmGroup.add(flowers);
-        }
+ if(!farmGroup||!THREE.InstancedMesh)return;
+ const dummy=new THREE.Object3D(),sectorCount=8;
+ const treeBuckets=Array.from({length:sectorCount},()=>[]),pineBuckets=Array.from({length:sectorCount},()=>[]);
+ const trunkMat=new THREE.MeshLambertMaterial({color:0x65452b}),leafMat=new THREE.MeshLambertMaterial({color:0x3f7e3d}),pineMat=new THREE.MeshLambertMaterial({color:0x285d3b});
+ // Zonas reservadas para edificios, talleres, caminos, vehículos y equipos de la granja.
+ const protectedAreas=[];
+ const protect=(point,radius)=>{if(point&&Number.isFinite(point.x)&&Number.isFinite(point.z))protectedAreas.push({x:point.x,z:point.z,r:radius});};
+ protect({x:FARM_CENTER.x-108,z:FARM_CENTER.z-48},34);
+ protect({x:FARM_CENTER.x+112,z:FARM_CENTER.z-105},34);
+ protect(FARM_STORAGE_POS,54);protect(FARM_SHOP_POS,30);protect(FARM_WORK_POS,28);
+ protect(FARM_COOP_POS,28);protect(FARM_DELIVERY_POS,34);protect(FARM_WELL_POS,24);
+ protect(FARM_TRACTOR_POS,28);protect(FARM_WATER_STORAGE_POS,25);protect(FARM_WORKSHOP_POS,46);
+ protect(FARM_TV_POS,17);protect(FARM_RADIO_POS,15);protect(FARM_PIG_POS,27);protect(FARM_REPAIR_POS,27);
+ const treeSpotClear=(x,z,extra=5)=>{
+  for(const area of protectedAreas)if(Math.hypot(x-area.x,z-area.z)<area.r+extra)return false;
+  // Reserva todo el corredor de la carretera hacia ciudad y su letrero lateral.
+  const dx=x-FARM_CENTER.x,dz=z-FARM_CENTER.z;
+  const along=dx*FARM_TUNNEL_DIR_X+dz*FARM_TUNNEL_DIR_Z;
+  const across=-dx*FARM_TUNNEL_DIR_Z+dz*FARM_TUNNEL_DIR_X;
+  if(along>=105-extra&&along<=276+extra&&Math.abs(across)<21+extra)return false;
+  return true;
+ };
+ const sectorFor=angle=>Math.min(sectorCount-1,Math.floor(((angle%(Math.PI*2)+Math.PI*2)%(Math.PI*2))/(Math.PI*2)*sectorCount));
+ let treeCount=0;
+ for(let attempt=0;attempt<360&&treeCount<72;attempt++){
+  const angle=attempt*2.39996+(Math.random()-.5)*.16,dist=158+Math.random()*83,scale=.72+Math.random()*.5;
+  const x=FARM_CENTER.x+Math.cos(angle)*dist,z=FARM_CENTER.z+Math.sin(angle)*dist;
+  if(!treeSpotClear(x,z,5))continue;
+  treeBuckets[sectorFor(angle)].push({x,z,scale,angle});treeCount++;
+ }
+ for(let sector=0;sector<sectorCount;sector++){
+  const trees=treeBuckets[sector];if(!trees.length)continue;
+  const trunks=new THREE.InstancedMesh(new THREE.CylinderGeometry(.38,.62,5.2,5),trunkMat,trees.length);
+  const crowns=new THREE.InstancedMesh(new THREE.IcosahedronGeometry(3.5,0),leafMat,trees.length);
+  trees.forEach((tree,i)=>{
+   const y=farmGroundAt(tree.x,tree.z),sc=tree.scale;
+   addFarmCollider(tree.x,tree.z,1.35*sc,1.35*sc,0,'farm-tree',6*sc);
+   dummy.position.set(tree.x,y+2.6*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc,sc);dummy.updateMatrix();trunks.setMatrixAt(i,dummy.matrix);
+   dummy.position.set(tree.x,y+6.3*sc,tree.z);dummy.rotation.set(0,tree.angle,0);dummy.scale.set(sc,sc*1.08,sc);dummy.updateMatrix();crowns.setMatrixAt(i,dummy.matrix);
+  });
+  for(const mesh of [trunks,crowns]){mesh.instanceMatrix.needsUpdate=true;mesh.castShadow=!IS_MOBILE_DEVICE;mesh.receiveShadow=false;mesh.frustumCulled=false;farmGroup.add(mesh);}
+ }
+ let pineCount=0;
+ for(let attempt=0;attempt<220&&pineCount<32;attempt++){
+  const angle=attempt*2.39996+.8,dist=184+Math.random()*95,scale=.72+Math.random()*.55;
+  const x=FARM_CENTER.x+Math.cos(angle)*dist,z=FARM_CENTER.z+Math.sin(angle)*dist;
+  if(!treeSpotClear(x,z,6))continue;
+  pineBuckets[sectorFor(angle)].push({x,z,scale,angle});pineCount++;
+ }
+ for(let sector=0;sector<sectorCount;sector++){
+  const pinesData=pineBuckets[sector];if(!pinesData.length)continue;
+  const pines=new THREE.InstancedMesh(new THREE.ConeGeometry(3.3,9,6),pineMat,pinesData.length);
+  pinesData.forEach((p,i)=>{
+   const y=farmGroundAt(p.x,p.z);
+   addFarmCollider(p.x,p.z,1.45*p.scale,1.45*p.scale,0,'farm-pine',9*p.scale);
+   dummy.position.set(p.x,y+4.3*p.scale,p.z);dummy.rotation.set(0,p.angle,0);dummy.scale.set(p.scale,p.scale,p.scale);dummy.updateMatrix();pines.setMatrixAt(i,dummy.matrix);
+  });
+  pines.instanceMatrix.needsUpdate=true;pines.castShadow=false;pines.receiveShadow=false;pines.frustumCulled=false;farmGroup.add(pines);
+ }
+ const flowerPositions=new Float32Array(180*3);
+ for(let i=0;i<180;i++){
+  const a=i*2.39996,dist=88+Math.random()*125;
+  flowerPositions[i*3]=FARM_CENTER.x+Math.cos(a)*dist;
+  flowerPositions[i*3+1]=farmGroundAt(flowerPositions[i*3],FARM_CENTER.z+Math.sin(a)*dist)+.2;
+  flowerPositions[i*3+2]=FARM_CENTER.z+Math.sin(a)*dist;
+ }
+ const flowerGeo=new THREE.BufferGeometry();flowerGeo.setAttribute('position',new THREE.BufferAttribute(flowerPositions,3));
+ const flowerCanvas=document.createElement('canvas');flowerCanvas.width=64;flowerCanvas.height=64;const flowerCtx=flowerCanvas.getContext('2d');
+ flowerCtx.clearRect(0,0,64,64);flowerCtx.fillStyle='#f2e5bc';
+ for(let p=0;p<5;p++){const a=p*Math.PI*2/5;flowerCtx.beginPath();flowerCtx.arc(32+Math.cos(a)*10,32+Math.sin(a)*10,8,0,Math.PI*2);flowerCtx.fill();}
+ flowerCtx.fillStyle='#e0b84a';flowerCtx.beginPath();flowerCtx.arc(32,32,6,0,Math.PI*2);flowerCtx.fill();
+ const flowerTexture=new THREE.CanvasTexture(flowerCanvas);
+ const flowers=new THREE.Points(flowerGeo,new THREE.PointsMaterial({color:0xf5e7bd,map:flowerTexture,transparent:true,alphaTest:.18,size:1.55,sizeAttenuation:true,depthWrite:false}));
+ flowers.frustumCulled=true;farmGroup.add(flowers);
+}
 
-        function createFarmMissionProps(){
+function createFarmMissionProps(){
             const wood=new THREE.MeshStandardMaterial({color:0x76502f,roughness:.92});
             const darkWood=new THREE.MeshStandardMaterial({color:0x49301e,roughness:.95});
             const roof=new THREE.MeshStandardMaterial({color:0x8b4937,roughness:.9});
@@ -5590,9 +5616,9 @@ function farmWaterCapacity(){return 10+Math.max(1,Math.min(4,farmWaterStorageLev
         }
 function createFarmCityRoad(){
             if(!farmGroup||farmGroup.getObjectByName('CarreteraRumboACiudad'))return;
-            const road=new THREE.Group();road.name='CarreteraRumboACiudad';
+            const road=new THREE.Group();road.name='CarreteraRumboACiudad';road.frustumCulled=false;
             const startDistance=115,endDistance=260,width=14,segment=10;
-            const asphaltMat=new THREE.MeshStandardMaterial({color:0x454d53,roughness:.98}),edgeMat=new THREE.MeshBasicMaterial({color:0xe4d7b2}),lineMat=new THREE.MeshBasicMaterial({color:0xf0d36a});
+            const asphaltMat=new THREE.MeshStandardMaterial({color:0x3b4246,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}),edgeMat=new THREE.MeshStandardMaterial({color:0x9e967f,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}),lineMat=new THREE.MeshStandardMaterial({color:0xb8a16a,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false});
             for(let distance=startDistance;distance<endDistance;distance+=segment){
                 const next=Math.min(endDistance,distance+segment);
                 const x1=FARM_CENTER.x+FARM_TUNNEL_DIR_X*distance,z1=FARM_CENTER.z+FARM_TUNNEL_DIR_Z*distance;
@@ -5640,7 +5666,8 @@ function createFarmCityRoad(){
             const cv=document.createElement('canvas');cv.width=512;cv.height=128;const ctx=cv.getContext('2d');
             ctx.fillStyle='#174b2b';ctx.fillRect(0,0,512,128);ctx.strokeStyle='#f3df9b';ctx.lineWidth=9;ctx.strokeRect(5,5,502,118);
             ctx.fillStyle='#fff2c4';ctx.font='bold 54px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CIUDAD',256,65);
-            const sign=new THREE.Mesh(new THREE.PlaneGeometry(9,2.25),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(cv),side:THREE.DoubleSide}));
+            const tunnelSignTexture=new THREE.CanvasTexture(cv);tunnelSignTexture.encoding=THREE.sRGBEncoding;
+ const sign=new THREE.Mesh(new THREE.PlaneGeometry(9,2.25),new THREE.MeshStandardMaterial({map:tunnelSignTexture,side:THREE.DoubleSide,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}));
             sign.position.set(0,17,.4);tunnel.add(sign);
             tunnel.position.set(FARM_TUNNEL_POS.x,farmGroundAt(FARM_TUNNEL_POS.x,FARM_TUNNEL_POS.z),FARM_TUNNEL_POS.z);
             tunnel.rotation.y=-Math.PI/2-FARM_TUNNEL_ANGLE;
@@ -5653,7 +5680,8 @@ function createFarmCityRoad(){
             const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');
             c.fillStyle='#174b2b';c.fillRect(0,0,1024,256);c.strokeStyle='#f3df9b';c.lineWidth=14;c.strokeRect(8,8,1008,240);
             c.fillStyle='#fff2c4';c.font='bold 112px Arial';c.textAlign='center';c.textBaseline='middle';c.fillText('RUMBO A CIUDAD  →',512,132);
-            const face=new THREE.Mesh(new THREE.PlaneGeometry(17.5,4),new THREE.MeshBasicMaterial({map:new THREE.CanvasTexture(canvas),side:THREE.DoubleSide}));
+            const signTexture=new THREE.CanvasTexture(canvas);signTexture.encoding=THREE.sRGBEncoding;
+            const face=new THREE.Mesh(new THREE.PlaneGeometry(17.5,4),new THREE.MeshStandardMaterial({map:signTexture,color:0xd8d3c4,side:THREE.DoubleSide,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}));
             face.position.set(0,7.8,.4);signGroup.add(face);
             const signDistance=165,signLateral=17;
             const signX=FARM_CENTER.x+FARM_TUNNEL_DIR_X*signDistance-FARM_TUNNEL_DIR_Z*signLateral;
@@ -6949,34 +6977,41 @@ async function loadCityMapModule(){
  if(cityMapScriptPromise)return cityMapScriptPromise;
  cityMapScriptPromise=(async()=>{
   const urls=[
-   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.11.1',
-   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.11.1'
+   'https://raw.githubusercontent.com/c2233x/Cskskskksks/main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.11.2',
+   'https://cdn.jsdelivr.net/gh/c2233x/Cskskskksks@main/Cuida%20a%20Benja/Mapas/Ciudad.js?v=1.11.2'
   ];
   let lastError=null;
   for(const url of urls){
    try{
     await new Promise((resolve,reject)=>{
-     const script=document.createElement('script');
+     const script=document.createElement('script');let settled=false;
+     const finish=(error)=>{
+      if(settled)return;settled=true;clearTimeout(timeout);
+      script.onload=null;script.onerror=null;
+      if(error){script.remove();reject(error);}else resolve();
+     };
+     const timeout=setTimeout(()=>finish(new Error('Tiempo de espera agotado al descargar el mapa de ciudad.')),5500);
      script.src=url;script.async=false;script.dataset.cityMapLoader='1';
      script.onload=()=>{
       if(window.CUIDA_BENJA_CITY_MAP&&typeof window.CUIDA_BENJA_CITY_MAP.buildWorld==='function'){
-       CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP;resolve();
-      }else{script.remove();reject(new Error('El archivo no publicó su constructor buildWorld().'));}
+       CITY_MAP_CONFIG=window.CUIDA_BENJA_CITY_MAP;finish();
+      }else finish(new Error('El archivo de ciudad no publicó su constructor buildWorld().'));
      };
-     script.onerror=()=>{script.remove();reject(new Error('No se pudo descargar '+url));};
+     script.onerror=()=>finish(new Error('No se pudo descargar el mapa desde '+url));
      document.head.appendChild(script);
     });
     return CITY_MAP_CONFIG;
    }catch(error){lastError=error;}
   }
-  // Respaldo local: conserva el viaje aunque GitHub Raw o jsDelivr no respondan.
+  // El respaldo local evita que una falla de red deje al jugador congelado en el túnel.
   CITY_MAP_CONFIG=CITY_MAP_FALLBACK;
-  showToast('Ciudad: se usará el mapa de respaldo. '+(lastError&&lastError.message?lastError.message:''));
+  showToast('Ciudad: usando el mapa de respaldo. '+(lastError&&lastError.message?lastError.message:''));
   return CITY_MAP_CONFIG;
  })();
  try{return await cityMapScriptPromise;}
  catch(error){cityMapScriptPromise=null;throw error;}
 }
+
 async function ensureCityWorldLoaded(){
  await loadCityMapModule();
  if(cityWorldLoaded&&cityWorldGroup){
@@ -7069,7 +7104,7 @@ function ensureCityFieldRoadSign(){
  ctx.strokeStyle='#f3df9b';ctx.lineWidth=16;ctx.strokeRect(10,10,1004,236);
  ctx.fillStyle='#fff2c4';ctx.font='bold 176px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('CAMPO',512,132);
  const tex=new THREE.CanvasTexture(canvas);tex.encoding=THREE.sRGBEncoding;tex.needsUpdate=true;
- const face=new THREE.Mesh(new THREE.PlaneGeometry(19,5),new THREE.MeshBasicMaterial({map:tex,side:THREE.DoubleSide,depthWrite:false}));
+ const face=new THREE.Mesh(new THREE.PlaneGeometry(19,5),new THREE.MeshStandardMaterial({map:tex,side:THREE.DoubleSide,roughness:1,metalness:0,emissive:0x000000,emissiveIntensity:0,fog:false}));
  face.position.set(gate.x+18,10.4,gate.z+4.48);face.renderOrder=26;road.add(face);
  road.frustumCulled=false;cityWorldGroup.add(road);
 }
@@ -7082,34 +7117,55 @@ function hideMapTravelOverlay(){
  const panel=document.getElementById('mapTravelOverlay');if(panel){panel.classList.remove('active');panel.style.display='none';}
 }
 async function travelToCity(){
- if(!storyModeActive||farmCityMode||mapTravelInProgress)return;
+ if(!storyModeActive||mapTravelInProgress)return;
+ if(farmCityMode&&cityWorldLoaded)return;
+ if(farmCityMode&&!cityWorldLoaded){farmCityMode=false;if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;}
  cancelFarmBuildPlacement();
  const wasDriving=!!(isDriving&&drivenCar);
+ const characterHomePose=character?{x:character.position.x,y:character.position.y,z:character.position.z,rotationY:character.rotation.y,visible:character.visible}:null;
  cityTravelVehicle=wasDriving?drivenCar:null;
  cityTravelVehicleWasPickup=!!(cityTravelVehicle&&cityTravelVehicle===farmPickupVehicle);
  if(cityTravelVehicle){
   cityTravelVehicleHomePose={x:cityTravelVehicle.position.x,y:cityTravelVehicle.position.y,z:cityTravelVehicle.position.z,rotationY:cityTravelVehicle.rotation.y,parent:cityTravelVehicle.parent};
   if(cityTravelVehicle.parent!==scene)scene.add(cityTravelVehicle);
   cityTravelVehicle.visible=true;cityTravelVehicle.frustumCulled=false;
- }else{cityTravelVehicleHomePose=null;}
+ }else cityTravelVehicleHomePose=null;
+ farmUsePending=false;farmUsePulseUntil=0;if(attackPhase===2){isAttacking=false;attackPhase=0;}
  mapTravelInProgress=true;isCinematic=true;stopFarmAmbience();
  setFarmTVPower(false);setFarmRadioPower(false);closeFarmTV();closeFarmRadio();
  const inv=document.getElementById('farmInventoryPanel');if(inv)inv.style.display='none';
- showMapTravelOverlay('RUMBO A LA CIUDAD','Viajando con el vehiculo y su conductor…');
+ showMapTravelOverlay('RUMBO A LA CIUDAD','Atravesando el tunel de la montaña…');
  try{
-  await new Promise(resolve=>setTimeout(resolve,650));await ensureCityWorldLoaded();await enterCityMap(!!cityTravelVehicle);
+  await new Promise(resolve=>setTimeout(resolve,350));
+  await ensureCityWorldLoaded();
+  await enterCityMap(!!cityTravelVehicle);
+  if(!farmCityMode||!cityWorldLoaded)throw new Error('La ciudad no terminó de activarse.');
+  cityTravelRetryAt=0;
   showMapTravelOverlay('LLEGASTE A LA CIUDAD','Llegaste a la carretera de entrada. El cartel CAMPO marca el camino de regreso.');
-  await new Promise(resolve=>setTimeout(resolve,550));
+  await new Promise(resolve=>setTimeout(resolve,450));
  }catch(error){
+  // Reversa completa: ningún fallo de descarga o construcción deja ocultos la granja o los controles.
+  farmCityMode=false;waveActive=false;waitingNextWave=false;
+  try{if(cityWorldGroup)unloadCityWorld();}catch(_){if(cityWorldGroup&&cityWorldGroup.parent)cityWorldGroup.parent.remove(cityWorldGroup);cityWorldGroup=null;cityWorldLoaded=false;}
+  if(farmGroup)farmGroup.visible=true;if(benjaPig)benjaPig.visible=true;
+  if(scene&&scene.fog){scene.fog.near=IS_MOBILE_DEVICE?145:140;scene.fog.far=IS_MOBILE_DEVICE?385:420;}
+  if(characterHomePose&&character){character.position.set(characterHomePose.x,characterHomePose.y,characterHomePose.z);character.rotation.y=characterHomePose.rotationY;character.visible=characterHomePose.visible;}
   if(cityTravelVehicle&&cityTravelVehicleHomePose){
-   const home=cityTravelVehicleHomePose;if(home.parent&&cityTravelVehicle.parent!==home.parent)home.parent.add(cityTravelVehicle);
-   cityTravelVehicle.position.set(home.x,home.y,home.z);cityTravelVehicle.rotation.y=home.rotationY;
+   const home=cityTravelVehicleHomePose;
+   if(home.parent&&cityTravelVehicle.parent!==home.parent)home.parent.add(cityTravelVehicle);
+   cityTravelVehicle.position.set(home.x,home.y,home.z);cityTravelVehicle.rotation.y=home.rotationY;cityTravelVehicle.visible=true;
+   if(wasDriving){drivenCar=cityTravelVehicle;isDriving=true;if(character)character.visible=false;}
   }
+  if(cityTravelVehicleWasPickup)farmPickupInCity=false;
   cityTravelVehicle=null;cityTravelVehicleHomePose=null;cityTravelVehicleWasPickup=false;
-  cityTravelRetryAt=Date.now()+12000;const retry=document.getElementById('farmGoCity');if(retry)retry.style.display='none';
-  showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga')+'. Puedes volver a intentarlo.');
- }finally{hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;}
+  if(farmGuideMarker)farmGuideMarker.visible=true;
+  cityTravelRetryAt=Date.now()+5000;
+  showToast('No se pudo cargar la ciudad: '+(error&&error.message?error.message:'error de carga')+'. La granja sigue activa; intenta de nuevo.');
+ }finally{
+  hideMapTravelOverlay();mapTravelInProgress=false;isCinematic=false;
+ }
 }
+
 async function travelToFarm(){
  if(!farmCityMode||mapTravelInProgress)return;
  mapTravelInProgress=true;isCinematic=true;
@@ -7286,17 +7342,32 @@ function setupFarmUiControls(){
  const useButton=document.getElementById('interactionPrompt');
  if(useButton&&!useButton.dataset.useBound){
   useButton.dataset.useBound='1';useButton.setAttribute('role','button');useButton.setAttribute('tabindex','0');
+  let usePointerId=null;
+  const releaseUse=()=>{
+   farmUsePending=false;farmUsePulseUntil=0;
+   if(attackPhase===2){isAttacking=false;attackPhase=0;}
+   usePointerId=null;
+  };
   const activate=()=>{
    if(!gameStarted||isDead||isCinematic||isDriving)return;
    const now=performance.now();if(now-farmLastUsePulse<260)return;
-   farmLastUsePulse=now;farmUsePending=true;farmUsePendingAt=now;farmUsePulseUntil=now+340;
+   farmLastUsePulse=now;farmUsePending=true;farmUsePendingAt=now;farmUsePulseUntil=now+300;
    isAttacking=true;attackPhase=2;
-   setTimeout(()=>{if(farmLastUsePulse===now){if(attackPhase===2){isAttacking=false;attackPhase=0;}farmUsePulseUntil=0;}},360);
+   setTimeout(()=>{if(farmLastUsePulse===now){if(attackPhase===2){isAttacking=false;attackPhase=0;}farmUsePulseUntil=0;}},340);
   };
   const useEvent=e=>{e.preventDefault();e.stopPropagation();activate();};
-  useButton.addEventListener('pointerup',useEvent);
+  useButton.addEventListener('pointerdown',e=>{
+   usePointerId=e.pointerId;
+   try{useButton.setPointerCapture(e.pointerId);}catch(_){}
+  },{passive:true});
+  // Un solo disparo por toque: pointerup ya no compite con el click sintetizado por Android.
   useButton.addEventListener('click',useEvent);
-  useButton.addEventListener('pointercancel',()=>{farmUsePending=false;isAttacking=false;attackPhase=0;farmUsePulseUntil=0;});
+  useButton.addEventListener('pointercancel',releaseUse,{passive:true});
+  useButton.addEventListener('lostpointercapture',releaseUse,{passive:true});
+  useButton.addEventListener('touchcancel',releaseUse,{passive:true});
+  window.addEventListener('pointercancel',e=>{if(usePointerId===e.pointerId)releaseUse();},{passive:true});
+  window.addEventListener('blur',releaseUse);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)releaseUse();});
   useButton.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();activate();}});
  }
  const jobs=document.getElementById('farmQuickJobs'),go=document.getElementById('farmGoCity'),close=document.getElementById('cityJobClose'),list=document.getElementById('cityJobList');
@@ -7541,9 +7612,14 @@ function updateFarmRaider(npc,groundY){
  }
  if(farmCityMode)return;
  const travelActor=(isDriving&&drivenCar&&drivenCar.position)?drivenCar:character;
- const inTunnelApproach=Math.hypot(travelActor.position.x-FARM_TUNNEL_POS.x,travelActor.position.z-FARM_TUNNEL_POS.z)<30;
+ const tunnelDx=travelActor.position.x-FARM_TUNNEL_POS.x,tunnelDz=travelActor.position.z-FARM_TUNNEL_POS.z;
+ const tunnelAlong=tunnelDx*FARM_TUNNEL_DIR_X+tunnelDz*FARM_TUNNEL_DIR_Z;
+ const tunnelAcross=-tunnelDx*FARM_TUNNEL_DIR_Z+tunnelDz*FARM_TUNNEL_DIR_X;
+ const inTunnelApproach=Math.hypot(tunnelDx,tunnelDz)<34;
+ // Detecta también el interior del tubo: evita saltarse el radio de entrada al cruzarlo rápido en vehículo.
+ const insideTunnel=tunnelAlong>=-30&&tunnelAlong<=76&&Math.abs(tunnelAcross)<=17;
  const cityRetryButton=document.getElementById('farmGoCity');if(cityRetryButton)cityRetryButton.style.display='none';
- if(!farmRaidActive&&inTunnelApproach&&Date.now()>=cityTravelRetryAt){showToast('entrando al tunel rumbo a ciudad...');travelToCity();return;}
+ if((inTunnelApproach||insideTunnel)&&Date.now()>=cityTravelRetryAt){showToast('entrando al tunel rumbo a ciudad...');travelToCity();return;}
  if(prompt){interactionPrompt.style.display='block';interactionPrompt.textContent=farmMissionId==='meetBenja'?'ACERCATE':'USAR';interactionPrompt.setAttribute('aria-label',prompt);interactionPrompt.title=prompt;}
  else if(interactionPrompt)interactionPrompt.style.display='none';
  updateFarmMoneyLabel();updateFarmGuide();if(now-storyLastSave>4500){storyLastSave=now;saveStoryProgress();}
