@@ -1,4 +1,5 @@
 ## Novedades de la version 1.11.6
+- Se corrige el cierre del evento de Respawn en Ajustes, replicado en las cinco copias del motor, para que el script completo pueda analizarse.
 - Se corrigen las cadenas JavaScript truncadas de las compras de comida y suministros de construcción, que impedían analizar el script.
 - Se agrega Logs 2 como panel independiente con FPS actuales, promedio, mínimos, máximos, bajones, tiempo de cuadro, estado de mapas, draw calls, triángulos, geometrías, texturas y memoria disponible.
 - El panel permite consultar y copiar un informe de rendimiento de la sesión.
