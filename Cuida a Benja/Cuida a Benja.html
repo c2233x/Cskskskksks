@@ -1415,7 +1415,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
         const startupProgressBar = document.getElementById('startupProgressBar');
         const startupProgressPercent = document.getElementById('startupProgressPercent');
         const startupProgressCount = document.getElementById('startupProgressCount'); const viewDebugLog = document.getElementById('viewDebugLog'); const startupRescanButton = document.getElementById('startupRescanButton'); const startupRefreshButton = document.getElementById('startupRefreshButton'); const startupLatestVersion = document.getElementById('startupLatestVersion'); const startupCurrentVersion = document.getElementById('startupCurrentVersion');
-        const startupRetryButton = document.getElementById('startupRetryButton'); const startupPlayAnyway = document.getElementById('startupPlayAnyway'); const startupErrorActions = document.getElementById('startupErrorActions'); const startupDebugPanel = document.getElementById('startupDebugPanel'); const startupDebugLog = document.getElementById('startupDebugLog'); const copyDebugLog = document.getElementById('copyDebugLog'); const playButton = document.getElementById('playButton'); const folderInput = document.getElementById('folderInput');
+        const startupRetryButton = document.getElementById('startupRetryButton'); const startupPlayAnyway = document.getElementById('startupPlayAnyway'); const startupErrorActions = document.getElementById('startupErrorButtons'); const startupDebugPanel = document.getElementById('startupDebugPanel'); const startupDebugLog = document.getElementById('startupDebugLog'); const copyDebugLog = document.getElementById('copyDebugLog'); const playButton = document.getElementById('playButton'); const folderInput = document.getElementById('folderInput');
         const githubLoader = document.getElementById('githubLoader');
         const githubLoaderStatus = document.getElementById('githubLoaderStatus');
         const githubProgressBar = document.getElementById('githubProgressBar');
@@ -1912,16 +1912,45 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
 
         async function fetchVersionDirect() {
             const folder = GITHUB_FOLDER.split('/').map(encodeURIComponent).join('/');
-            const raw = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${folder}/Version.txt`;
-            const cdn = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${folder}/Version.txt`;
-            for (const url of [raw, cdn]) {
+            const stamp = Date.now();
+            const raw = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/${GITHUB_BRANCH}/${folder}/Version.txt?cb=${stamp}`;
+            const cdn = `https://cdn.jsdelivr.net/gh/${GITHUB_OWNER}/${GITHUB_REPO}@${GITHUB_BRANCH}/${folder}/Version.txt?cb=${stamp}`;
+            const api = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${folder}/Version.txt?ref=${encodeURIComponent(GITHUB_BRANCH)}&cb=${stamp}`;
+            const sources = [
+                { url: raw, name: 'GitHub Raw', json: false },
+                { url: cdn, name: 'jsDelivr', json: false },
+                { url: api, name: 'GitHub Contents API', json: true }
+            ];
+
+            for (const source of sources) {
                 try {
-                    const r = await fetchWithTimeout(url, { cache: 'no-store' }, 3500);
-                    if (!r.ok) continue;
-                    const value = (await r.text()).trim();
-                    if (value) return value;
+                    const options = { cache: 'no-store' };
+                    if (source.json) options.headers = { 'Accept': 'application/vnd.github+json' };
+                    const r = await fetchWithTimeout(source.url, options, 3500);
+                    if (!r.ok) {
+                        githubLogMsg(`Versión no disponible desde ${source.name}: HTTP ${r.status}`);
+                        continue;
+                    }
+
+                    let value = '';
+                    if (source.json) {
+                        const data = await r.json();
+                        if (data && data.content && data.encoding === 'base64') {
+                            value = atob(String(data.content).replace(/\\s/g, ''));
+                        } else if (data && typeof data.content === 'string') {
+                            value = data.content;
+                        }
+                    } else {
+                        value = await r.text();
+                    }
+
+                    value = String(value || '').trim();
+                    if (value) {
+                        githubLogMsg(`Versión detectada desde ${source.name}: ${value}`, 'ok');
+                        return value;
+                    }
                 } catch (error) {
-                    githubLogMsg(`Versión no disponible desde ${url.includes('raw.githubusercontent') ? 'GitHub Raw' : 'jsDelivr'}: ${error.message}`);
+                    githubLogMsg(`Versión no disponible desde ${source.name}: ${error.message}`);
                 }
             }
             return null;
@@ -1937,7 +1966,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
                 currentGameVersion = remote;
                 if (saved && saved !== remote) {
                     githubLogMsg(`🔄 VERSION CAMBIÓ: ${saved} → ${remote}. Se actualizarán y guardarán los recursos.`, 'ok');
-                    await cacheClearOldVersions(remote);
+                    cacheClearOldVersions(remote).catch(() => {});
                 } else if (saved === remote) {
                     githubLogMsg(`♻️ Versión ${remote}: se intentará usar el caché guardado.`, 'ok');
                 } else {
@@ -2309,7 +2338,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
             if (startupPlayAnyway) startupPlayAnyway.style.display = 'none';
             if (startupDebugPanel) startupDebugPanel.style.display = 'none';
             partialVirtualFiles = [];
-            if (loadingText) loadingText.textContent = 'Iniciando';
+            if (loadingText) loadingText.textContent = 'Conectando';
             currentLoadProgress = 0;
             githubRetryBtn.style.display = 'none';
             playOfflineBtn.style.display = 'none';
@@ -8865,6 +8894,9 @@ function startProtestMission() {
         // El código de acceso se pide antes de ejecutar el cargador del juego.
         // 
         const initializeCuidaBenja = () => {
+            if (window.__cuidaBenjaBootStarted) return;
+            window.__cuidaBenjaBootStarted = true;
+
             // Arrancar el cargador ANTES de intentar pantalla completa.
             // En algunos WebView Android requestFullscreen lanza/rechaza la promesa
             // si no hay un gesto del usuario; eso no debe impedir que cargue el juego.
@@ -8881,6 +8913,22 @@ function startProtestMission() {
                     showStartupError(error);
                 }
             }, 80);
+
+            // Evita que una descarga o consulta de versión deje la pantalla en 0/0
+            // indefinidamente. Libera el bloqueo para que el botón de reintento funcione.
+            setTimeout(() => {
+                const visible = startScreen && getComputedStyle(startScreen).display !== 'none';
+                const percent = startupProgressPercent ? String(startupProgressPercent.textContent || '').trim() : '0%';
+                const count = startupProgressCount ? String(startupProgressCount.textContent || '').replace(/\\s/g, '') : '';
+                const latest = startupLatestVersion ? String(startupLatestVersion.textContent || '').trim() : '-';
+                const noProgress = /^0(?:\\.0)?%$/.test(percent) && count === '0/0' && latest === '-';
+                if (!gameStarted && visible && noProgress && !startScreen.classList.contains('error')) {
+                    githubLoader.dataset.loading = '0';
+                    if (loadingText) loadingText.textContent = 'Sin respuesta';
+                    showStartupError(new Error('El inicio no recibió respuesta de GitHub y quedó en 0/0. Revisa la conexión y pulsa Reintentar o Jugar de todos modos.'));
+                }
+            }, 22000);
+
             try { Promise.resolve(enterFullscreen()).catch(() => {}); } catch (_) {}
             setTimeout(() => {
                 try { Promise.resolve(enterFullscreen()).catch(() => {}); } catch (_) {}
@@ -8943,6 +8991,10 @@ function startProtestMission() {
         } else {
             initializeCuidaBenja();
         }
+        // Segundo respaldo para WebView que no entrega DOMContentLoaded al documento incrustado.
+        setTimeout(() => {
+            if (!window.__cuidaBenjaBootStarted) initializeCuidaBenja();
+        }, 700);
     
 
 
