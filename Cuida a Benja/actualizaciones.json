@@ -12,7 +12,8 @@
         "Se agrega el botón Logs 2 con medición en vivo de FPS actuales, promedio, mínimos y máximos.",
         "El monitor cuenta muestras por debajo de 30 y 20 FPS, estima el tiempo de cuadro y muestra historial de rendimiento.",
         "Se muestran el mapa activo, el estado de carga de granja y ciudad, objetos de escena, draw calls, triángulos, geometrías, texturas, recursos y memoria disponible.",
-        "El informe de rendimiento se puede copiar desde el panel."
+        "El informe de rendimiento se puede copiar desde el panel.",
+        "Se corrige el cierre del evento Respawn en Ajustes, presente en las cinco copias del motor, evitando un error de sintaxis en el script completo."
       ]
     },
     {
