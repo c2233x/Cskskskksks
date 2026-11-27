@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.1",
+  "version": "1.11.2",
   "updates": [
+    {
+      "version": "1.11.2",
+      "title": "Viaje estable, controles tactiles y mapas sin arboles en estructuras",
+      "date": "26 de noviembre de 2026",
+      "changes": [
+        "El viaje a ciudad limita el tiempo de descarga del mapa y activa un respaldo local si las dos fuentes remotas fallan; la entrada tambien detecta al jugador que atraviesa rapido el tunel.",
+        "El boton USAR evita el doble evento de toque y libera su estado ante cancelaciones, perdida de foco o cambio de pestaña.",
+        "Los arboles y pinos respetan zonas protegidas de estructuras, taller, almacen, equipos y corredor de la carretera; los arboles del parque no invaden las avenidas.",
+        "El asfalto, las lineas viales y los letreros usan materiales mates sin emision, con niebla desactivada en las superficies de carretera para conservar su visibilidad a distancia.",
+        "Se redujo el brillo autoiluminado de anuncios y ventanas urbanas."
+      ]
+    },
     {
       "version": "1.11.1",
       "title": "Ciudad ampliada, calles visibles y tunel atravesando la montaña",
