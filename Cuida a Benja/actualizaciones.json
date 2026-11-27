@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.3",
+  "version": "1.11.4",
   "updates": [
+    {
+      "version": "1.11.4",
+      "title": "Inicio estable y recuperacion del actualizador",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "La consulta de Version.txt ahora prueba GitHub Raw, jsDelivr y la API de contenidos de GitHub, con cache-busting para evitar respuestas antiguas.",
+        "La limpieza de la caché de versiones anteriores ya no bloquea el arranque del juego.",
+        "Un vigilante de inicio detecta la pantalla detenida en 0/0, muestra el diagnóstico y libera el botón de reintento.",
+        "El arranque tiene un segundo respaldo por si un WebView Android no entrega DOMContentLoaded al documento incrustado.",
+        "Los controles de error se conectan al contenedor correcto para mostrar Reintentar, Ver logs y Jugar de todos modos."
+      ]
+    },
     {
       "version": "1.11.3",
       "title": "Respawn, controles, carretera y miniaturas",
