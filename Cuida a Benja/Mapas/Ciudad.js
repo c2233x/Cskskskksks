@@ -3,7 +3,8 @@
 window.CUIDA_BENJA_CITY_MAP = {
   id: "ciudad",
   title: "Ciudad principal",
-  spawn: { x: 0, z: 0 },
+  spawn: { x: 0, z: -42 },
+  cityTunnel: { x: 0, z: -75 },
   jobBoard: { x: 34, z: -24 },
   returnGate: { x: 0, z: -210 },
   exitRadius: 310,
