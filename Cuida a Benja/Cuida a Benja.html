@@ -5215,10 +5215,11 @@ function updateFarmCinematic(){
             camera.position.lerpVectors(storyCinematicFrom||camera.position,cam,ease*.12+.01);camera.lookAt(look);
             if(storyCinematicFrame>=220){storyCinematicFrame=220;advanceFarmCinematic();}
         }
-        function playBenjaGrunt(force=false){
-            if(!benjaSoundPlayers.length)return;if(character&&benjaPig&&!farmCityMode&&character.position.distanceTo(benjaPig.position)>18)return;const now=performance.now();if(!force&&now<benjaSoundNextAt)return;
-            const a=benjaSoundPlayers[benjaSoundIndex%benjaSoundPlayers.length];benjaSoundIndex++;benjaSoundNextAt=now+12000+Math.random()*8000;
-            try{a.pause();a.currentTime=0;a.volume=.66;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+        // Audio espacial de Benja: audible hasta 120 m y atenuado progresivamente.
+        function playBenjaGrunt(force=false,volume=.66){
+            if(!benjaSoundPlayers.length)return;const now=performance.now();if(!force&&now<benjaSoundNextAt)return;
+            const a=benjaSoundPlayers[benjaSoundIndex%benjaSoundPlayers.length];benjaSoundIndex++;benjaSoundNextAt=now+9000+Math.random()*6000;
+            try{a.pause();a.currentTime=0;a.volume=Math.max(0,Math.min(.66,volume));const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
         }
         function updateBenjaAnimation(){
             if(!benjaPig)return;const now=performance.now(),t=now*.001,rolling=!!(benjaPig.userData&&benjaPig.userData.rollUntil);
@@ -5238,7 +5239,16 @@ function updateFarmCinematic(){
                 benjaPig.rotation.z=Math.sin(t*1.18)*.12;benjaPig.rotation.x=Math.sin(t*1.55)*.1;
                 if(benjaPigBody)benjaPigBody.rotation.z=Math.sin(t*2.2)*.13;
             }
-            if(storyModeActive&&!farmCityMode&&!storyCinematicPlaying&&character&&character.position.distanceTo(benjaPig.position)<16&&t*1000>benjaSoundNextAt)playBenjaGrunt();
+            if(storyModeActive&&!farmCityMode&&!storyCinematicPlaying&&character){
+                const distance=character.position.distanceTo(benjaPig.position),maxDistance=120;
+                const proximity=Math.max(0,1-distance/maxDistance);
+                const volume=distance<=maxDistance?.012+.648*Math.pow(proximity,1.6):0;
+                // Ajusta también el sonido que ya está reproduciéndose si el jugador se mueve.
+                for(const audio of benjaSoundPlayers){if(audio&&!audio.paused)audio.volume=volume;}
+                if(distance<=maxDistance&&now>=benjaSoundNextAt)playBenjaGrunt(false,volume);
+            }else{
+                for(const audio of benjaSoundPlayers){if(audio&&!audio.paused)audio.volume=0;}
+            }
         }
         function updateFarmMoneyLabel(){
             const el=document.getElementById('peneCountInfo');
