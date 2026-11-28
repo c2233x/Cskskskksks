@@ -27,3 +27,15 @@ Archivo: `La_huerta_de_Dona_Lila.json`
 ## Estado de publicación
 
 Los dos paquetes están publicados como JSON, pero **no están conectados al gestor de misiones ni al motor de cultivos**. No se ha cambiado el HTML principal en estas publicaciones. Antes de anunciarlos como jugables, integrar objetivos, objetos, estados persistentes, recompensas, subtítulos y pruebas de mapa por separado.
+
+## Actualización #3 — Huellas junto al portón
+
+- Rescate de Chispa, un perro perdido: cuatro etapas con objetivos, diálogos y recompensas.
+- Marta, NPC de granja con una instancia como máximo; Chispa usa tres escondites fijos y seguimiento a pie de baja complejidad.
+- Collar, cuenco de agua, comida para perro y caseta reutilizable.
+- Evento corto de Chispa encuentra un paquete, sin escaneo, partículas ni físicas.
+- Mejora de caseta en tres niveles y aviso de mascotas perdidas en la plaza, cargado solo en Ciudad.js.
+- Secreto: campanita bajo una caja junto al árbol.
+- Notas de rendimiento: un perro, puntos fijos, actualización cercana y limpieza al cambiar de mapa.
+
+Archivo: `Huellas_junto_al_porton.json`
