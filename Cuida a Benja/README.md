@@ -1,3 +1,9 @@
+## Novedades de la version 1.11.9
+- Los sonidos de Benja se escuchan desde un radio ampliado de hasta 120 metros.
+- El volumen aumenta progresivamente al acercarse y es muy bajo en el limite lejano.
+- La atenuacion se actualiza durante la reproduccion cuando el jugador se mueve.
+- Se conservan los audios originales y la reproduccion ocasional de sonidos.
+
 ## Novedades de la version 1.11.8
 - Logs mide por separado el tiempo de CPU del bucle principal, el envio de dibujo de Three.js y el intervalo entre cuadros.
 - Se registra una cronologia de cuadros lentos, cambios de resolucion/canvas y aumentos de draw calls, triangulos, geometrias y texturas.
