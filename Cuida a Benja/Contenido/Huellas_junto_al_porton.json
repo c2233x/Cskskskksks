@@ -1,0 +1,296 @@
+{
+  "id": "update_3_huellas_junto_al_porton",
+  "title": "Huellas junto al portón",
+  "type": "content_pack",
+  "status": "propuesta_publicada_no_integrada",
+  "version": 1,
+  "story": {
+    "title": "Chispa se perdió",
+    "trigger": "Disponible después del primer encuentro con Benja. Marta aparece junto al portón de la granja; no se activa durante conducción ni cinemáticas.",
+    "stages": [
+      {
+        "id": "seguir_huellas",
+        "title": "¿De quién son estas huellas?",
+        "objectives": [
+          "Hablar con Marta",
+          "Revisar 3 marcas fijas junto al portón y el camino",
+          "Encontrar la dirección hacia el cobertizo"
+        ],
+        "reward": {
+          "money": 4,
+          "unlock": "pistas_chispa"
+        },
+        "dialogue": [
+          {
+            "speaker": "Marta",
+            "text": "Se me escapó Chispa cuando abrí el portón. ¿Me ayudas a buscarlo?"
+          },
+          {
+            "speaker": "Cornatan",
+            "text": "Vi unas huellas por aquí. Vamos a ver si no se fue muy lejos."
+          },
+          {
+            "speaker": "Marta",
+            "text": "Si lo encuentras, no lo asustes. Ese perro sale corriendo por cualquier cosa."
+          }
+        ]
+      },
+      {
+        "id": "buscar_chispa",
+        "title": "El escondite del perro",
+        "objectives": [
+          "Revisar el cobertizo",
+          "Buscar en uno de 3 escondites predefinidos",
+          "Acercarse a Chispa y usar para llamarlo"
+        ],
+        "reward": {
+          "money": 5,
+          "unlock": "chispa_rescatado"
+        },
+        "dialogue": [
+          {
+            "speaker": "Cornatan",
+            "text": "¡Chispa! Salí de ahí, hombre. Nadie te está regañando."
+          },
+          {
+            "speaker": "Chispa",
+            "text": "Guau, guau!"
+          },
+          {
+            "speaker": "Cornatan",
+            "text": "Mirá, hasta el perro se hace el que no escucha."
+          }
+        ]
+      },
+      {
+        "id": "preparar_regreso",
+        "title": "Un poco de agua y calma",
+        "objectives": [
+          "Recoger un recipiente de agua",
+          "Llenarlo en el pozo",
+          "Dejarlo junto a Chispa y esperar a que se acerque"
+        ],
+        "reward": {
+          "money": 6,
+          "unlock": "recipiente_chispa"
+        },
+        "dialogue": [
+          {
+            "speaker": "Marta",
+            "text": "Seguro tiene sed. Deja el agua cerca y dale un momento."
+          },
+          {
+            "speaker": "Cornatan",
+            "text": "Aquí está el agua. Ahora no te me escondas otra vez."
+          },
+          {
+            "speaker": "Chispa",
+            "text": "Guau!"
+          }
+        ]
+      },
+      {
+        "id": "llevar_a_marta",
+        "title": "De vuelta con Marta",
+        "objectives": [
+          "Llamar a Chispa",
+          "Acompañarlo hasta el punto de entrega junto al portón",
+          "Hablar con Marta para terminar"
+        ],
+        "reward": {
+          "money": 8,
+          "unlock": "caseta_chispa_basica"
+        },
+        "dialogue": [
+          {
+            "speaker": "Marta",
+            "text": "¡Ahí está! Ya me estaba preocupando. Gracias, de verdad."
+          },
+          {
+            "speaker": "Cornatan",
+            "text": "Lo encontramos. Eso sí, este perro conoce más escondites que yo."
+          },
+          {
+            "speaker": "Marta",
+            "text": "Te dejo una caseta. A ver si ahora se queda en su sitio."
+          }
+        ]
+      }
+    ],
+    "optionalCityMission": {
+      "id": "aviso_mascota_plaza",
+      "title": "Un aviso en la plaza",
+      "objectives": [
+        "Llevar un aviso de Chispa al tablero de la plaza",
+        "Colocarlo en el tablero cuando Ciudad.js esté activo"
+      ],
+      "reward": {
+        "money": 5
+      },
+      "spawnRules": "El aviso y su marcador se crean exclusivamente en Ciudad.js; no precargar props de ciudad en la granja.",
+      "dialogue": [
+        {
+          "speaker": "Marta",
+          "text": "Si alguien ve otro perro perdido, que deje un aviso en la plaza."
+        },
+        {
+          "speaker": "Cornatan",
+          "text": "Lo llevo. Ojalá no me toque buscar otro por toda la ciudad."
+        }
+      ]
+    },
+    "cinematic": {
+      "start": [
+        "Fade breve",
+        "Plano del portón abierto",
+        "Mostrar huellas predefinidas en el camino",
+        "Subtítulos inferiores con Marta"
+      ],
+      "finish": [
+        "Chispa vuelve junto a Marta",
+        "Plano corto de la caseta",
+        "Cornatan hace una despedida breve"
+      ],
+      "skipAllowed": true,
+      "doNotPlayWhileDriving": true,
+      "durationSeconds": {
+        "startMax": 6,
+        "finishMax": 7
+      }
+    }
+  },
+  "items": [
+    {
+      "id": "collar_chispa",
+      "name": "Collar de Chispa",
+      "amount": 1,
+      "purpose": "Identificar y llamar al perro; un único modelo con material sencillo."
+    },
+    {
+      "id": "recipiente_agua_perro",
+      "name": "Cuenco de agua",
+      "amount": 1,
+      "purpose": "Interacción de rescate; no consume agua por segundo."
+    },
+    {
+      "id": "comida_perro",
+      "name": "Bolsa de comida para perro",
+      "amount": 1,
+      "purpose": "Recompensa opcional al completar el rescate, guardada como item acumulable."
+    },
+    {
+      "id": "caseta_perro",
+      "name": "Caseta de Chispa",
+      "amount": 1,
+      "purpose": "Objeto de mejora decorativa y punto de descanso, sin navegación compleja."
+    }
+  ],
+  "npc": {
+    "id": "marta_vecina",
+    "name": "Marta",
+    "description": "Vecina del camino rural. Una sola instancia en la granja; diálogos breves con humor tranquilo.",
+    "lines": [
+      "Chispa siempre encuentra cómo meterse donde no lo llaman.",
+      "Deja el cuenco a la sombra, que ahí no le pega tanto el sol.",
+      "Gracias por ayudar. Ya me estaba dando vueltas la cabeza de buscarlo."
+    ],
+    "spawnRules": "Solo granja; una instancia máxima; no aparece durante cinemáticas ni bloquea el portón."
+  },
+  "animal": {
+    "id": "chispa_perro",
+    "name": "Chispa",
+    "description": "Perro pequeño de aspecto low-poly, con collar rojo y animaciones de espera, caminar corto, olfatear y ladrar.",
+    "behavior": "Antes del rescate permanece en uno de tres puntos fijos. Después usa solo una rutina sencilla de seguir al jugador a pie y vuelve a su caseta al terminar; no usar navmesh ni seguimiento mientras se conduce."
+  },
+  "randomEvent": {
+    "id": "chispa_encuentra_paquete",
+    "name": "Chispa encuentra algo",
+    "trigger": "Después de completar el rescate, una vez por día de juego como máximo, cuando el jugador está cerca del portón.",
+    "effects": [
+      "Chispa olfatea junto a una caja predefinida",
+      "Mostrar un aviso pequeño de interacción",
+      "Al usar, entregar 1 paquete de comida para perro; el evento queda guardado"
+    ],
+    "durationSeconds": 12,
+    "performanceNotes": "Sin escaneo periódico, sin partículas y sin física de objetos; reutilizar la caja y el perro, y activar solo a corta distancia."
+  },
+  "farmUpgrade": {
+    "id": "caseta_chispa",
+    "name": "Caseta y rincón de descanso",
+    "levels": [
+      "Caseta sencilla",
+      "Caseta con techo reforzado y cuenco",
+      "Caseta decorada con letrero y sombra"
+    ],
+    "physicalModelChanges": true,
+    "gameplayRules": [
+      "Un solo modelo base reutilizable con variantes de materiales",
+      "No bloquear el portón, los caminos ni las colisiones del corral",
+      "La mejora se guarda y se reemplaza, no se apilan modelos anteriores"
+    ]
+  },
+  "cityUpgrade": {
+    "id": "tablon_mascotas_plaza",
+    "name": "Tablón de mascotas perdidas",
+    "purpose": "Añadir un pequeño aviso de mascotas al tablón de la plaza; puede habilitar encargos futuros sin crear NPC extra.",
+    "interaction": "Un botón Usar abre el aviso; cerrar y reabrir no duplica recompensas.",
+    "spawnRules": "Instanciar únicamente cuando el mapa de ciudad esté cargado."
+  },
+  "secret": {
+    "id": "campana_bajo_caja",
+    "name": "La campanita olvidada",
+    "locationHint": "Debajo de una caja de madera junto a un árbol del camino, fuera de las zonas de paso.",
+    "reward": [
+      "Coleccionable Campanita",
+      "$2"
+    ],
+    "dialogue": {
+      "speaker": "Cornatan",
+      "text": "Mirá lo que había debajo de esta caja. Seguro alguien la anda buscando."
+    },
+    "onceOnly": true
+  },
+  "quality": {
+    "fixes": [
+      "Guardar cada etapa y los objetos recogidos; las recompensas se entregan una sola vez.",
+      "Ocultar la flecha durante diálogo y cinemática, y ubicarla fuera del centro de pantalla.",
+      "No permitir iniciar búsqueda o cinemática mientras Cornatan conduce.",
+      "Mantener libre el portón y las entradas del corral; revisar colisiones simples.",
+      "Al cambiar de mapa, detener sonidos y retirar marcadores temporales."
+    ],
+    "assetBriefs": [
+      {
+        "id": "chispa_glb",
+        "format": "GLB",
+        "brief": "Perro low-poly pequeño con collar rojo; materiales simples, pivote bajo y animaciones reutilizables de espera, caminar corto, olfatear y ladrar."
+      },
+      {
+        "id": "caseta_glb",
+        "format": "GLB",
+        "brief": "Caseta compacta de madera, techo de una pieza y cuenco separado; variantes por material sin duplicar geometría."
+      },
+      {
+        "id": "collar_glb",
+        "format": "GLB",
+        "brief": "Collar rojo con campana sencilla, tamaño de inventario y pivote centrado."
+      }
+    ]
+  },
+  "implementation": {
+    "priority": [
+      "Rescate con tres puntos de búsqueda fijos",
+      "Interacción de llamar y retorno por puntos de ruta cortos",
+      "Persistencia de rescate y recompensa",
+      "Caseta reemplazable por nivel",
+      "Aviso de ciudad solo al cargar Ciudad.js"
+    ],
+    "safeguards": [
+      "No modificar la lógica de viaje ni vehículos",
+      "No añadir bucles de escaneo, navmesh, físicas ni IA compleja",
+      "Una sola instancia de Chispa y Marta",
+      "Actualizar comportamiento solo a baja frecuencia y cerca del jugador",
+      "Eliminar eventos y sonidos temporales al cambiar de mapa",
+      "Subtítulos inferiores y cinemáticas saltables"
+    ]
+  }
+}
