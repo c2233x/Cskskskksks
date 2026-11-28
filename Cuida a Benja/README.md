@@ -1,3 +1,9 @@
+## Novedades de la version 1.12.0
+- Los controles fisicos de TV y radio actualizan su posicion cada 60 ms, reduciendo trabajo repetido en cada cuadro.
+- Se almacenan referencias de botones y objetivos, evitando busquedas repetidas en el DOM y recorridos innecesarios.
+- Se reutiliza el vector de proyeccion y se elimina la actualizacion forzada de matrices de toda la escena desde el overlay.
+- Se limitan las comprobaciones de paneles y las escrituras de estilos a los cambios necesarios.
+
 ## Novedades de la version 1.11.9
 - Los sonidos de Benja se escuchan desde un radio ampliado de hasta 120 metros.
 - El volumen aumenta progresivamente al acercarse y es muy bajo en el limite lejano.
