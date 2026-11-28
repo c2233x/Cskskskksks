@@ -1,3 +1,10 @@
+## Novedades de la version 1.13.0
+- El joystick ahora sigue exclusivamente el dedo que lo inicio, incluso cuando se usan dos dedos al mismo tiempo.
+- Se usa Pointer Events con captura del puntero; los navegadores sin ese soporte conservan la ruta Touch Events, tambien corregida por identificador.
+- Se recuperan los estados tactiles al recibir cancelacion, perder el foco o cambiar de visibilidad para evitar movimiento atascado.
+- El giro de camara sigue el dedo aunque salga del lienzo y libera el control al terminar el gesto.
+- Correr y los controles de vuelo tambien responden a la cancelacion de toque.
+
 ## Novedades de la version 1.12.0
 - Los controles fisicos de TV y radio actualizan su posicion cada 60 ms, reduciendo trabajo repetido en cada cuadro.
 - Se almacenan referencias de botones y objetivos, evitando busquedas repetidas en el DOM y recorridos innecesarios.
@@ -45,7 +52,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.11.8**
+**Version actual: 1.13.0**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
