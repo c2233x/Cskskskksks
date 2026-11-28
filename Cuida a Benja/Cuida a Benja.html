@@ -4656,10 +4656,61 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         
         function setupControls() {
-            joystickArea.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(isCinematic || isDead) return; joystickActive = true; joystickTouchId = e.changedTouches[0] ? e.changedTouches[0].identifier : null; updateJoystick(e.touches[0]); });
-            joystickArea.addEventListener('touchmove', (e) => { e.preventDefault(); e.stopPropagation(); if (joystickActive) updateJoystick(e.touches[0]); });
-            joystickArea.addEventListener('touchend', (e) => { e.preventDefault(); joystickActive = false; joystickTouchId = null; joystickVector = { x: 0, y: 0 }; joystickKnob.style.transform = 'translate(-50%, -50%)'; });
-            runBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isCinematic && !isDead) isRunning = true; }); runBtn.addEventListener('touchend', () => { isRunning = false; });
+            let joystickPointerId = null;
+            const resetJoystickInput = () => {
+                joystickActive = false;
+                joystickTouchId = null;
+                joystickPointerId = null;
+                joystickVector = { x: 0, y: 0 };
+                if (joystickKnob) joystickKnob.style.transform = 'translate(-50%, -50%)';
+            };
+            if (window.PointerEvent) {
+                joystickArea.addEventListener('pointerdown', (e) => {
+                    if (isCinematic || isDead || joystickActive) return;
+                    e.preventDefault(); e.stopPropagation();
+                    joystickActive = true; joystickPointerId = e.pointerId;
+                    try { joystickArea.setPointerCapture(e.pointerId); } catch (_) {}
+                    updateJoystick(e);
+                }, { passive: false });
+                joystickArea.addEventListener('pointermove', (e) => {
+                    if (!joystickActive || e.pointerId !== joystickPointerId) return;
+                    e.preventDefault(); updateJoystick(e);
+                }, { passive: false });
+                const finishJoystickPointer = (e) => {
+                    if (e.pointerId !== joystickPointerId) return;
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation(); resetJoystickInput();
+                };
+                joystickArea.addEventListener('pointerup', finishJoystickPointer, { passive: false });
+                joystickArea.addEventListener('pointercancel', finishJoystickPointer, { passive: false });
+                joystickArea.addEventListener('lostpointercapture', finishJoystickPointer, { passive: false });
+            } else {
+                const findTouchById = (list, id) => {
+                    for (let i = 0; list && i < list.length; i++) if (list[i].identifier === id) return list[i];
+                    return null;
+                };
+                joystickArea.addEventListener('touchstart', (e) => {
+                    if (isCinematic || isDead || joystickActive) return;
+                    const first = e.changedTouches && e.changedTouches[0];
+                    if (!first) return;
+                    e.preventDefault(); e.stopPropagation();
+                    joystickActive = true; joystickTouchId = first.identifier;
+                    updateJoystick(findTouchById(e.touches, joystickTouchId) || first);
+                }, { passive: false });
+                joystickArea.addEventListener('touchmove', (e) => {
+                    if (!joystickActive || joystickTouchId === null) return;
+                    const touch = findTouchById(e.touches, joystickTouchId);
+                    if (!touch) return;
+                    e.preventDefault(); e.stopPropagation(); updateJoystick(touch);
+                }, { passive: false });
+                const finishJoystickTouch = (e) => {
+                    if (joystickTouchId === null || !findTouchById(e.changedTouches, joystickTouchId)) return;
+                    e.preventDefault(); e.stopPropagation(); resetJoystickInput();
+                };
+                joystickArea.addEventListener('touchend', finishJoystickTouch, { passive: false });
+                joystickArea.addEventListener('touchcancel', finishJoystickTouch, { passive: false });
+            }
+            runBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isCinematic && !isDead) isRunning = true; }); runBtn.addEventListener('touchend', () => { isRunning = false; }); runBtn.addEventListener('touchcancel', () => { isRunning = false; });
             jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (!isJumping && !isCinematic && !isFlying && !isDead && !isDriving) { isJumping = true; jumpVelocity = 6.2; playJumpSound(); } });
             
             attackBtn.addEventListener('touchstart', (e) => {
@@ -4690,8 +4741,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
             tuboBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 50000 && tuboCooldownLeft <= 0 && !isTuboActive && !isCinematic && !isDead && !morteroActive && !isDriving) { isTuboActive = true; tuboTimer = 900; tuboCooldownLeft = 3000; tuboTick = 0; if(character.userData.tuboGroup) character.userData.tuboGroup.visible = true; document.getElementById('tuboBigFireBtn').style.display = 'flex'; playPumSound(); } });
 
             const flyUpBtn = document.getElementById('flyUpBtn'); const flyDownBtn = document.getElementById('flyDownBtn');
-            flyUpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyUp = true; }); flyUpBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyUp = false; });
-            flyDownBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyDown = true; }); flyDownBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyDown = false; });
+            flyUpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyUp = true; }); flyUpBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyUp = false; }); flyUpBtn.addEventListener('touchcancel', () => { isFlyUp = false; });
+            flyDownBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyDown = true; }); flyDownBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyDown = false; }); flyDownBtn.addEventListener('touchcancel', () => { isFlyDown = false; });
 
             const morteroFireBtn = document.getElementById('morteroFireBtn'); const morteroTimerEl = document.getElementById('morteroTimer'); const crosshairEl = document.getElementById('crosshair');
             // Mortero: un solo sistema de entrada. El bucle del juego NO decide si el botón está pulsado;
@@ -4837,15 +4888,21 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 if(joystickActive&&e.pointerId===joystickTouchId)return;
                 cameraPointerId=e.pointerId;lastTouchX=e.clientX;lastTouchY=e.clientY;isCameraTouch=true;isZooming=false;
             },true);
-            renderer.domElement.addEventListener('pointermove',e=>{
+            window.addEventListener('pointermove',e=>{
                 if(e.pointerType!=='touch'||cameraPointerId!==e.pointerId||isCinematic)return;
                 cameraTheta-=(e.clientX-lastTouchX)*0.008;
                 cameraPhi=Math.max(0.1,Math.min(Math.PI/2+0.2,cameraPhi-(e.clientY-lastTouchY)*0.008));
                 lastTouchX=e.clientX;lastTouchY=e.clientY;
-            });
+            },{passive:true});
             const releaseCameraPointer=e=>{if(cameraPointerId===e.pointerId){cameraPointerId=null;if(!joystickActive)isCameraTouch=false;}};
-            renderer.domElement.addEventListener('pointerup',releaseCameraPointer);
-            renderer.domElement.addEventListener('pointercancel',releaseCameraPointer);
+            window.addEventListener('pointerup',releaseCameraPointer);
+            window.addEventListener('pointercancel',releaseCameraPointer);
+            const resetTouchFocus=()=>{
+                resetJoystickInput();isRunning=false;isFlyUp=false;isFlyDown=false;
+                cameraPointerId=null;cameraTouchId=null;isCameraTouch=false;isZooming=false;
+            };
+            window.addEventListener('blur',resetTouchFocus);
+            document.addEventListener('visibilitychange',()=>{if(document.hidden)resetTouchFocus();});
             renderer.domElement.addEventListener('touchstart', (e) => {
                 e.preventDefault(); if(cameraPointerId!==null)return; if(isCinematic) return;
                 // Si el joystick está siendo usado, el otro dedo controla la cámara al mismo tiempo.
