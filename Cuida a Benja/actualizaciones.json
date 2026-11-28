@@ -1,8 +1,19 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.9",
+  "version": "1.12.0",
   "updates": [
+    {
+      "version": "1.12.0",
+      "title": "Optimizacion de controles tactiles de TV y radio",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "Los controles fisicos de TV y radio ahora recalculan su posicion cada 60 ms en lugar de hacerlo en cada cuadro.",
+        "Se guardan referencias a botones y objetivos para evitar consultas repetidas al DOM y recorridos de listas en cada actualizacion.",
+        "Se reutiliza un vector 3D para proyectar los controles y se evita forzar la actualizacion de matrices de toda la escena desde esta funcion.",
+        "Se reducen escrituras repetidas de estilos y se limita la comprobacion de paneles abiertos a una frecuencia menor."
+      ]
+    },
     {
       "version": "1.11.9",
       "title": "Sonido espacial de Benja y alcance ampliado",
