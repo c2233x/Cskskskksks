@@ -7232,48 +7232,70 @@ function farmUpdatePhysicalControlOverlay(){
  if(!cache){
   const root=farmEnsurePhysicalControlOverlay(),buttons={};
   root.querySelectorAll('button[data-kind][data-action]').forEach(b=>{buttons[b.dataset.kind+'-'+b.dataset.action]=b;});
-  cache=fn.__perfCache={root,buttons,targets:{tv:null,radio:null},targetMaps:{tv:{},radio:{}},vector:new THREE.Vector3(),lastRun:0,lastPanelCheck:0,panelsOpen:false,hidden:null};
+  cache=fn.__perfCache={root,buttons,targets:{tv:null,radio:null},targetMaps:{tv:{},radio:{}},lastRun:0,lastPanelCheck:0,lastRectCheck:0,rect:null,panelsOpen:false,hidden:null};
  }
- // 60 ms entre calculos: los controles siguen la camara sin recalcularse en cada cuadro.
- if(now-cache.lastRun<60)return;
+ // Este HUD solo necesita seguir la camara a ~12 Hz, no en cada frame.
+ if(now-cache.lastRun<80)return;
  cache.lastRun=now;
  const hideAll=()=>{
   if(cache.hidden===true)return;
-  Object.values(cache.buttons).forEach(b=>{if(b.style.display!=='none')b.style.display='none';});
+  for(const key in cache.buttons){const b=cache.buttons[key];if(b&&b.style.display!=='none')b.style.display='none';}
   cache.hidden=true;
  };
  if(!gameStarted||!storyModeActive||farmCityMode||isDriving||!character||!renderer||!camera||!farmGroup||!farmGroup.visible){hideAll();return;}
- if(now-cache.lastPanelCheck>=200){
+ if(now-cache.lastPanelCheck>=500){
   cache.lastPanelCheck=now;
   const tvPanel=document.getElementById('farmTVPanel'),radioPanel=document.getElementById('farmRadioPanel');
-  cache.panelsOpen=!!((tvPanel&&getComputedStyle(tvPanel).display!=='none')||(radioPanel&&getComputedStyle(radioPanel).display!=='none'));
+  cache.panelsOpen=!!((tvPanel&&tvPanel.style.display!=='none'&&getComputedStyle(tvPanel).display!=='none')||(radioPanel&&radioPanel.style.display!=='none'&&getComputedStyle(radioPanel).display!=='none'));
  }
  if(cache.panelsOpen){hideAll();return;}
- const rect=renderer.domElement.getBoundingClientRect();
- if(!rect.width||!rect.height){hideAll();return;}
- cache.hidden=false;
+ if(!cache.rect||now-cache.lastRectCheck>=500){
+  cache.lastRectCheck=now;
+  const r=renderer.domElement.getBoundingClientRect();
+  cache.rect={left:r.left,top:r.top,width:r.width,height:r.height};
+ }
+ const rect=cache.rect;
+ if(!rect||rect.width<=0||rect.height<=0){hideAll();return;}
  const tvD=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
  const radioD=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
- // No forzar la actualizacion de matrices de toda la escena: renderer.render se encarga de ello.
- camera.updateMatrixWorld();
+ // Los botones fisicos son estaticos: calcular su posicion mundial una sola vez.
+ // Antes se recalculaba getWorldPosition para cada boton en cada pasada.
  const place=(kind,targets,near)=>{
   const map=cache.targetMaps[kind];
   if(cache.targets[kind]!==targets){
-   cache.targets[kind]=targets;Object.keys(map).forEach(k=>delete map[k]);
-   (targets||[]).forEach(o=>{if(!o||!o.userData)return;const action=kind==='tv'?o.userData.tvChannelAction:o.userData.radioAction;if(action)map[action]=o;});
+   cache.targets[kind]=targets;
+   for(const k in map)delete map[k];
+   (targets||[]).forEach(o=>{
+    if(!o||!o.userData)return;
+    const action=kind==='tv'?o.userData.tvChannelAction:o.userData.radioAction;
+    if(!action)return;
+    const world=new THREE.Vector3();
+    o.getWorldPosition(world);
+    map[action]={object:o,world};
+   });
   }
-  ['prev','power','next'].forEach(action=>{
-   const button=cache.buttons[kind+'-'+action],target=map[action];
-   if(!button)return;
-   if(!near||!target||!target.visible){if(button.style.display!=='none')button.style.display='none';return;}
-   const p=target.getWorldPosition(cache.vector).project(camera);
-   if(p.z< -1||p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05){if(button.style.display!=='none')button.style.display='none';return;}
-   const left=(rect.left+(p.x+1)*.5*rect.width)+'px',top=(rect.top+(1-p.y)*.5*rect.height)+'px';
+  const actions=['prev','power','next'];
+  for(let i=0;i<actions.length;i++){
+   const action=actions[i],button=cache.buttons[kind+'-'+action],entry=map[action];
+   if(!button)continue;
+   if(!near||!entry||!entry.object.visible){
+    if(button.style.display!=='none')button.style.display='none';
+    continue;
+   }
+   const p=entry.world.clone().project(camera);
+   if(p.z< -1||p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05){
+    if(button.style.display!=='none')button.style.display='none';
+    continue;
+   }
+   const left=(rect.left+(p.x+1)*.5*rect.width)+'px';
+   const top=(rect.top+(1-p.y)*.5*rect.height)+'px';
    if(button.style.left!==left)button.style.left=left;
    if(button.style.top!==top)button.style.top=top;
    if(button.style.display!=='block')button.style.display='block';
-  });
+  }
  };
+ // Actualizar matrices de camara una vez por pasada, no una vez por objetivo.
+ camera.updateMatrixWorld();
  place('tv',farmTVPhysicalHitTargets,tvD<=30);
  place('radio',farmRadioPhysicalHitTargets,radioD<=28);
 }
