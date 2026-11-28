@@ -818,135 +818,7 @@ body>canvas{position:fixed!important;left:0!important;top:0!important;width:100v
 
 </script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js"></script>
-<script>
 
-/* ===== DIAGNÓSTICO TEMPORAL DE ARRANQUE ===== */
-(function installCuidaTemporaryLogs(){
- const KEY='cuida_benja_temp_logs_v1',MAX=1400,MAX_CHARS=420000;let records=[];
- try{const saved=sessionStorage.getItem(KEY);if(saved){const parsed=JSON.parse(saved);if(Array.isArray(parsed))records=parsed.slice(-MAX);}}catch(_){}
- const safe=v=>{try{if(v instanceof Error)return v.name+': '+v.message+(v.stack?'\n'+v.stack:'');if(typeof v==='string')return v;if(v&&typeof v==='object')return JSON.stringify(v);return String(v);}catch(_){return String(v);}};
- window.cuidaAddLog=function(level,message){
-  const line='['+new Date().toISOString()+'] ['+String(level||'INFO').toUpperCase()+'] '+safe(message);
-  records.push(line);if(records.length>MAX)records=records.slice(-MAX);
-  let total=records.reduce((n,x)=>n+x.length,0);while(total>MAX_CHARS&&records.length>20)total-=records.shift().length;
-  try{sessionStorage.setItem(KEY,JSON.stringify(records));}catch(_){}
-
- };
- window.cuidaGetLogs=()=>records.join('\n');
- window.cuidaAddLog('INFO','Diagnóstico iniciado. URL: '+location.href.split('?')[0]+' | navegador: '+navigator.userAgent);
- window.addEventListener('error',e=>{
-  const target=e.target;if(target&&target!==window){window.cuidaAddLog('RESOURCE_ERROR',(target.tagName||'recurso')+' '+(target.src||target.href||'sin URL'));return;}
-  window.cuidaAddLog('JS_ERROR',(e.message||'Error JavaScript')+' | '+(e.filename||'')+':'+(e.lineno||0)+':'+(e.colno||0)+' | '+(e.error?.stack||''));
- },true);
- window.addEventListener('unhandledrejection',e=>window.cuidaAddLog('PROMISE_REJECTION',safe(e.reason)));
- window.addEventListener('DOMContentLoaded',()=>window.cuidaAddLog('DOM','DOMContentLoaded; readyState='+document.readyState),{once:true});
- window.addEventListener('load',()=>window.cuidaAddLog('WINDOW','load; readyState='+document.readyState),{once:true});
- const originalFetch=window.fetch.bind(window);
- window.fetch=function(input,init){
-  const raw=typeof input==='string'?input:(input?.url||String(input));
-  const url=(()=>{try{const u=new URL(raw,location.href);return u.origin+u.pathname;}catch(_){return raw.split('?')[0];}})();
-  const started=Date.now();window.cuidaAddLog('FETCH_START',url);
-  return originalFetch(input,init).then(response=>{window.cuidaAddLog(response.ok?'FETCH_OK':'FETCH_HTTP_ERROR',url+' | HTTP '+response.status+' | '+(Date.now()-started)+'ms');return response;})
-   .catch(error=>{window.cuidaAddLog('FETCH_FAILED',url+' | '+error.name+': '+error.message+' | '+(Date.now()-started)+'ms');throw error;});
- };
- ['error','warn'].forEach(level=>{const original=console[level].bind(console);console[level]=(...args)=>{window.cuidaAddLog('CONSOLE_'+level,args.map(safe).join(' '));original(...args);};});
-
- // La interfaz flotante Logs anterior fue retirada. Se conserva el registro interno para errores de inicio.
-
-
-
-
-})();
-
-/* Logs 2 eliminado: sin panel, escaneo periódico ni recopilación de métricas. */
-
-
-
-// Cuida a Benja - datos del mapa de la granja.// Cuida a Benja - datos del mapa de la granja.
-// El motor 3D compartido lee este objeto; aqui solo van puntos y datos de mapa.
-window.CUIDA_BENJA_FARM_MAP = {
-  id: "granja",
-  title: "La granja de Benja",
-  center: { x: -330, z: -330 },
-  flatRadius: 245,
-  tv: { x: -414, z: -365 },
-  radio: { x: -400, z: -356 },
-  waterStorage: { x: -435, z: -470 },
-  ponds: [
-    { id: "laguna-grande", x: -270, z: -242, radius: 22, depth: 0.9 },
-    { id: "laguna-pequena", x: -465, z: -255, radius: 13, depth: 0.55 }
-  ],
-  ambientZones: [
-    { id: "patio-central", x: -354, z: -322, radius: 0, insects: false },
-    { id: "pocilga-benja", x: -286, z: -354, radius: 0, insects: false },
-    { id: "huerto", x: -220, z: -250, radius: 105, insects: true },
-    { id: "arboleda", x: -266, z: -284, radius: 95, insects: true },
-    { id: "camino-tractor", x: -448, z: -286, radius: 0, insects: false },
-    { id: "sendero-norte", x: -320, z: -242, radius: 0, insects: false },
-    { id: "pozo-y-agua", x: -410, z: -450, radius: 0, insects: false }
-  ],
-  pig: { x: -286, z: -354 },
-  work: { x: -388, z: -302 },
-  shop: { x: -258, z: -302 },
-  warehouse: { x: -362, z: -220 },
-  crops: { x: -220, z: -250 },
-  coop: { x: -240, z: -340 },
-  delivery: { x: -218, z: -435 },
-  well: { x: -390, z: -440 },
-  tractor: { x: -400, z: -385 },
-  repair: { x: -286, z: -354 },
-  fruitTrees: { x: -266, z: -284 },
-  cityExitRadius: 235,
-  cityGate: { x: -135, z: -330 },
-  maxBenjaWeight: 100,
-  saveWeightGoal: 52,
-  goods: {
-    maiz: { label: "Maíz", price: 8, color: 0xe3b949, food: true, icon: "🌽", buyable: true },
-    trigo: { label: "Trigo", price: 7, color: 0xd8c27c, food: true, icon: "🌾", buyable: true },
-    zanahoria: { label: "Zanahorias", price: 10, color: 0xe77a37, food: true, icon: "🥕", buyable: true },
-    heno: { label: "Heno", price: 6, color: 0xc4a24c, food: true, icon: "🌿", buyable: true },
-    pienso: { label: "Pienso", price: 12, color: 0x8c7049, food: true, icon: "🫘", buyable: true },
-    huevos: { label: "Huevos", price: 5, color: 0xf2e8cb, food: false, icon: "🥚", buyable: false },
-    agua: { label: "Agua", price: 0, color: 0x5aa8d7, food: false, icon: "💧", buyable: false },
-    madera: { label: "Madera", price: 9, color: 0x805536, food: false, icon: "🪵", buyable: true },
-    balde: { label: "Balde resistente", price: 18, color: 0x7f9aa7, food: false, icon: "🪣", buyable: true, model: "bucket" },
-    antorcha: { label: "Antorcha", price: 22, color: 0xd78332, food: false, icon: "🔥", buyable: true, buildable: true, model: "torch" },
-    muro_madera: { label: "Muro de madera", price: 28, color: 0x8f633b, food: false, icon: "🪵", buyable: true, buildable: true, model: "wood-wall" },
-    muro_ladrillo: { label: "Muro de ladrillo", price: 42, color: 0x9a5542, food: false, icon: "🧱", buyable: true, buildable: true, model: "brick-wall" },
-    puerta: { label: "Puerta de madera", price: 32, color: 0x754727, food: false, icon: "🚪", buyable: true, buildable: true, model: "door" },
-    ventana: { label: "Ventana con cristal", price: 24, color: 0x8bc8dc, food: false, icon: "🪟", buyable: true, buildable: true, model: "window" },
-    techo: { label: "Panel de tejado", price: 30, color: 0x765044, food: false, icon: "🏠", buyable: true, buildable: true, model: "roof" },
-    manzanas: { label: "Manzanas", price: 0, color: 0xc83c36, food: true, icon: "🍎", buyable: false },
-  },
-  missionOrder: ["harvest", "eggs", "delivery", "orchard", "repair", "water", "tractor", "feed", "warehouse", "restock", "cleanBenja"],
-  missions: {
-    harvest: { title: "COSECHA EL CAMPO", target: "crops", label: "ve al cultivo", progress: "recoge verduras para el pedido", icon: "🥕" },
-    eggs: { title: "RECOGE LOS HUEVOS", target: "coop", label: "ve al gallinero", progress: "revisa los nidos y recoge los huevos", icon: "🥚" },
-    delivery: { title: "ENTREGA A LA CASA VECINA", target: "delivery", label: "lleva el pedido a la casa", progress: "entrega 2 verduras y 1 huevo", icon: "📦" },
-    orchard: { title: "COSECHA MANZANAS", target: "fruitTrees", label: "ve al huerto", progress: "recoge manzanas para Benja", icon: "🍎" },
-    repair: { title: "REFUERZA EL CORRAL", target: "repair", label: "ve al corral", progress: "usa 2 maderas para reforzar la defensa", icon: "🪵" },
-    water: { title: "LLENA EL BEBEDERO", target: "well", label: "ve al pozo", progress: "recoge agua limpia para la granja", icon: "💧" },
-    tractor: { title: "PON EL TRACTOR A PUNTO", target: "tractor", label: "ve al tractor", progress: "revisa el tractor y prepara heno", icon: "🚜" },
-    feed: { title: "CUIDA A BENJA", target: "pig", label: "vuelve con benja", progress: "lanzale comida a benja cuando tenga hambre", icon: "🐷" },
-    warehouse: { title: "REVISAR ALMACEN", target: "warehouse", label: "ve al almacen", progress: "revisa las existencias guardadas", icon: "🏠" },
-    restock: { title: "PREPARA LA DESPENSA", target: "shop", label: "ve al puesto", progress: "consigue alimento extra para Benja", icon: "🛒" },
-    cleanBenja: { title: "BAÑO PARA BENJA", target: "pig", label: "ve con Benja", progress: "revisa a Benja y prepara su limpieza", icon: "🧼" }
-  },
-  // En esta zona no hay NPC de construccion ni trabajadores automáticos.
-  ambientWorkers: 0,
-  nightInvaders: { min: 4, max: 6, rewardPerTwo: 5 }
-};
-
-window.CUIDA_BENJA_FARM_MAP.buildWorld = function(engine) {
-  if (!engine || typeof engine.createFarmWorld !== "function") {
-    throw new Error("No está disponible el motor del mapa de granja");
-  }
-  engine.createFarmWorld();
-  if (typeof engine.updateFarmCarryVisual === "function") {
-    engine.updateFarmCarryVisual(true);
-  }
-};
-</script>
 <!-- Ciudad.js se descarga al entrar a la ciudad; no se carga durante la granja. -->
 <script>
 window.addEventListener('error', function(e){ try { var el=document.getElementById('statusText'); if(el){ el.style.display='block'; el.textContent='Error: '+(e.message||'inicio'); } } catch(_){} });
@@ -1442,7 +1314,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
 
         function showStartupError(error) {
             const msg = error?.stack || error?.message || String(error || 'Error desconocido');
-            if (window.cuidaAddLog) window.cuidaAddLog('STARTUP_ERROR', msg);
+
             startScreen.classList.add('error');
             if (loadingText) loadingText.textContent = 'Error';
             if (startupProgressPercent) startupProgressPercent.textContent = 'Error';
@@ -1631,7 +1503,7 @@ let farmUsePending=false,farmUsePendingAt=0,farmLastUsePulse=0,farmUsePulseUntil
 
         function githubLogMsg(message, type='info') {
             window.__cuidaStartupLastProgressAt = Date.now();
-            if (window.cuidaAddLog) window.cuidaAddLog('STARTUP_' + String(type || 'info').toUpperCase(), message);
+
             const stamp = new Date().toLocaleTimeString();
             const prefix = type === 'error' ? '❌' : type === 'ok' ? '✅' : 'ℹ️';
             const line = `[${stamp}] ${prefix} ${message}`;
@@ -4301,10 +4173,61 @@ function removeCarRadioStation(index, reason='Sin señal'){
         }
         
         function setupControls() {
-            joystickArea.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(isCinematic || isDead) return; joystickActive = true; joystickTouchId = e.changedTouches[0] ? e.changedTouches[0].identifier : null; updateJoystick(e.touches[0]); });
-            joystickArea.addEventListener('touchmove', (e) => { e.preventDefault(); e.stopPropagation(); if (joystickActive) updateJoystick(e.touches[0]); });
-            joystickArea.addEventListener('touchend', (e) => { e.preventDefault(); joystickActive = false; joystickTouchId = null; joystickVector = { x: 0, y: 0 }; joystickKnob.style.transform = 'translate(-50%, -50%)'; });
-            runBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isCinematic && !isDead) isRunning = true; }); runBtn.addEventListener('touchend', () => { isRunning = false; });
+            let joystickPointerId = null;
+            const resetJoystickInput = () => {
+                joystickActive = false;
+                joystickTouchId = null;
+                joystickPointerId = null;
+                joystickVector = { x: 0, y: 0 };
+                if (joystickKnob) joystickKnob.style.transform = 'translate(-50%, -50%)';
+            };
+            if (window.PointerEvent) {
+                joystickArea.addEventListener('pointerdown', (e) => {
+                    if (isCinematic || isDead || joystickActive) return;
+                    e.preventDefault(); e.stopPropagation();
+                    joystickActive = true; joystickPointerId = e.pointerId;
+                    try { joystickArea.setPointerCapture(e.pointerId); } catch (_) {}
+                    updateJoystick(e);
+                }, { passive: false });
+                joystickArea.addEventListener('pointermove', (e) => {
+                    if (!joystickActive || e.pointerId !== joystickPointerId) return;
+                    e.preventDefault(); updateJoystick(e);
+                }, { passive: false });
+                const finishJoystickPointer = (e) => {
+                    if (e.pointerId !== joystickPointerId) return;
+                    if (e.cancelable) e.preventDefault();
+                    e.stopPropagation(); resetJoystickInput();
+                };
+                joystickArea.addEventListener('pointerup', finishJoystickPointer, { passive: false });
+                joystickArea.addEventListener('pointercancel', finishJoystickPointer, { passive: false });
+                joystickArea.addEventListener('lostpointercapture', finishJoystickPointer, { passive: false });
+            } else {
+                const findTouchById = (list, id) => {
+                    for (let i = 0; list && i < list.length; i++) if (list[i].identifier === id) return list[i];
+                    return null;
+                };
+                joystickArea.addEventListener('touchstart', (e) => {
+                    if (isCinematic || isDead || joystickActive) return;
+                    const first = e.changedTouches && e.changedTouches[0];
+                    if (!first) return;
+                    e.preventDefault(); e.stopPropagation();
+                    joystickActive = true; joystickTouchId = first.identifier;
+                    updateJoystick(findTouchById(e.touches, joystickTouchId) || first);
+                }, { passive: false });
+                joystickArea.addEventListener('touchmove', (e) => {
+                    if (!joystickActive || joystickTouchId === null) return;
+                    const touch = findTouchById(e.touches, joystickTouchId);
+                    if (!touch) return;
+                    e.preventDefault(); e.stopPropagation(); updateJoystick(touch);
+                }, { passive: false });
+                const finishJoystickTouch = (e) => {
+                    if (joystickTouchId === null || !findTouchById(e.changedTouches, joystickTouchId)) return;
+                    e.preventDefault(); e.stopPropagation(); resetJoystickInput();
+                };
+                joystickArea.addEventListener('touchend', finishJoystickTouch, { passive: false });
+                joystickArea.addEventListener('touchcancel', finishJoystickTouch, { passive: false });
+            }
+            runBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isCinematic && !isDead) isRunning = true; }); runBtn.addEventListener('touchend', () => { isRunning = false; }); runBtn.addEventListener('touchcancel', () => { isRunning = false; });
             jumpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (!isJumping && !isCinematic && !isFlying && !isDead && !isDriving) { isJumping = true; jumpVelocity = 6.2; playJumpSound(); } });
             
             attackBtn.addEventListener('touchstart', (e) => {
@@ -4335,8 +4258,8 @@ function removeCarRadioStation(index, reason='Sin señal'){
             tuboBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if (playerAura >= 50000 && tuboCooldownLeft <= 0 && !isTuboActive && !isCinematic && !isDead && !morteroActive && !isDriving) { isTuboActive = true; tuboTimer = 900; tuboCooldownLeft = 3000; tuboTick = 0; if(character.userData.tuboGroup) character.userData.tuboGroup.visible = true; document.getElementById('tuboBigFireBtn').style.display = 'flex'; playPumSound(); } });
 
             const flyUpBtn = document.getElementById('flyUpBtn'); const flyDownBtn = document.getElementById('flyDownBtn');
-            flyUpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyUp = true; }); flyUpBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyUp = false; });
-            flyDownBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyDown = true; }); flyDownBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyDown = false; });
+            flyUpBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyUp = true; }); flyUpBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyUp = false; }); flyUpBtn.addEventListener('touchcancel', () => { isFlyUp = false; });
+            flyDownBtn.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); if(!isDead) isFlyDown = true; }); flyDownBtn.addEventListener('touchend', (e) => { e.preventDefault(); isFlyDown = false; }); flyDownBtn.addEventListener('touchcancel', () => { isFlyDown = false; });
 
             const morteroFireBtn = document.getElementById('morteroFireBtn'); const morteroTimerEl = document.getElementById('morteroTimer'); const crosshairEl = document.getElementById('crosshair');
             // Mortero: un solo sistema de entrada. El bucle del juego NO decide si el botón está pulsado;
@@ -4482,15 +4405,21 @@ function removeCarRadioStation(index, reason='Sin señal'){
                 if(joystickActive&&e.pointerId===joystickTouchId)return;
                 cameraPointerId=e.pointerId;lastTouchX=e.clientX;lastTouchY=e.clientY;isCameraTouch=true;isZooming=false;
             },true);
-            renderer.domElement.addEventListener('pointermove',e=>{
+            window.addEventListener('pointermove',e=>{
                 if(e.pointerType!=='touch'||cameraPointerId!==e.pointerId||isCinematic)return;
                 cameraTheta-=(e.clientX-lastTouchX)*0.008;
                 cameraPhi=Math.max(0.1,Math.min(Math.PI/2+0.2,cameraPhi-(e.clientY-lastTouchY)*0.008));
                 lastTouchX=e.clientX;lastTouchY=e.clientY;
-            });
+            },{passive:true});
             const releaseCameraPointer=e=>{if(cameraPointerId===e.pointerId){cameraPointerId=null;if(!joystickActive)isCameraTouch=false;}};
-            renderer.domElement.addEventListener('pointerup',releaseCameraPointer);
-            renderer.domElement.addEventListener('pointercancel',releaseCameraPointer);
+            window.addEventListener('pointerup',releaseCameraPointer);
+            window.addEventListener('pointercancel',releaseCameraPointer);
+            const resetTouchFocus=()=>{
+                resetJoystickInput();isRunning=false;isFlyUp=false;isFlyDown=false;
+                cameraPointerId=null;cameraTouchId=null;isCameraTouch=false;isZooming=false;
+            };
+            window.addEventListener('blur',resetTouchFocus);
+            document.addEventListener('visibilitychange',()=>{if(document.hidden)resetTouchFocus();});
             renderer.domElement.addEventListener('touchstart', (e) => {
                 e.preventDefault(); if(cameraPointerId!==null)return; if(isCinematic) return;
                 // Si el joystick está siendo usado, el otro dedo controla la cámara al mismo tiempo.
@@ -4860,10 +4789,11 @@ function updateFarmCinematic(){
             camera.position.lerpVectors(storyCinematicFrom||camera.position,cam,ease*.12+.01);camera.lookAt(look);
             if(storyCinematicFrame>=220){storyCinematicFrame=220;advanceFarmCinematic();}
         }
-        function playBenjaGrunt(force=false){
-            if(!benjaSoundPlayers.length)return;if(character&&benjaPig&&!farmCityMode&&character.position.distanceTo(benjaPig.position)>18)return;const now=performance.now();if(!force&&now<benjaSoundNextAt)return;
-            const a=benjaSoundPlayers[benjaSoundIndex%benjaSoundPlayers.length];benjaSoundIndex++;benjaSoundNextAt=now+12000+Math.random()*8000;
-            try{a.pause();a.currentTime=0;a.volume=.66;const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
+        // Audio espacial de Benja: audible hasta 120 m y atenuado progresivamente.
+        function playBenjaGrunt(force=false,volume=.66){
+            if(!benjaSoundPlayers.length)return;const now=performance.now();if(!force&&now<benjaSoundNextAt)return;
+            const a=benjaSoundPlayers[benjaSoundIndex%benjaSoundPlayers.length];benjaSoundIndex++;benjaSoundNextAt=now+9000+Math.random()*6000;
+            try{a.pause();a.currentTime=0;a.volume=Math.max(0,Math.min(.66,volume));const p=a.play();if(p&&p.catch)p.catch(()=>{});}catch(e){}
         }
         function updateBenjaAnimation(){
             if(!benjaPig)return;const now=performance.now(),t=now*.001,rolling=!!(benjaPig.userData&&benjaPig.userData.rollUntil);
@@ -4883,7 +4813,16 @@ function updateFarmCinematic(){
                 benjaPig.rotation.z=Math.sin(t*1.18)*.12;benjaPig.rotation.x=Math.sin(t*1.55)*.1;
                 if(benjaPigBody)benjaPigBody.rotation.z=Math.sin(t*2.2)*.13;
             }
-            if(storyModeActive&&!farmCityMode&&!storyCinematicPlaying&&character&&character.position.distanceTo(benjaPig.position)<16&&t*1000>benjaSoundNextAt)playBenjaGrunt();
+            if(storyModeActive&&!farmCityMode&&!storyCinematicPlaying&&character){
+                const distance=character.position.distanceTo(benjaPig.position),maxDistance=120;
+                const proximity=Math.max(0,1-distance/maxDistance);
+                const volume=distance<=maxDistance?.012+.648*Math.pow(proximity,1.6):0;
+                // Ajusta también el sonido que ya está reproduciéndose si el jugador se mueve.
+                for(const audio of benjaSoundPlayers){if(audio&&!audio.paused)audio.volume=volume;}
+                if(distance<=maxDistance&&now>=benjaSoundNextAt)playBenjaGrunt(false,volume);
+            }else{
+                for(const audio of benjaSoundPlayers){if(audio&&!audio.paused)audio.volume=0;}
+            }
         }
         function updateFarmMoneyLabel(){
             const el=document.getElementById('peneCountInfo');
@@ -6805,27 +6744,75 @@ function farmEnsurePhysicalControlOverlay(){
  document.body.appendChild(root);return root;
 }
 function farmUpdatePhysicalControlOverlay(){
- const root=farmEnsurePhysicalControlOverlay();
- const hideAll=()=>root.querySelectorAll('button').forEach(b=>b.style.display='none');
+ const fn=farmUpdatePhysicalControlOverlay,now=performance.now();
+ let cache=fn.__perfCache;
+ if(!cache){
+  const root=farmEnsurePhysicalControlOverlay(),buttons={};
+  root.querySelectorAll('button[data-kind][data-action]').forEach(b=>{buttons[b.dataset.kind+'-'+b.dataset.action]=b;});
+  cache=fn.__perfCache={root,buttons,targets:{tv:null,radio:null},targetMaps:{tv:{},radio:{}},lastRun:0,lastPanelCheck:0,lastRectCheck:0,rect:null,panelsOpen:false,hidden:null};
+ }
+ // Este HUD solo necesita seguir la camara a ~12 Hz, no en cada frame.
+ if(now-cache.lastRun<80)return;
+ cache.lastRun=now;
+ const hideAll=()=>{
+  if(cache.hidden===true)return;
+  for(const key in cache.buttons){const b=cache.buttons[key];if(b&&b.style.display!=='none')b.style.display='none';}
+  cache.hidden=true;
+ };
  if(!gameStarted||!storyModeActive||farmCityMode||isDriving||!character||!renderer||!camera||!farmGroup||!farmGroup.visible){hideAll();return;}
- const tvPanel=document.getElementById('farmTVPanel'),radioPanel=document.getElementById('farmRadioPanel');
- if((tvPanel&&getComputedStyle(tvPanel).display!=='none')||(radioPanel&&getComputedStyle(radioPanel).display!=='none')){hideAll();return;}
+ if(now-cache.lastPanelCheck>=500){
+  cache.lastPanelCheck=now;
+  const tvPanel=document.getElementById('farmTVPanel'),radioPanel=document.getElementById('farmRadioPanel');
+  cache.panelsOpen=!!((tvPanel&&tvPanel.style.display!=='none'&&getComputedStyle(tvPanel).display!=='none')||(radioPanel&&radioPanel.style.display!=='none'&&getComputedStyle(radioPanel).display!=='none'));
+ }
+ if(cache.panelsOpen){hideAll();return;}
+ if(!cache.rect||now-cache.lastRectCheck>=500){
+  cache.lastRectCheck=now;
+  const r=renderer.domElement.getBoundingClientRect();
+  cache.rect={left:r.left,top:r.top,width:r.width,height:r.height};
+ }
+ const rect=cache.rect;
+ if(!rect||rect.width<=0||rect.height<=0){hideAll();return;}
  const tvD=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
  const radioD=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
- const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height){hideAll();return;}
- camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);
+ // Los botones fisicos son estaticos: calcular su posicion mundial una sola vez.
+ // Antes se recalculaba getWorldPosition para cada boton en cada pasada.
  const place=(kind,targets,near)=>{
-  const actions=kind==='tv'?['prev','power','next']:['prev','power','next'];
-  actions.forEach(action=>{
-   const button=root.querySelector('button[data-kind="'+kind+'"][data-action="'+action+'"]');
-   const target=(targets||[]).find(o=>o&&o.userData&&(kind==='tv'?o.userData.tvChannelAction:o.userData.radioAction)===action);
-   if(!button||!near||!target||!target.visible){if(button)button.style.display='none';return;}
-   const p=target.getWorldPosition(new THREE.Vector3()).project(camera);
-   if(p.z< -1||p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05){button.style.display='none';return;}
-   const x=rect.left+(p.x+1)*.5*rect.width,y=rect.top+(1-p.y)*.5*rect.height;
-   button.style.left=x+'px';button.style.top=y+'px';button.style.display='block';
-  });
+  const map=cache.targetMaps[kind];
+  if(cache.targets[kind]!==targets){
+   cache.targets[kind]=targets;
+   for(const k in map)delete map[k];
+   (targets||[]).forEach(o=>{
+    if(!o||!o.userData)return;
+    const action=kind==='tv'?o.userData.tvChannelAction:o.userData.radioAction;
+    if(!action)return;
+    const world=new THREE.Vector3();
+    o.getWorldPosition(world);
+    map[action]={object:o,world};
+   });
+  }
+  const actions=['prev','power','next'];
+  for(let i=0;i<actions.length;i++){
+   const action=actions[i],button=cache.buttons[kind+'-'+action],entry=map[action];
+   if(!button)continue;
+   if(!near||!entry||!entry.object.visible){
+    if(button.style.display!=='none')button.style.display='none';
+    continue;
+   }
+   const p=entry.world.clone().project(camera);
+   if(p.z< -1||p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05){
+    if(button.style.display!=='none')button.style.display='none';
+    continue;
+   }
+   const left=(rect.left+(p.x+1)*.5*rect.width)+'px';
+   const top=(rect.top+(1-p.y)*.5*rect.height)+'px';
+   if(button.style.left!==left)button.style.left=left;
+   if(button.style.top!==top)button.style.top=top;
+   if(button.style.display!=='block')button.style.display='block';
+  }
  };
+ // Actualizar matrices de camara una vez por pasada, no una vez por objetivo.
+ camera.updateMatrixWorld();
  place('tv',farmTVPhysicalHitTargets,tvD<=30);
  place('radio',farmRadioPhysicalHitTargets,radioD<=28);
 }
@@ -7907,35 +7894,31 @@ function startProtestMission() {
                 renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             // Limpieza/culling extra a baja tasa, sin tocar la lógica de gameplay.
-            if(graphicsSettings.effectLimiter!==false && perfFps<30){
-                const maxD2=220*220, c=character;
-                if(c) scene.traverse(o=>{ if(o.userData && o.userData.__tempEffect && o.position){ const dx=o.position.x-c.position.x,dz=o.position.z-c.position.z; if(dx*dx+dz*dz>maxD2) o.visible=false; }});
-            }
+            // Se evita recorrer toda la escena cada segundo para reducir microtirones.
         }
 
         function animate() {
             if (!gameStarted) return; requestAnimationFrame(animate);
             updatePerformanceOptimizer();
             optimizerFrameCounter++; worldCullFrameCounter++;
-            const nowFrame=performance.now(); if(!window.__fpsLast) window.__fpsLast=nowFrame; if(!window.__fpsFrames) window.__fpsFrames=0; window.__fpsFrames++; if(nowFrame-window.__fpsLast>=1000){ window.__fpsMeasured=window.__fpsFrames*1000/(nowFrame-window.__fpsLast); window.__fpsFrames=0; window.__fpsLast=nowFrame; }
             // La visibilidad por camara se calcula despues de actualizar la posicion de la camara.
             if(graphicsSettings && graphicsSettings.autoOptimizer !== false && (optimizerFrameCounter % 600 === 0)) runAutoOptimizer();
             for (let stand of lifeCardStands) {
                 if (stand.userData.cards < stand.userData.maxCards) { stand.userData.respawnTimer--; if (stand.userData.respawnTimer <= 0) { stand.userData.cards++; stand.userData.respawnTimer = 600; if (stand.userData.cards === stand.userData.maxCards) stand.userData.signMesh.material.emissive.setHex(0x00ff00); } }
-                if (!isDead && character.position.distanceTo(stand.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(stand.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Tarjetas de vida: ${stand.userData.cards} (100 aura cada una)`);
                     if (isAttacking && attackPhase === 2 && playerAura >= 100 && stand.userData.cards > 0) { playerAura -= 100; playerHealth = Math.min(playerMaxHealth, playerHealth + 30); stand.userData.cards--; updatePlayerHealth(); updateAuraUI(); changeAura(-100); playPumSound(); }
-                } else if (character.position.distanceTo(stand.position) < 12) { interactionPrompt.style.display = 'none'; }
+                } else if (character.position.distanceToSquared(stand.position) < 144) { interactionPrompt.style.display = 'none'; }
             }
             
             for (let bath of bathZones) {
-                if (!isDead && character.position.distanceTo(bath.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(bath.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Baño: ${bath.userData.cost} aura para limpiar mud`);
                     if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
             
-            if (!lifeCardStands.some(s => character.position.distanceTo(s.position) < 8) && !bathZones.some(b => character.position.distanceTo(b.position) < 8)) { interactionPrompt.style.display = 'none'; }
+            if (!lifeCardStands.some(s => character.position.distanceToSquared(s.position) < 64) && !bathZones.some(b => character.position.distanceToSquared(b.position) < 64)) { interactionPrompt.style.display = 'none'; }
             if (missionActive && missionType === 'protest') { protestSoundTimer--; if(protestSoundTimer <= 0) { playFueraSound(); protestSoundTimer = 150 + Math.random()*100; } }
             if (flyCooldownLeft > 0) { flyCooldownLeft--; document.getElementById('flyCooldownFill').style.width = Math.max(0, (1 - flyCooldownLeft/1500)*100) + '%'; } else { document.getElementById('flyCooldownFill').style.width = '100%'; }
             if (poopCooldownLeft > 0) { poopCooldownLeft--; document.getElementById('poopCooldownFill').style.width = Math.max(0, (1 - poopCooldownLeft/300)*100) + '%'; } else { document.getElementById('poopCooldownFill').style.width = '100%'; }
@@ -8941,7 +8924,7 @@ function startProtestMission() {
                         githubLoader.dataset.cancelled = '1';
                         githubLoader.dataset.loading = '0';
                     }
-                    if (window.cuidaAddLog) window.cuidaAddLog('STARTUP_STALLED', detail);
+
                     if (loadingText) loadingText.textContent = 'Sin respuesta';
                     showStartupError(new Error(detail));
                 }, 4000);
@@ -11088,35 +11071,31 @@ function startProtestMission() {
                 renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             // Limpieza/culling extra a baja tasa, sin tocar la lógica de gameplay.
-            if(graphicsSettings.effectLimiter!==false && perfFps<30){
-                const maxD2=220*220, c=character;
-                if(c) scene.traverse(o=>{ if(o.userData && o.userData.__tempEffect && o.position){ const dx=o.position.x-c.position.x,dz=o.position.z-c.position.z; if(dx*dx+dz*dz>maxD2) o.visible=false; }});
-            }
+            // Se evita recorrer toda la escena cada segundo para reducir microtirones.
         }
 
         function animate() {
             if (!gameStarted) return; requestAnimationFrame(animate);
             updatePerformanceOptimizer();
             optimizerFrameCounter++; worldCullFrameCounter++;
-            const nowFrame=performance.now(); if(!window.__fpsLast) window.__fpsLast=nowFrame; if(!window.__fpsFrames) window.__fpsFrames=0; window.__fpsFrames++; if(nowFrame-window.__fpsLast>=1000){ window.__fpsMeasured=window.__fpsFrames*1000/(nowFrame-window.__fpsLast); window.__fpsFrames=0; window.__fpsLast=nowFrame; }
             // La visibilidad por camara se calcula despues de actualizar la posicion de la camara.
             if(graphicsSettings && graphicsSettings.autoOptimizer !== false && (optimizerFrameCounter % 600 === 0)) runAutoOptimizer();
             for (let stand of lifeCardStands) {
                 if (stand.userData.cards < stand.userData.maxCards) { stand.userData.respawnTimer--; if (stand.userData.respawnTimer <= 0) { stand.userData.cards++; stand.userData.respawnTimer = 600; if (stand.userData.cards === stand.userData.maxCards) stand.userData.signMesh.material.emissive.setHex(0x00ff00); } }
-                if (!isDead && character.position.distanceTo(stand.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(stand.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Tarjetas de vida: ${stand.userData.cards} (100 aura cada una)`);
                     if (isAttacking && attackPhase === 2 && playerAura >= 100 && stand.userData.cards > 0) { playerAura -= 100; playerHealth = Math.min(playerMaxHealth, playerHealth + 30); stand.userData.cards--; updatePlayerHealth(); updateAuraUI(); changeAura(-100); playPumSound(); }
-                } else if (character.position.distanceTo(stand.position) < 12) { interactionPrompt.style.display = 'none'; }
+                } else if (character.position.distanceToSquared(stand.position) < 144) { interactionPrompt.style.display = 'none'; }
             }
             
             for (let bath of bathZones) {
-                if (!isDead && character.position.distanceTo(bath.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(bath.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Baño: ${bath.userData.cost} aura para limpiar mud`);
                     if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
             
-            if (!lifeCardStands.some(s => character.position.distanceTo(s.position) < 8) && !bathZones.some(b => character.position.distanceTo(b.position) < 8)) { interactionPrompt.style.display = 'none'; }
+            if (!lifeCardStands.some(s => character.position.distanceToSquared(s.position) < 64) && !bathZones.some(b => character.position.distanceToSquared(b.position) < 64)) { interactionPrompt.style.display = 'none'; }
             if (missionActive && missionType === 'protest') { protestSoundTimer--; if(protestSoundTimer <= 0) { playFueraSound(); protestSoundTimer = 150 + Math.random()*100; } }
             if (flyCooldownLeft > 0) { flyCooldownLeft--; document.getElementById('flyCooldownFill').style.width = Math.max(0, (1 - flyCooldownLeft/1500)*100) + '%'; } else { document.getElementById('flyCooldownFill').style.width = '100%'; }
             if (poopCooldownLeft > 0) { poopCooldownLeft--; document.getElementById('poopCooldownFill').style.width = Math.max(0, (1 - poopCooldownLeft/300)*100) + '%'; } else { document.getElementById('poopCooldownFill').style.width = '100%'; }
@@ -14236,35 +14215,31 @@ function startProtestMission() {
                 renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             // Limpieza/culling extra a baja tasa, sin tocar la lógica de gameplay.
-            if(graphicsSettings.effectLimiter!==false && perfFps<30){
-                const maxD2=220*220, c=character;
-                if(c) scene.traverse(o=>{ if(o.userData && o.userData.__tempEffect && o.position){ const dx=o.position.x-c.position.x,dz=o.position.z-c.position.z; if(dx*dx+dz*dz>maxD2) o.visible=false; }});
-            }
+            // Se evita recorrer toda la escena cada segundo para reducir microtirones.
         }
 
         function animate() {
             if (!gameStarted) return; requestAnimationFrame(animate);
             updatePerformanceOptimizer();
             optimizerFrameCounter++; worldCullFrameCounter++;
-            const nowFrame=performance.now(); if(!window.__fpsLast) window.__fpsLast=nowFrame; if(!window.__fpsFrames) window.__fpsFrames=0; window.__fpsFrames++; if(nowFrame-window.__fpsLast>=1000){ window.__fpsMeasured=window.__fpsFrames*1000/(nowFrame-window.__fpsLast); window.__fpsFrames=0; window.__fpsLast=nowFrame; }
             // La visibilidad por camara se calcula despues de actualizar la posicion de la camara.
             if(graphicsSettings && graphicsSettings.autoOptimizer !== false && (optimizerFrameCounter % 600 === 0)) runAutoOptimizer();
             for (let stand of lifeCardStands) {
                 if (stand.userData.cards < stand.userData.maxCards) { stand.userData.respawnTimer--; if (stand.userData.respawnTimer <= 0) { stand.userData.cards++; stand.userData.respawnTimer = 600; if (stand.userData.cards === stand.userData.maxCards) stand.userData.signMesh.material.emissive.setHex(0x00ff00); } }
-                if (!isDead && character.position.distanceTo(stand.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(stand.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Tarjetas de vida: ${stand.userData.cards} (100 aura cada una)`);
                     if (isAttacking && attackPhase === 2 && playerAura >= 100 && stand.userData.cards > 0) { playerAura -= 100; playerHealth = Math.min(playerMaxHealth, playerHealth + 30); stand.userData.cards--; updatePlayerHealth(); updateAuraUI(); changeAura(-100); playPumSound(); }
-                } else if (character.position.distanceTo(stand.position) < 12) { interactionPrompt.style.display = 'none'; }
+                } else if (character.position.distanceToSquared(stand.position) < 144) { interactionPrompt.style.display = 'none'; }
             }
             
             for (let bath of bathZones) {
-                if (!isDead && character.position.distanceTo(bath.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(bath.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Baño: ${bath.userData.cost} aura para limpiar mud`);
                     if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
             
-            if (!lifeCardStands.some(s => character.position.distanceTo(s.position) < 8) && !bathZones.some(b => character.position.distanceTo(b.position) < 8)) { interactionPrompt.style.display = 'none'; }
+            if (!lifeCardStands.some(s => character.position.distanceToSquared(s.position) < 64) && !bathZones.some(b => character.position.distanceToSquared(b.position) < 64)) { interactionPrompt.style.display = 'none'; }
             if (missionActive && missionType === 'protest') { protestSoundTimer--; if(protestSoundTimer <= 0) { playFueraSound(); protestSoundTimer = 150 + Math.random()*100; } }
             if (flyCooldownLeft > 0) { flyCooldownLeft--; document.getElementById('flyCooldownFill').style.width = Math.max(0, (1 - flyCooldownLeft/1500)*100) + '%'; } else { document.getElementById('flyCooldownFill').style.width = '100%'; }
             if (poopCooldownLeft > 0) { poopCooldownLeft--; document.getElementById('poopCooldownFill').style.width = Math.max(0, (1 - poopCooldownLeft/300)*100) + '%'; } else { document.getElementById('poopCooldownFill').style.width = '100%'; }
@@ -17386,35 +17361,31 @@ function startProtestMission() {
                 renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             // Limpieza/culling extra a baja tasa, sin tocar la lógica de gameplay.
-            if(graphicsSettings.effectLimiter!==false && perfFps<30){
-                const maxD2=220*220, c=character;
-                if(c) scene.traverse(o=>{ if(o.userData && o.userData.__tempEffect && o.position){ const dx=o.position.x-c.position.x,dz=o.position.z-c.position.z; if(dx*dx+dz*dz>maxD2) o.visible=false; }});
-            }
+            // Se evita recorrer toda la escena cada segundo para reducir microtirones.
         }
 
         function animate() {
             if (!gameStarted) return; requestAnimationFrame(animate);
             updatePerformanceOptimizer();
             optimizerFrameCounter++; worldCullFrameCounter++;
-            const nowFrame=performance.now(); if(!window.__fpsLast) window.__fpsLast=nowFrame; if(!window.__fpsFrames) window.__fpsFrames=0; window.__fpsFrames++; if(nowFrame-window.__fpsLast>=1000){ window.__fpsMeasured=window.__fpsFrames*1000/(nowFrame-window.__fpsLast); window.__fpsFrames=0; window.__fpsLast=nowFrame; }
             // La visibilidad por camara se calcula despues de actualizar la posicion de la camara.
             if(graphicsSettings && graphicsSettings.autoOptimizer !== false && (optimizerFrameCounter % 600 === 0)) runAutoOptimizer();
             for (let stand of lifeCardStands) {
                 if (stand.userData.cards < stand.userData.maxCards) { stand.userData.respawnTimer--; if (stand.userData.respawnTimer <= 0) { stand.userData.cards++; stand.userData.respawnTimer = 600; if (stand.userData.cards === stand.userData.maxCards) stand.userData.signMesh.material.emissive.setHex(0x00ff00); } }
-                if (!isDead && character.position.distanceTo(stand.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(stand.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Tarjetas de vida: ${stand.userData.cards} (100 aura cada una)`);
                     if (isAttacking && attackPhase === 2 && playerAura >= 100 && stand.userData.cards > 0) { playerAura -= 100; playerHealth = Math.min(playerMaxHealth, playerHealth + 30); stand.userData.cards--; updatePlayerHealth(); updateAuraUI(); changeAura(-100); playPumSound(); }
-                } else if (character.position.distanceTo(stand.position) < 12) { interactionPrompt.style.display = 'none'; }
+                } else if (character.position.distanceToSquared(stand.position) < 144) { interactionPrompt.style.display = 'none'; }
             }
             
             for (let bath of bathZones) {
-                if (!isDead && character.position.distanceTo(bath.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(bath.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Baño: ${bath.userData.cost} aura para limpiar mud`);
                     if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
             
-            if (!lifeCardStands.some(s => character.position.distanceTo(s.position) < 8) && !bathZones.some(b => character.position.distanceTo(b.position) < 8)) { interactionPrompt.style.display = 'none'; }
+            if (!lifeCardStands.some(s => character.position.distanceToSquared(s.position) < 64) && !bathZones.some(b => character.position.distanceToSquared(b.position) < 64)) { interactionPrompt.style.display = 'none'; }
             if (missionActive && missionType === 'protest') { protestSoundTimer--; if(protestSoundTimer <= 0) { playFueraSound(); protestSoundTimer = 150 + Math.random()*100; } }
             if (flyCooldownLeft > 0) { flyCooldownLeft--; document.getElementById('flyCooldownFill').style.width = Math.max(0, (1 - flyCooldownLeft/1500)*100) + '%'; } else { document.getElementById('flyCooldownFill').style.width = '100%'; }
             if (poopCooldownLeft > 0) { poopCooldownLeft--; document.getElementById('poopCooldownFill').style.width = Math.max(0, (1 - poopCooldownLeft/300)*100) + '%'; } else { document.getElementById('poopCooldownFill').style.width = '100%'; }
@@ -20534,35 +20505,31 @@ function startProtestMission() {
                 renderer.setSize(window.innerWidth,window.innerHeight,false);
             }
             // Limpieza/culling extra a baja tasa, sin tocar la lógica de gameplay.
-            if(graphicsSettings.effectLimiter!==false && perfFps<30){
-                const maxD2=220*220, c=character;
-                if(c) scene.traverse(o=>{ if(o.userData && o.userData.__tempEffect && o.position){ const dx=o.position.x-c.position.x,dz=o.position.z-c.position.z; if(dx*dx+dz*dz>maxD2) o.visible=false; }});
-            }
+            // Se evita recorrer toda la escena cada segundo para reducir microtirones.
         }
 
         function animate() {
             if (!gameStarted) return; requestAnimationFrame(animate);
             updatePerformanceOptimizer();
             optimizerFrameCounter++; worldCullFrameCounter++;
-            const nowFrame=performance.now(); if(!window.__fpsLast) window.__fpsLast=nowFrame; if(!window.__fpsFrames) window.__fpsFrames=0; window.__fpsFrames++; if(nowFrame-window.__fpsLast>=1000){ window.__fpsMeasured=window.__fpsFrames*1000/(nowFrame-window.__fpsLast); window.__fpsFrames=0; window.__fpsLast=nowFrame; }
             // La visibilidad por camara se calcula despues de actualizar la posicion de la camara.
             if(graphicsSettings && graphicsSettings.autoOptimizer !== false && (optimizerFrameCounter % 600 === 0)) runAutoOptimizer();
             for (let stand of lifeCardStands) {
                 if (stand.userData.cards < stand.userData.maxCards) { stand.userData.respawnTimer--; if (stand.userData.respawnTimer <= 0) { stand.userData.cards++; stand.userData.respawnTimer = 600; if (stand.userData.cards === stand.userData.maxCards) stand.userData.signMesh.material.emissive.setHex(0x00ff00); } }
-                if (!isDead && character.position.distanceTo(stand.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(stand.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Tarjetas de vida: ${stand.userData.cards} (100 aura cada una)`);
                     if (isAttacking && attackPhase === 2 && playerAura >= 100 && stand.userData.cards > 0) { playerAura -= 100; playerHealth = Math.min(playerMaxHealth, playerHealth + 30); stand.userData.cards--; updatePlayerHealth(); updateAuraUI(); changeAura(-100); playPumSound(); }
-                } else if (character.position.distanceTo(stand.position) < 12) { interactionPrompt.style.display = 'none'; }
+                } else if (character.position.distanceToSquared(stand.position) < 144) { interactionPrompt.style.display = 'none'; }
             }
             
             for (let bath of bathZones) {
-                if (!isDead && character.position.distanceTo(bath.position) < 8) {
+                if (!isDead && character.position.distanceToSquared(bath.position) < 64) {
                     interactionPrompt.style.display = 'block'; interactionPrompt.textContent='USAR';interactionPrompt.setAttribute('aria-label',`Baño: ${bath.userData.cost} aura para limpiar mud`);
                     if (isAttacking && attackPhase === 2 && playerAura >= bath.userData.cost && mudStainLevel > 0) { playerAura -= bath.userData.cost; mudStainLevel = 0; updateMudUI(); updateAvatarStainVisual(); changeAura(-bath.userData.cost); playPedoSound(); }
                 }
             }
             
-            if (!lifeCardStands.some(s => character.position.distanceTo(s.position) < 8) && !bathZones.some(b => character.position.distanceTo(b.position) < 8)) { interactionPrompt.style.display = 'none'; }
+            if (!lifeCardStands.some(s => character.position.distanceToSquared(s.position) < 64) && !bathZones.some(b => character.position.distanceToSquared(b.position) < 64)) { interactionPrompt.style.display = 'none'; }
             if (missionActive && missionType === 'protest') { protestSoundTimer--; if(protestSoundTimer <= 0) { playFueraSound(); protestSoundTimer = 150 + Math.random()*100; } }
             if (flyCooldownLeft > 0) { flyCooldownLeft--; document.getElementById('flyCooldownFill').style.width = Math.max(0, (1 - flyCooldownLeft/1500)*100) + '%'; } else { document.getElementById('flyCooldownFill').style.width = '100%'; }
             if (poopCooldownLeft > 0) { poopCooldownLeft--; document.getElementById('poopCooldownFill').style.width = Math.max(0, (1 - poopCooldownLeft/300)*100) + '%'; } else { document.getElementById('poopCooldownFill').style.width = '100%'; }
