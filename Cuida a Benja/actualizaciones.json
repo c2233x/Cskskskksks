@@ -1,8 +1,19 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.11.8",
+  "version": "1.11.9",
   "updates": [
+    {
+      "version": "1.11.9",
+      "title": "Sonido espacial de Benja y alcance ampliado",
+      "date": "27 de noviembre de 2026",
+      "changes": [
+        "Los sonidos de Benja ahora pueden escucharse desde un radio de hasta 120 metros en la granja, no solamente al estar junto al corral.",
+        "El volumen aumenta progresivamente al acercarse y se mantiene muy bajo en el limite lejano del alcance.",
+        "La atenuacion se actualiza mientras el jugador se mueve, tambien durante la reproduccion de cada sonido.",
+        "Se elimina el limite anterior que silenciaba por completo los sonidos a mas de 18 metros; se conservan los audios originales y sus reproducciones ocasionales."
+      ]
+    },
     {
       "version": "1.11.8",
       "title": "Diagnostico detallado de rendimiento por fases",
