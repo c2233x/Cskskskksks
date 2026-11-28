@@ -7170,25 +7170,51 @@ function farmEnsurePhysicalControlOverlay(){
  document.body.appendChild(root);return root;
 }
 function farmUpdatePhysicalControlOverlay(){
- const root=farmEnsurePhysicalControlOverlay();
- const hideAll=()=>root.querySelectorAll('button').forEach(b=>b.style.display='none');
+ const fn=farmUpdatePhysicalControlOverlay,now=performance.now();
+ let cache=fn.__perfCache;
+ if(!cache){
+  const root=farmEnsurePhysicalControlOverlay(),buttons={};
+  root.querySelectorAll('button[data-kind][data-action]').forEach(b=>{buttons[b.dataset.kind+'-'+b.dataset.action]=b;});
+  cache=fn.__perfCache={root,buttons,targets:{tv:null,radio:null},targetMaps:{tv:{},radio:{}},vector:new THREE.Vector3(),lastRun:0,lastPanelCheck:0,panelsOpen:false,hidden:null};
+ }
+ // 60 ms entre calculos: los controles siguen la camara sin recalcularse en cada cuadro.
+ if(now-cache.lastRun<60)return;
+ cache.lastRun=now;
+ const hideAll=()=>{
+  if(cache.hidden===true)return;
+  Object.values(cache.buttons).forEach(b=>{if(b.style.display!=='none')b.style.display='none';});
+  cache.hidden=true;
+ };
  if(!gameStarted||!storyModeActive||farmCityMode||isDriving||!character||!renderer||!camera||!farmGroup||!farmGroup.visible){hideAll();return;}
- const tvPanel=document.getElementById('farmTVPanel'),radioPanel=document.getElementById('farmRadioPanel');
- if((tvPanel&&getComputedStyle(tvPanel).display!=='none')||(radioPanel&&getComputedStyle(radioPanel).display!=='none')){hideAll();return;}
+ if(now-cache.lastPanelCheck>=200){
+  cache.lastPanelCheck=now;
+  const tvPanel=document.getElementById('farmTVPanel'),radioPanel=document.getElementById('farmRadioPanel');
+  cache.panelsOpen=!!((tvPanel&&getComputedStyle(tvPanel).display!=='none')||(radioPanel&&getComputedStyle(radioPanel).display!=='none'));
+ }
+ if(cache.panelsOpen){hideAll();return;}
+ const rect=renderer.domElement.getBoundingClientRect();
+ if(!rect.width||!rect.height){hideAll();return;}
+ cache.hidden=false;
  const tvD=Math.hypot(character.position.x-FARM_TV_POS.x,character.position.z-FARM_TV_POS.z);
  const radioD=Math.hypot(character.position.x-FARM_RADIO_POS.x,character.position.z-FARM_RADIO_POS.z);
- const rect=renderer.domElement.getBoundingClientRect();if(!rect.width||!rect.height){hideAll();return;}
- camera.updateMatrixWorld(true);scene.updateMatrixWorld(true);
+ // No forzar la actualizacion de matrices de toda la escena: renderer.render se encarga de ello.
+ camera.updateMatrixWorld();
  const place=(kind,targets,near)=>{
-  const actions=kind==='tv'?['prev','power','next']:['prev','power','next'];
-  actions.forEach(action=>{
-   const button=root.querySelector('button[data-kind="'+kind+'"][data-action="'+action+'"]');
-   const target=(targets||[]).find(o=>o&&o.userData&&(kind==='tv'?o.userData.tvChannelAction:o.userData.radioAction)===action);
-   if(!button||!near||!target||!target.visible){if(button)button.style.display='none';return;}
-   const p=target.getWorldPosition(new THREE.Vector3()).project(camera);
-   if(p.z< -1||p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05){button.style.display='none';return;}
-   const x=rect.left+(p.x+1)*.5*rect.width,y=rect.top+(1-p.y)*.5*rect.height;
-   button.style.left=x+'px';button.style.top=y+'px';button.style.display='block';
+  const map=cache.targetMaps[kind];
+  if(cache.targets[kind]!==targets){
+   cache.targets[kind]=targets;Object.keys(map).forEach(k=>delete map[k]);
+   (targets||[]).forEach(o=>{if(!o||!o.userData)return;const action=kind==='tv'?o.userData.tvChannelAction:o.userData.radioAction;if(action)map[action]=o;});
+  }
+  ['prev','power','next'].forEach(action=>{
+   const button=cache.buttons[kind+'-'+action],target=map[action];
+   if(!button)return;
+   if(!near||!target||!target.visible){if(button.style.display!=='none')button.style.display='none';return;}
+   const p=target.getWorldPosition(cache.vector).project(camera);
+   if(p.z< -1||p.z>1||Math.abs(p.x)>1.05||Math.abs(p.y)>1.05){if(button.style.display!=='none')button.style.display='none';return;}
+   const left=(rect.left+(p.x+1)*.5*rect.width)+'px',top=(rect.top+(1-p.y)*.5*rect.height)+'px';
+   if(button.style.left!==left)button.style.left=left;
+   if(button.style.top!==top)button.style.top=top;
+   if(button.style.display!=='block')button.style.display='block';
   });
  };
  place('tv',farmTVPhysicalHitTargets,tvD<=30);
