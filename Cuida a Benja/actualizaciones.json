@@ -1,56 +1,8 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.13.0",
+  "version": "1.11.7",
   "updates": [
-    {
-      "version": "1.13.0",
-      "title": "Controles tactiles multitouch mas fiables en Android",
-      "date": "28 de noviembre de 2026",
-      "changes": [
-        "El joystick usa Pointer Events y captura el dedo que lo inicio; en navegadores sin Pointer Events conserva el modo tactil con seguimiento por identificador.",
-        "Mover o levantar un segundo dedo ya no cambia ni cancela el movimiento del joystick.",
-        "Se agregan recuperacion ante pointercancel, touchcancel, perdida de foco y cambio de visibilidad para evitar controles atascados.",
-        "El giro de camara sigue recibiendo el movimiento aunque el dedo salga del lienzo y libera el puntero al terminar o cancelarse.",
-        "Los controles de correr y vuelo tambien limpian su estado cuando Android cancela un toque."
-      ]
-    },
-    {
-      "version": "1.12.0",
-      "title": "Optimizacion de controles tactiles de TV y radio",
-      "date": "27 de noviembre de 2026",
-      "changes": [
-        "Los controles fisicos de TV y radio ahora recalculan su posicion cada 60 ms en lugar de hacerlo en cada cuadro.",
-        "Se guardan referencias a botones y objetivos para evitar consultas repetidas al DOM y recorridos de listas en cada actualizacion.",
-        "Se reutiliza un vector 3D para proyectar los controles y se evita forzar la actualizacion de matrices de toda la escena desde esta funcion.",
-        "Se reducen escrituras repetidas de estilos y se limita la comprobacion de paneles abiertos a una frecuencia menor."
-      ]
-    },
-    {
-      "version": "1.11.9",
-      "title": "Sonido espacial de Benja y alcance ampliado",
-      "date": "27 de noviembre de 2026",
-      "changes": [
-        "Los sonidos de Benja ahora pueden escucharse desde un radio de hasta 120 metros en la granja, no solamente al estar junto al corral.",
-        "El volumen aumenta progresivamente al acercarse y se mantiene muy bajo en el limite lejano del alcance.",
-        "La atenuacion se actualiza mientras el jugador se mueve, tambien durante la reproduccion de cada sonido.",
-        "Se elimina el limite anterior que silenciaba por completo los sonidos a mas de 18 metros; se conservan los audios originales y sus reproducciones ocasionales."
-      ]
-    },
-    {
-      "version": "1.11.8",
-      "title": "Diagnostico detallado de rendimiento por fases",
-      "date": "27 de noviembre de 2026",
-      "changes": [
-        "Logs ahora registra los intervalos entre cuadros, el tiempo de CPU del bucle principal y la duracion de renderer.render por separado.",
-        "El perfilador mide funciones costosas del optimizador, visibilidad del mundo, historia, animaciones, vehiculos y controles cuando estas funciones estan disponibles para instrumentar.",
-        "Se agrega una cronologia de cuadros lentos, cambios de resolucion dinamica, redimensionamientos del canvas y aumentos de draw calls, triangulos, geometrias y texturas.",
-        "Se cuentan mallas totales y visibles, luces, sprites, objetos Points y programas de renderizado en intervalos de bajo costo.",
-        "Cuando el navegador lo soporta, se registran tareas largas y su atribucion disponible.",
-        "Se incorpora COPIAR LOG DETALLADO con causas probables, tiempos por fase y eventos recientes.",
-        "El informe aclara que renderer.render mide tiempo de CPU enviando comandos WebGL, no el tiempo exacto de ejecucion de la GPU."
-      ]
-    },
     {
       "version": "1.11.7",
       "title": "Log de rendimiento integrado en Ajustes",

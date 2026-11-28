@@ -1,30 +1,3 @@
-## Novedades de la version 1.13.0
-- El joystick ahora sigue exclusivamente el dedo que lo inicio, incluso cuando se usan dos dedos al mismo tiempo.
-- Se usa Pointer Events con captura del puntero; los navegadores sin ese soporte conservan la ruta Touch Events, tambien corregida por identificador.
-- Se recuperan los estados tactiles al recibir cancelacion, perder el foco o cambiar de visibilidad para evitar movimiento atascado.
-- El giro de camara sigue el dedo aunque salga del lienzo y libera el control al terminar el gesto.
-- Correr y los controles de vuelo tambien responden a la cancelacion de toque.
-
-## Novedades de la version 1.12.0
-- Los controles fisicos de TV y radio actualizan su posicion cada 60 ms, reduciendo trabajo repetido en cada cuadro.
-- Se almacenan referencias de botones y objetivos, evitando busquedas repetidas en el DOM y recorridos innecesarios.
-- Se reutiliza el vector de proyeccion y se elimina la actualizacion forzada de matrices de toda la escena desde el overlay.
-- Se limitan las comprobaciones de paneles y las escrituras de estilos a los cambios necesarios.
-
-## Novedades de la version 1.11.9
-- Los sonidos de Benja se escuchan desde un radio ampliado de hasta 120 metros.
-- El volumen aumenta progresivamente al acercarse y es muy bajo en el limite lejano.
-- La atenuacion se actualiza durante la reproduccion cuando el jugador se mueve.
-- Se conservan los audios originales y la reproduccion ocasional de sonidos.
-
-## Novedades de la version 1.11.8
-- Logs mide por separado el tiempo de CPU del bucle principal, el envio de dibujo de Three.js y el intervalo entre cuadros.
-- Se registra una cronologia de cuadros lentos, cambios de resolucion/canvas y aumentos de draw calls, triangulos, geometrias y texturas.
-- Se instrumentan funciones del optimizador, culling, historia, animaciones, vehiculos y controles para detectar llamadas costosas.
-- Se muestran mallas totales/visibles, luces, sprites, objetos Points, tareas largas cuando el navegador las expone y eventos recientes.
-- El boton COPIAR LOG DETALLADO genera un informe ampliado con causas probables y datos de la sesion.
-- La medicion de renderer.render corresponde al tiempo de CPU enviando comandos WebGL; no equivale al tiempo exacto de GPU.
-
 ## Novedades de la version 1.11.7
 - Se retira el botón flotante del registro Logs anterior para evitar duplicados en pantalla.
 - El monitor de rendimiento se traslada a Ajustes y ahora se abre con un único botón llamado **Log**.
@@ -52,7 +25,7 @@
 
 **Archivo del juego:** `Cuida a Benja.html`
 
-**Version actual: 1.13.0**
+**Version actual: 1.11.7**
 
 Cuida a Benja es una aventura 3D de granja y ciudad. El personaje principal llega al rancho, encuentra a Benja en el barro y empieza a mantener la granja, reunir dinero, conseguir comida y defender el corral por las noches.
 
