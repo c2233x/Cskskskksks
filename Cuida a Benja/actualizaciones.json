@@ -1,8 +1,20 @@
 {
   "game": "Cuida a Benja",
   "edition": "Cuida a Benja",
-  "version": "1.12.0",
+  "version": "1.13.0",
   "updates": [
+    {
+      "version": "1.13.0",
+      "title": "Controles tactiles multitouch mas fiables en Android",
+      "date": "28 de noviembre de 2026",
+      "changes": [
+        "El joystick usa Pointer Events y captura el dedo que lo inicio; en navegadores sin Pointer Events conserva el modo tactil con seguimiento por identificador.",
+        "Mover o levantar un segundo dedo ya no cambia ni cancela el movimiento del joystick.",
+        "Se agregan recuperacion ante pointercancel, touchcancel, perdida de foco y cambio de visibilidad para evitar controles atascados.",
+        "El giro de camara sigue recibiendo el movimiento aunque el dedo salga del lienzo y libera el puntero al terminar o cancelarse.",
+        "Los controles de correr y vuelo tambien limpian su estado cuando Android cancela un toque."
+      ]
+    },
     {
       "version": "1.12.0",
       "title": "Optimizacion de controles tactiles de TV y radio",
